@@ -25,7 +25,7 @@ classdef GraphWrapper < handle
     %                                             graph to its initial one.
     %
     %       plot                                - Plot the graph.
-
+    
     % Copyright 2018 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,29 +39,29 @@ classdef GraphWrapper < handle
     % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     % See the License for the specific language governing permissions and
     % limitations under the License.
-
+    
     properties(Access=private)
-
+        
         %An EnhancedGraph object used to represent the graph
         Graph
-
+        
         %A ComponentSubGraphMap object that maps components to sub-graphs
         %in a TASSL-specific way.
         Map
-
+        
         %A criterion to sort the nodes in the graph.
         NodeSortingCriterion
-
+        
     end
     
     %% PUBLIC METHDOS
-
+    
     methods(Access=public)
-
+        
         function obj = GraphWrapper(I, J, V, maxSize)
             %GRAPHWRAPPER(I, J, V, MAXSIZE) Constructs a graph wrapper to be used for
             %the analysis phase with the TASSL approach.
-
+            
             % Initialise the graph
             obj.Graph = a2msla.common.EnhancedGraph(I, J, V);
             obj.Graph.computeComponents();
@@ -69,17 +69,17 @@ classdef GraphWrapper < handle
             [componentIds, componentSizes] = obj.Graph.listOfComponents();
             obj.Map = a2msla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
         end
-
+        
         function h = plot(obj)
             %PLOT(G) Produce a plot of the graph.
             h = obj.Graph.plot();
         end
-
+        
         function setSortingCriterion(obj, sortingCriterion)
             %SETSORTINGCRITERION(G, K) Set the sorting criterion K for the
             %nodes in the graph.
             sortingCriterion = string(sortingCriterion);
-
+            
             if strcmp(sortingCriterion, "descend outdegree")
                 sortingFunction = @(j) obj.Graph.sortNodesByOutdegree(j);
             elseif strcmp(sortingCriterion, "ascend outdegree")
@@ -98,7 +98,7 @@ classdef GraphWrapper < handle
             % Assign sorting criterion
             obj.NodeSortingCriterion = sortingFunction;
         end
-
+        
         function [rootIds, subgAssignments] = distributeRootsToSubGraphs(obj, density)
             %DISTRIBUTEROOTSTOSUBGRAPHS(G,D) Distribute the root nodes
             %in the graph based on a density parameter D. The higher D, the
@@ -108,20 +108,20 @@ classdef GraphWrapper < handle
             %   [R, S] = DISTRIBUTEROOTSTOSUBGRAPHS(G,D) Distribute the
             %   roots of nodes in G to sub-graphs. Get the root node IDs
             %   and the sub-graph IDs S.
-
+            
             % Retrieve root and sub-graph IDs
             [rootIds, mergedComponentIds] = obj.rootsOfMergedComponents();
             subGraphIds = obj.Map.subGraphsOfMergedComponent(mergedComponentIds);
-
+            
             % Check that we can associate roots to sub-graphs
             [rootIds, subGraphIds, density] = iCheckAssociationIsPossible(rootIds, subGraphIds, density);
-
+            
             % Distribute the roots
             subgAssignments = cellfun(@iDistributeRootsToSubGraphsForOneComponent, rootIds, subGraphIds, ...
                 "UniformOutput", false);
             subgAssignments = cell2mat(subgAssignments);
             rootIds = cell2mat(rootIds);
-
+            
             % Helper function
             function subgAssignmentsOneComp = iDistributeRootsToSubGraphsForOneComponent(roots, subgs)
                 % Select a subset of sub-graphs based on density
@@ -130,7 +130,7 @@ classdef GraphWrapper < handle
                 subgs = subgs(1:numUsableSubgs);
                 % Sort roots by the current criterion
                 roots = obj.sortNodes(roots);
-
+                
                 % Assign sub-graphs to root nodes cyclically
                 numRoots = numel(roots);
                 numCompleteSubgAssignments = floor(numRoots/numUsableSubgs);
@@ -139,7 +139,7 @@ classdef GraphWrapper < handle
                     [repmat(subgs, 1, numCompleteSubgAssignments), subgs(1:numRemeainingSubAssignments)];
             end
         end
-
+        
         function assignNodeToSubGraph(obj, nodeIds, subGraphIds)
             %ASSIGNNODETOSUBGRAPH(G, I, S) Assign one or more nodes with ID
             %I to sub-graphs with IDs S.
@@ -152,27 +152,27 @@ classdef GraphWrapper < handle
             % Assign sub-graphs
             obj.Graph.setSubGraphOfNode(nodeIds, subGraphIds);
         end
-
+        
         function outIds = subGraphOfNode(obj, nodeIds)
             %SUBGRAPHOFNODE(G, I) Get the sub-graph IDs to which one or
             %more nodes were assigned.
             outIds = obj.Graph.subGraphOfNode(nodeIds);
         end
-
+        
         function isFullyAssigned = checkFullAssignment(obj)
             %CHECKFULLASSIGNMENT(G) Check that all the nodes in the graph
             %were assigned to sub-graphs.
             isFullyAssigned = ~any(a2msla.common.isNullId( ...
                 obj.Graph.subGraphOfNode(obj.Graph.listOfNodes())));
         end
-
+        
         function resetAllAssignments(obj)
             %RESETALLASSIGNMENTS(G) Reset all node-to-sub-graph
             %assignments.
             obj.Graph.resetSubGraphs();
             obj.Map.resetSubGraphs();
         end
-
+        
         function [childrenIds, subGraphIds] = childrenOfNodeReadyForAssignment(obj, nodeIds)
             %CHILDRENOFNODEREADYFORASSIGNMENT(G, I) Get the IDs of the
             %children of one or more nodes I, such that all the parents of
@@ -184,19 +184,19 @@ classdef GraphWrapper < handle
             %   [C, S] = CHILDRENOFNODEREADYFORASSIGNMENT(G, I) Get the IDs
             %   of the chidlren that are ready for assignment and the
             %   corresponding sub-graph IDs to assign them to.
-
+            
             childrenIds = obj.Graph.childrenOfNode(nodeIds);
             if iscell(childrenIds)
                 childrenIds = cell2mat(childrenIds);
             end
             childrenIds = unique(childrenIds);
-
+            
             % Sort children by the current sorting
             childrenIds = obj.sortNodes(childrenIds);
             % No children must have been assigned to a sub-graph already
             assert(all(a2msla.common.isNullId(obj.Graph.subGraphOfNode(childrenIds))), ...
                 "One or more nodes were assigned to a sub-graph before their parents.");
-
+            
             % Retrieve candidate sub-graph IDs
             parentIds = obj.Graph.parentsOfNode(childrenIds);
             if iscell(parentIds)
@@ -205,12 +205,12 @@ classdef GraphWrapper < handle
             else
                 subGraphIds = iGetSubGraphCandidateGivenParentIds(parentIds);
             end
-
+            
             % Filter out nodes that are not ready
             filterSel = a2msla.common.isNullId(subGraphIds);
             subGraphIds(filterSel) = [];
             childrenIds(filterSel) = [];
-
+            
             % Helper function
             function subGraphCandidateId = iGetSubGraphCandidateGivenParentIds(parentIds)
                 parentSubGraphs = obj.Graph.subGraphOfNode(parentIds);
@@ -221,13 +221,13 @@ classdef GraphWrapper < handle
                 end
             end
         end
-
+        
     end
-
+    
     %% PRIVATE METHODS
-
+    
     methods (Access=private)
-
+        
         function [outIds, mergedComponentIds] = subGraphsOfMergedComponents(obj)
             %SUBGRAPHSOFMERGEDCOMPONENTS(G) Get the list of the sub-graphs
             %IDs associated with every merged component in the graph G and the
@@ -241,7 +241,7 @@ classdef GraphWrapper < handle
             mergedComponentIds = sort(obj.Map.listOfMergedComponents());
             outIds = obj.Map.subGraphsOfMergedComponent(mergedComponentIds);
         end
-
+        
         function [outRootIds, outMergedComponentIds] = rootsOfMergedComponents(obj)
             %ROOTSOFMERGEDCOMPONENTS(G) Retrieve the roots of every merged
             %component in the graph G and the component IDs.
@@ -251,22 +251,26 @@ classdef GraphWrapper < handle
             %
             %   [R, C] = ROOTSOFMERGEDCOMPONENTS(G) Get both the list of
             %   root node IDs and the corresponding merged component IDs.
-
+            
             % Map is not aware of component roots and Graph is not aware
             % of merged components
             componentIds = obj.Graph.listOfComponents();
             rootsOfComp = obj.Graph.rootsOfComponent(componentIds);
             mergedComponentIds = obj.Map.componentToMergedComponent(componentIds);
             outMergedComponentIds = unique(mergedComponentIds);
-
+            
             % Output according to how many entries can be found
             if isscalar(outMergedComponentIds)
-                outRootIds = cell2mat(rootsOfComp);
+                if iscell(rootsOfComp)
+                    outRootIds = cell2mat(rootsOfComp);
+                else
+                    outRootIds = rootsOfComp;
+                end
             else
                 outRootIds = arrayfun(@iGetRootsOfOneMergedComponent, outMergedComponentIds, ...
                     'UniformOutput', false);
             end
-
+            
             % Helper function
             function someRoots = iGetRootsOfOneMergedComponent(aMergedCompId)
                 someRoots = rootsOfComp(mergedComponentIds==aMergedCompId);
@@ -275,7 +279,7 @@ classdef GraphWrapper < handle
                 end
             end
         end
-
+        
         function varargout = sortNodes(obj, inNodes)
             %Sort the input nodes according to the sorting criterion. Error
             %if the sorting criterion was not set
@@ -289,7 +293,7 @@ classdef GraphWrapper < handle
                 varargout{2} = iFindSorting(inNodes, outNodes);
             end
         end
-
+        
     end
 end
 
@@ -352,12 +356,12 @@ for k = 1:numRowsInDuplicateCols
     % If entries in this row have duplicates, fix it and write the column
     % where the element was left
     columnsWithElementsInCurrentRow = find(duplicateMat(k, :));
-
+    
     % Skip empty rows
     if isempty(columnsWithElementsInCurrentRow)
         continue;
     end
-
+    
     % Remove duplicates from the current row
     colToAssign = iGetMinimumUnassignedCol(columnsWithElementsInCurrentRow, fixedRow);
     duplicateMat(k, :) = zeros(1, numDuplicateCols);

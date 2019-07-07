@@ -173,7 +173,6 @@ classdef tGraphWrapper < hA2mslaTest
             import matlab.unittest.constraints.IsTrue;
             testCase.assumeThat(EveryElementOf(isCleared), IsTrue());
         end
-        
     end
 end
 
