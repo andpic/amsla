@@ -67,7 +67,7 @@ classdef GraphWrapper < handle
             obj.Graph.computeComponents();
             % Initialise the map of components to sub-graphs
             [componentIds, componentSizes] = obj.Graph.listOfComponents();
-            obj.Map = a2msla.tassl.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
+            obj.Map = a2msla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
         end
 
         function h = plot(obj)

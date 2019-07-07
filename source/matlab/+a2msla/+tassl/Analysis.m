@@ -41,7 +41,7 @@ classdef Analysis < handle
 
             % Initialise the graph
             [I, J, V, maxSubGraph, obj.IsProducingPlot] = iParseConstructorArguments(varargin{:});
-            obj.Graph = a2msla.tassl.GraphWrapper(I, J, V, maxSubGraph);
+            obj.Graph = a2msla.tassl.internal.GraphWrapper(I, J, V, maxSubGraph);
         end
 
         function partition(obj)

@@ -1,5 +1,5 @@
 classdef tGraphWrapper < hA2mslaTest
-    %TGRAPHRAPPER Tests for the class a2msla.tassl.GraphWrapper
+    %TGRAPHRAPPER Tests for the class a2msla.tassl.internal.GraphWrapper
     
     % Copyright 2018 Andrea Picciau
     %
@@ -184,5 +184,5 @@ J = [1, 1, 1, 2, 3, 4, 4, 5, 5,  3,  6,  6,  7,  8,  6,  9,  9, 10];
 I = [1, 2, 3, 2, 3, 4, 5, 5, 6,  6,  6,  7,  7,  8,  8, 10,  9, 10];
 numberOfElements = numel(J);
 V = ones(1, numberOfElements);
-aGraph = a2msla.tassl.GraphWrapper(I, J, V, 3);
+aGraph = a2msla.tassl.internal.GraphWrapper(I, J, V, 3);
 end
