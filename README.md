@@ -25,6 +25,7 @@ References
 *A. Picciau*. Concurrency and data locality for sparse linear algebra on modern
 processors. PhD thesis. August 2017. Supervised by Prof. G.A.  Constantinides
 and Dr. E.C. Kerrigan. 
+[PDF](https://spiral.imperial.ac.uk/handle/10044/1/58884).
 
 Copyright
 ---------
