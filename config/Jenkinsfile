@@ -1,0 +1,12 @@
+pipeline {
+   agent any
+
+   stages {
+      stage('Test') {
+         steps {
+            sh "echo ${USER}"
+            sh "bash ./config/run_tests.sh /usr/local/MATLAB/R2019a"
+         }
+      }
+   }
+}
