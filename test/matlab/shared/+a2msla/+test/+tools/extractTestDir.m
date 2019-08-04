@@ -16,5 +16,5 @@ function testDir = extractTestDir()
 % limitations under the License.
 
 thisDir = mfilename('fullpath');
-testDir = extractBefore(thisDir, "private");
+testDir = extractBefore(thisDir, "shared");
 end

@@ -1,4 +1,4 @@
-classdef tComponentSubGraphMap < hA2mslaTest
+classdef tComponentSubGraphMap < a2msla.test.tools.A2mslaTest
     %TCOMPONENTSUBGRAPHMAP Tests for class a2msla.tassl.internal.ComponentSubGraphMap
     
     % Copyright 2018 Andrea Picciau

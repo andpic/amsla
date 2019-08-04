@@ -1,4 +1,4 @@
-classdef tEnhancedGraph < hA2mslaTest
+classdef tEnhancedGraph < a2msla.test.tools.A2mslaTest
     %TENHANCEDGRAPH Tests for class a2msla.common.EnhancedGraph
     
     % Copyright 2018 Andrea Picciau

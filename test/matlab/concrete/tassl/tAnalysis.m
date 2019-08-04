@@ -1,4 +1,4 @@
-classdef tAnalysis < hA2mslaTest
+classdef tAnalysis < a2msla.test.shared.AnalysisTests
     %TANALYSIS Tests for the class a2msla.tassl.Analysis
     
     % Copyright 2019 Andrea Picciau
@@ -15,19 +15,9 @@ classdef tAnalysis < hA2mslaTest
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    %% Manage corner cases for a single root in the sub-graph
-    methods (Test)
-        function manages_single_root_in_sub_graph(~)
-            % Check that distributing the roots into the sub-graphs does
-            % not give an error if there is only one root in the whole graph.
-            
-            aMatrix =  gallery('poisson', 10);
-            aMatrix = tril(aMatrix);
-            [I, J, V] = find(aMatrix);
-            subGraphSize = 10;
-            
-            objectUnderTest = a2msla.tassl.Analysis(I, J, V, subGraphSize);
-            objectUnderTest.partition();
+    methods
+        function analysisObject = createAnalysisObject(~, I, J, V, maxSubGraphSize)
+            analysisObject = a2msla.tassl.Analysis(I, J, V, maxSubGraphSize);
         end
     end
 end

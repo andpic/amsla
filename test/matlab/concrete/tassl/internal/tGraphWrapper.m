@@ -1,4 +1,4 @@
-classdef tGraphWrapper < hA2mslaTest
+classdef tGraphWrapper < a2msla.test.tools.A2mslaTest
     %TGRAPHRAPPER Tests for the class a2msla.tassl.internal.GraphWrapper
     
     % Copyright 2018 Andrea Picciau

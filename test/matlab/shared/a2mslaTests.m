@@ -29,16 +29,21 @@ import matlab.unittest.TestRunner;
 import matlab.unittest.plugins.CodeCoveragePlugin;
 
 % Setup directories
-matlabTestDir = extractTestDir();
-matlabSourceDir = extractSourceDir();
+matlabTestDir = a2msla.test.tools.extractTestDir();
+matlabSourceDir = a2msla.test.tools.extractSourceDir();
+
+% Add directories to the path
 oldPath = path();
 addpath(matlabSourceDir);
-addpath(matlabTestDir);
+sharedTestsDir = fullfile(matlabTestDir, "shared");
+addpath(sharedTestsDir);
+
 % Remove added directories at the end of tests
 restorePath = onCleanup(@() path(oldPath));
 
 % Test suite
-suite = TestSuite.fromFolder(matlabTestDir, "IncludingSubfolders", true);
+concreteTests = fullfile(matlabTestDir, "concrete");
+suite = TestSuite.fromFolder(concreteTests, "IncludingSubfolders", true);
 
 % Test runner
 runner = TestRunner.withTextOutput("LoggingLevel", 3, "OutputDetail", 3);
@@ -50,5 +55,4 @@ end
 
 % Run tests
 testResults = runner.run(suite);
-
 end

@@ -1,5 +1,5 @@
-classdef tAnalysis < hA2mslaTest
-    %TANALYSIS Tests for the class a2msla.levelSet.Analysis
+classdef(Abstract) AnalysisTests < a2msla.test.tools.A2mslaTest
+    %ANALYSISTESTS Tests for the Analysis classes
     
     % Copyright 2019 Andrea Picciau
     %
@@ -15,6 +15,11 @@ classdef tAnalysis < hA2mslaTest
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
+    methods(Abstract)
+        analysisObject = createAnalysisObject(obj, I, J, V, maxSubg);
+    end    
+
+
     %% Manage corner cases for a single root in the sub-graph
     methods (Test)
         function managesSingleRootInSubGraph(~)
