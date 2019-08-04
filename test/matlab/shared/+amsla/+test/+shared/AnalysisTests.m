@@ -1,4 +1,4 @@
-classdef(Abstract) AnalysisTests < a2msla.test.tools.A2mslaTest
+classdef(Abstract) AnalysisTests < amsla.test.tools.AmslaTest
     %ANALYSISTESTS Tests for the Analysis classes
     
     % Copyright 2019 Andrea Picciau
@@ -30,7 +30,7 @@ classdef(Abstract) AnalysisTests < a2msla.test.tools.A2mslaTest
             aMatrix = tril(aMatrix);
             [I, J, V] = find(aMatrix);
             
-            objectUnderTest = a2msla.levelSet.Analysis(I, J, V);
+            objectUnderTest = amsla.levelSet.Analysis(I, J, V);
             objectUnderTest.partition();
         end
     end

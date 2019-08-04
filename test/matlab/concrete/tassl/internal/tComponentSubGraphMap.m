@@ -1,5 +1,5 @@
-classdef tComponentSubGraphMap < a2msla.test.tools.A2mslaTest
-    %TCOMPONENTSUBGRAPHMAP Tests for class a2msla.tassl.internal.ComponentSubGraphMap
+classdef tComponentSubGraphMap < amsla.test.tools.AmslaTest
+    %TCOMPONENTSUBGRAPHMAP Tests for class amsla.tassl.internal.ComponentSubGraphMap
     
     % Copyright 2018 Andrea Picciau
     %
@@ -128,5 +128,5 @@ function [aMap, componentIds, componentSizes, maxSize] = iGetASimpleMap()
 componentIds   = [1, 3,  4, 5,  8, 2];
 componentSizes = [2, 20, 5, 10, 3, 5];
 maxSize = 10;
-aMap = a2msla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
+aMap = amsla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
 end

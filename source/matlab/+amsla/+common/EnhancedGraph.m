@@ -243,7 +243,7 @@ classdef EnhancedGraph < handle
         function resetSubGraphs(obj)
             %RESETSUBGRAPHS(G) Reset all sub-graph IDs. Revert the graph to
             %the original state.
-            obj.BaseGraph.Nodes.SubGraphId = a2msla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
+            obj.BaseGraph.Nodes.SubGraphId = amsla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
         end
     end
 
@@ -271,9 +271,9 @@ classdef EnhancedGraph < handle
             % Cache the children indices that have never been cached
             cacheContent = obj.BaseGraph.Nodes.(tableColumn)(selNodes)';
             if iscell(cacheContent)
-                hasNeverBeenCached = cellfun(@(x) any(a2msla.common.isNullId(x)), cacheContent, 'UniformOutput', true);
+                hasNeverBeenCached = cellfun(@(x) any(amsla.common.isNullId(x)), cacheContent, 'UniformOutput', true);
             else
-                hasNeverBeenCached = any(a2msla.common.isNullId(cacheContent));
+                hasNeverBeenCached = any(amsla.common.isNullId(cacheContent));
             end
             if any(hasNeverBeenCached)
                 nodesToCache = nodeIds(hasNeverBeenCached);
@@ -353,7 +353,7 @@ classdef EnhancedGraph < handle
             tableColumn = iGetTableColumnByGraphSetType(graphSetType);
 
             outIds = [];
-            if ~any(a2msla.common.isNullId(obj.BaseGraph.Nodes.(tableColumn)))
+            if ~any(amsla.common.isNullId(obj.BaseGraph.Nodes.(tableColumn)))
                 outIds = unique(obj.BaseGraph.Nodes.(tableColumn))';
             end
             varargout{1} = outIds;
@@ -405,7 +405,7 @@ classdef EnhancedGraph < handle
             if isscalar(graphSetId)
                 graphSetId = graphSetId*ones(size(nodeIds));
             elseif isempty(graphSetId)
-                graphSetId = a2msla.common.nullId(size(nodeIds));
+                graphSetId = amsla.common.nullId(size(nodeIds));
             end
 
             % Check assumption on graphSetId
@@ -438,9 +438,9 @@ classdef EnhancedGraph < handle
 
         function outColours = getNodeColours(obj)
             % Get the colours to be used in the graph plot
-            if any(~a2msla.common.isNullId(obj.BaseGraph.Nodes.SubGraphId))
+            if any(~amsla.common.isNullId(obj.BaseGraph.Nodes.SubGraphId))
                 outColours = obj.BaseGraph.Nodes.SubGraphId;
-            elseif any(~a2msla.common.isNullId(obj.BaseGraph.Nodes.ComponentId))
+            elseif any(~amsla.common.isNullId(obj.BaseGraph.Nodes.ComponentId))
                 outColours = obj.BaseGraph.Nodes.ComponentId;
             else
                 outColours = "blue";
@@ -460,16 +460,16 @@ outGraph = digraph(I, J, V);
 % Set nodes
 numNodes = numnodes(outGraph);
 outGraph.Nodes.Id = (1:numNodes)';
-outGraph.Nodes.ParentsId = num2cell(a2msla.common.nullId(numNodes, 1));
-outGraph.Nodes.ChildrenId = num2cell(a2msla.common.nullId(numNodes, 1));
-outGraph.Nodes.ComponentId = a2msla.common.nullId(numNodes, 1);
-outGraph.Nodes.SubGraphId = a2msla.common.nullId(numNodes, 1);
+outGraph.Nodes.ParentsId = num2cell(amsla.common.nullId(numNodes, 1));
+outGraph.Nodes.ChildrenId = num2cell(amsla.common.nullId(numNodes, 1));
+outGraph.Nodes.ComponentId = amsla.common.nullId(numNodes, 1);
+outGraph.Nodes.SubGraphId = amsla.common.nullId(numNodes, 1);
 
 % Set edges
 numEdges = numedges(outGraph);
 outGraph.Edges.Id = (1:numEdges)';
-outGraph.Edges.TimeSlot = a2msla.common.nullId(numEdges, 1);
-outGraph.Edges.IsExternal = a2msla.common.nullId(numEdges, 1);
+outGraph.Edges.TimeSlot = amsla.common.nullId(numEdges, 1);
+outGraph.Edges.IsExternal = amsla.common.nullId(numEdges, 1);
 end
 
 function tableColumn = iGetTableColumnByGraphSetType(graphSetType)

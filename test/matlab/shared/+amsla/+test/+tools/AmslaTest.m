@@ -1,5 +1,5 @@
-classdef (Abstract) A2mslaTest < matlab.unittest.TestCase
-    %A2MSLATESTS Test for A²MSLA.
+classdef (Abstract) AmslaTest < matlab.unittest.TestCase
+    %AMSLATESTS Test for A²MSLA.
     
     % Copyright 2019 Andrea Picciau
     %
@@ -22,7 +22,7 @@ classdef (Abstract) A2mslaTest < matlab.unittest.TestCase
         function addPath(testCase)
             % Add the path to the EnhancedGraph class.
             
-            sourceDir = a2msla.test.tools.extractSourceDir();
+            sourceDir = amsla.test.tools.extractSourceDir();
             if ~iIsOnPath(sourceDir)
                 oldPath = path();
                 addpath(sourceDir);

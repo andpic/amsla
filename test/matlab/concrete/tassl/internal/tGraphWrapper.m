@@ -1,5 +1,5 @@
-classdef tGraphWrapper < a2msla.test.tools.A2mslaTest
-    %TGRAPHRAPPER Tests for the class a2msla.tassl.internal.GraphWrapper
+classdef tGraphWrapper < amsla.test.tools.AmslaTest
+    %TGRAPHRAPPER Tests for the class amsla.tassl.internal.GraphWrapper
     
     % Copyright 2018 Andrea Picciau
     %
@@ -74,7 +74,7 @@ classdef tGraphWrapper < a2msla.test.tools.A2mslaTest
             
             nodeIds              = [1, 2, 3, 4, 9, 10];
             actualSubGraphIds = aGraph.subGraphOfNode(nodeIds);
-            expectedSubGraphIds = a2msla.common.nullId(size(actualSubGraphIds));
+            expectedSubGraphIds = amsla.common.nullId(size(actualSubGraphIds));
             
             testCase.verifyEqual(actualSubGraphIds, expectedSubGraphIds);
         end
@@ -167,7 +167,7 @@ classdef tGraphWrapper < a2msla.test.tools.A2mslaTest
             
             % Check that all the nodes are assigned to no sub-graphs at
             % this stage
-            isCleared = a2msla.common.isNullId(aGraph.subGraphOfNode(1:10));
+            isCleared = amsla.common.isNullId(aGraph.subGraphOfNode(1:10));
             
             import matlab.unittest.constraints.EveryElementOf;
             import matlab.unittest.constraints.IsTrue;
@@ -183,5 +183,5 @@ J = [1, 1, 1, 2, 3, 4, 4, 5, 5,  3,  6,  6,  7,  8,  6,  9,  9, 10];
 I = [1, 2, 3, 2, 3, 4, 5, 5, 6,  6,  6,  7,  7,  8,  8, 10,  9, 10];
 numberOfElements = numel(J);
 V = ones(1, numberOfElements);
-aGraph = a2msla.tassl.internal.GraphWrapper(I, J, V, 3);
+aGraph = amsla.tassl.internal.GraphWrapper(I, J, V, 3);
 end

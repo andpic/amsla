@@ -1,5 +1,5 @@
-classdef tAnalysis < a2msla.test.shared.AnalysisTests
-    %TANALYSIS Tests for the class a2msla.levelSet.Analysis
+classdef tAnalysis < amsla.test.shared.AnalysisTests
+    %TANALYSIS Tests for the class amsla.levelSet.Analysis
     
     % Copyright 2019 Andrea Picciau
     %
@@ -17,7 +17,7 @@ classdef tAnalysis < a2msla.test.shared.AnalysisTests
     
     methods
         function analysisObject = createAnalysisObject(~, I, J, V, ~)
-            analysisObject = a2msla.levelSet.Analysis(I, J, V);
+            analysisObject = amsla.levelSet.Analysis(I, J, V);
         end
     end
 end

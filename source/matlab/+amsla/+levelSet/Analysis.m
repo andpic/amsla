@@ -48,7 +48,7 @@ classdef Analysis < handle
             
             % Initialise the graph
             [I, J, V, obj.IsProducingPlot] = iParseConstructorArguments(varargin{:});
-            obj.Graph = a2msla.levelSet.internal.GraphWrapper(I, J, V);
+            obj.Graph = amsla.levelSet.internal.GraphWrapper(I, J, V);
         end
         
         function partition(obj)

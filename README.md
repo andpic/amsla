@@ -1,5 +1,5 @@
-A²MSLA: algorithm-architecture-matching sparse linear algebra
-=============================================================
+A²MSLA: algorithm-architecture-matching for sparse linear algebra
+=================================================================
 
 A sparse linear algebra library for many-core and multi-core processors that
 automatically optimizes the data structures and their parameters based on the

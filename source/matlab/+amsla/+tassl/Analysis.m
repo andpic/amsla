@@ -50,7 +50,7 @@ classdef Analysis < handle
             
             % Initialise the graph
             [I, J, V, maxSubGraph, obj.IsProducingPlot] = iParseConstructorArguments(varargin{:});
-            obj.Graph = a2msla.tassl.internal.GraphWrapper(I, J, V, maxSubGraph);
+            obj.Graph = amsla.tassl.internal.GraphWrapper(I, J, V, maxSubGraph);
         end
         
         function partition(obj)
@@ -156,7 +156,7 @@ assert(tentativeNumber<=numSortingCriteria*numDensity, "Cannot partition the gra
 end
 
 function nextTentative = iCheckExceptionForNextTentative(matlabException)
-nextTentative = strcmp(matlabException.identifier, "a2msla:badSubGraph");
+nextTentative = strcmp(matlabException.identifier, "amsla:badSubGraph");
 end
 
 function [I, J, V, maxSubGraph, isPlot] = iParseConstructorArguments(I, J, V, varargin)

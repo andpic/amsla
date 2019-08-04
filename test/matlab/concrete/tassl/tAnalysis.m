@@ -1,5 +1,5 @@
-classdef tAnalysis < a2msla.test.shared.AnalysisTests
-    %TANALYSIS Tests for the class a2msla.tassl.Analysis
+classdef tAnalysis < amsla.test.shared.AnalysisTests
+    %TANALYSIS Tests for the class amsla.tassl.Analysis
     
     % Copyright 2019 Andrea Picciau
     %
@@ -17,7 +17,7 @@ classdef tAnalysis < a2msla.test.shared.AnalysisTests
     
     methods
         function analysisObject = createAnalysisObject(~, I, J, V, maxSubGraphSize)
-            analysisObject = a2msla.tassl.Analysis(I, J, V, maxSubGraphSize);
+            analysisObject = amsla.tassl.Analysis(I, J, V, maxSubGraphSize);
         end
     end
 end

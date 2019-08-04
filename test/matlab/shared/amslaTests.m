@@ -1,11 +1,11 @@
-function testResults = a2mslaTests(varargin)
-%A2MSLATESTS(NAME, VALUE, ...) Execute all the tests in the A²MSLA test
+function testResults = amslaTests(varargin)
+%AMSLATESTS(NAME, VALUE, ...) Execute all the tests in the A²MSLA test
 %suite.
 %
-%   TR = A2MSLATESTS() Execute all the available tests. Returns the test
+%   TR = AMSLATESTS() Execute all the available tests. Returns the test
 %   results.
 %
-%   TR = A2MSLATESTS(NAME, VALUE, ...) Execute the tests with added
+%   TR = AMSLATESTS(NAME, VALUE, ...) Execute the tests with added
 %   settings. Currently supported name-value paris are:
 %       'CodeCoverage'      - If true, prints out a code coverage report.
 %
@@ -29,8 +29,8 @@ import matlab.unittest.TestRunner;
 import matlab.unittest.plugins.CodeCoveragePlugin;
 
 % Setup directories
-matlabTestDir = a2msla.test.tools.extractTestDir();
-matlabSourceDir = a2msla.test.tools.extractSourceDir();
+matlabTestDir = amsla.test.tools.extractTestDir();
+matlabSourceDir = amsla.test.tools.extractSourceDir();
 
 % Add directories to the path
 oldPath = path();

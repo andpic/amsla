@@ -174,7 +174,7 @@ classdef ComponentSubGraphMap < handle
             % Sort sub-graph IDs
             [subGraphIds, sorter] = sort(subGraphIds);
             unSorter = iInvertSorting(sorter);
-            actualSubGraphIds = a2msla.common.nullId(size(subGraphIds));
+            actualSubGraphIds = amsla.common.nullId(size(subGraphIds));
             actualK = 1;
 
             % Find unique sub-graph IDs
@@ -257,7 +257,7 @@ classdef ComponentSubGraphMap < handle
                 obj.SubGraphTable.Id>=subGraphId);
 
             % Check that this is still a good sub-graph
-            assert(~isempty(candidateIds), "a2msla:badSubGraph", ...
+            assert(~isempty(candidateIds), "amsla:badSubGraph", ...
                 "All the sub-graphs in merged component are full.");
 
             % Return the smallest ID
@@ -281,7 +281,7 @@ smallComponentTable = sortrows(smallComponentTable, [-2, 1]);
 % Loop through all components
 for k = 1:height(smallComponentTable)
     % Skip is component has already been assigned
-    if ~a2msla.common.isNullId(smallComponentTable.MergedComponentId(k))
+    if ~amsla.common.isNullId(smallComponentTable.MergedComponentId(k))
         continue;
     end
 
@@ -291,7 +291,7 @@ for k = 1:height(smallComponentTable)
 
     for j = height(smallComponentTable):-1:(k+1)
         % Check if the component can be merged
-        if  a2msla.common.isNullId(smallComponentTable.MergedComponentId(j)) && ...
+        if  amsla.common.isNullId(smallComponentTable.MergedComponentId(j)) && ...
                 currMergedComponentSize(k)+smallComponentTable.ComponentSize(j) <= maxSize
             smallComponentTable.MergedComponentId(j) = currMergedComponent;
             currMergedComponentSize = currMergedComponentSize(k)+smallComponentTable.ComponentSize(j);
@@ -305,7 +305,7 @@ largeComponentTable.MergedComponentId = largeComponentTable.ComponentId;
 componentTable = sortrows([largeComponentTable; smallComponentTable], [3 1]);
 
 % Check output
-assert(~any(a2msla.common.isNullId(componentTable.MergedComponentId)), ...
+assert(~any(amsla.common.isNullId(componentTable.MergedComponentId)), ...
     "One or more components were not merged");
 end
 
@@ -336,7 +336,7 @@ function componentTable = iCreateMergedComponentTable(componentIds, componentSiz
 numComponents = length(componentIds);
 componentIds = reshape(componentIds, [numComponents, 1]);
 componentSizes = reshape(componentSizes, [numComponents, 1]);
-mergedComponentIds = a2msla.common.nullId([numComponents, 1]);
+mergedComponentIds = amsla.common.nullId([numComponents, 1]);
 componentTable = table(componentIds, componentSizes, mergedComponentIds);
 componentTable.Properties.VariableNames = ["ComponentId", "ComponentSize", "MergedComponentId"];
 end

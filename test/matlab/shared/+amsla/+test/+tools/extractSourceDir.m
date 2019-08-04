@@ -15,7 +15,7 @@ function sourceDir = extractSourceDir()
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-testDir = a2msla.test.tools.extractTestDir();
+testDir = amsla.test.tools.extractTestDir();
 repoDir = extractBefore(testDir, "test");
 sourceDir = fullfile(repoDir, "source", "matlab");
 end

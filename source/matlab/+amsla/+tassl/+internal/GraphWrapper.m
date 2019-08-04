@@ -63,11 +63,11 @@ classdef GraphWrapper < handle
             %the analysis phase with the TASSL approach.
             
             % Initialise the graph
-            obj.Graph = a2msla.common.EnhancedGraph(I, J, V);
+            obj.Graph = amsla.common.EnhancedGraph(I, J, V);
             obj.Graph.computeComponents();
             % Initialise the map of components to sub-graphs
             [componentIds, componentSizes] = obj.Graph.listOfComponents();
-            obj.Map = a2msla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
+            obj.Map = amsla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
         end
         
         function h = plot(obj)
@@ -162,7 +162,7 @@ classdef GraphWrapper < handle
         function isFullyAssigned = checkFullAssignment(obj)
             %CHECKFULLASSIGNMENT(G) Check that all the nodes in the graph
             %were assigned to sub-graphs.
-            isFullyAssigned = ~any(a2msla.common.isNullId( ...
+            isFullyAssigned = ~any(amsla.common.isNullId( ...
                 obj.Graph.subGraphOfNode(obj.Graph.listOfNodes())));
         end
         
@@ -194,7 +194,7 @@ classdef GraphWrapper < handle
             % Sort children by the current sorting
             childrenIds = obj.sortNodes(childrenIds);
             % No children must have been assigned to a sub-graph already
-            assert(all(a2msla.common.isNullId(obj.Graph.subGraphOfNode(childrenIds))), ...
+            assert(all(amsla.common.isNullId(obj.Graph.subGraphOfNode(childrenIds))), ...
                 "One or more nodes were assigned to a sub-graph before their parents.");
             
             % Retrieve candidate sub-graph IDs
@@ -207,17 +207,17 @@ classdef GraphWrapper < handle
             end
             
             % Filter out nodes that are not ready
-            filterSel = a2msla.common.isNullId(subGraphIds);
+            filterSel = amsla.common.isNullId(subGraphIds);
             subGraphIds(filterSel) = [];
             childrenIds(filterSel) = [];
             
             % Helper function
             function subGraphCandidateId = iGetSubGraphCandidateGivenParentIds(parentIds)
                 parentSubGraphs = obj.Graph.subGraphOfNode(parentIds);
-                if ~any(a2msla.common.isNullId(parentSubGraphs))
+                if ~any(amsla.common.isNullId(parentSubGraphs))
                     subGraphCandidateId = max(parentSubGraphs);
                 else
-                    subGraphCandidateId = a2msla.common.nullId();
+                    subGraphCandidateId = amsla.common.nullId();
                 end
             end
         end
@@ -351,7 +351,7 @@ duplicateMat = permMatrix(:, duplicateCols);
 
 % Ensure that there is only one entry per row
 [numRowsInDuplicateCols, numDuplicateCols] = size(duplicateMat);
-fixedRow = a2msla.common.nullId(numRowsInDuplicateCols, 1);
+fixedRow = amsla.common.nullId(numRowsInDuplicateCols, 1);
 for k = 1:numRowsInDuplicateCols
     % If entries in this row have duplicates, fix it and write the column
     % where the element was left

@@ -1,5 +1,5 @@
-classdef tGraphWrapper < a2msla.test.tools.A2mslaTest
-    %TGRAPHRAPPER Tests for the class a2msla.levelSet.internal.GraphWrapper
+classdef tGraphWrapper < amsla.test.tools.AmslaTest
+    %TGRAPHRAPPER Tests for the class amsla.levelSet.internal.GraphWrapper
     
     % Copyright 2019 Andrea Picciau
     %
@@ -46,7 +46,7 @@ end
 
 function [aGraph, I, J, V] = iGraphWithLoops()
 [I, J, V] = iExampleGraph();
-aGraph = a2msla.levelSet.internal.GraphWrapper(I, J, V);
+aGraph = amsla.levelSet.internal.GraphWrapper(I, J, V);
 end
 
 function [aGraph, I, J, V] = iGraphWithoutLoops()
@@ -55,7 +55,7 @@ isLoop = I==J;
 I(isLoop) = [];
 J(isLoop) = [];
 V(isLoop) = [];
-aGraph = a2msla.levelSet.internal.GraphWrapper(I, J, V);
+aGraph = amsla.levelSet.internal.GraphWrapper(I, J, V);
 end
 
 function [I, J, V] = iExampleGraph()
