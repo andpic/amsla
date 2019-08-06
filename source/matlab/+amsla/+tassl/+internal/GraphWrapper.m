@@ -1,11 +1,11 @@
-classdef GraphWrapper < handle
-    %GRAPHWRAPPER Wrapper to a graph to be used for the analysis phase with
-    %the TASSL approach.
+classdef GraphWrapper < amsla.common.GraphWrapper
+    %AMSLA.TASSL.INTERNAL.GRAPHWRAPPER Wrapper to a graph to be used for the
+    %analysis phase with the TASSL approach.
     %
-    %   G = GRAPHWRAPPER(I, J, V, MAXSIZE) Create a wrapper to a graph
-    %   describer by the triplet I (row indexes), J (column indexes), and J
-    %   (edge values), where the maximum number of nodes in a sub-graph is
-    %   MAXSIZE.
+    %   G = AMSLA.TASSL.INTERNAL.GRAPHWRAPPER(I, J, V, MAXSIZE) Create a
+    %   wrapper to a graph described by the triplet I (row indexes), J
+    %   (column indexes), and J (edge values), where the maximum number of
+    %   nodes in a sub-graph is MAXSIZE.
     %
     %   GraphWrapper methods:
     %       setSortingCriterion                 - Set the criterion to
@@ -42,9 +42,6 @@ classdef GraphWrapper < handle
     
     properties(Access=private)
         
-        %An EnhancedGraph object used to represent the graph
-        Graph
-        
         %A ComponentSubGraphMap object that maps components to sub-graphs
         %in a TASSL-specific way.
         Map
@@ -63,21 +60,18 @@ classdef GraphWrapper < handle
             %the analysis phase with the TASSL approach.
             
             % Initialise the graph
-            obj.Graph = amsla.common.EnhancedGraph(I, J, V);
-            obj.Graph.computeComponents();
+            obj = obj@amsla.common.GraphWrapper(I, J, V);
+            
             % Initialise the map of components to sub-graphs
+            obj.Graph.computeComponents();
             [componentIds, componentSizes] = obj.Graph.listOfComponents();
             obj.Map = amsla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
-        end
-        
-        function h = plot(obj)
-            %PLOT(G) Produce a plot of the graph.
-            h = obj.Graph.plot();
         end
         
         function setSortingCriterion(obj, sortingCriterion)
             %SETSORTINGCRITERION(G, K) Set the sorting criterion K for the
             %nodes in the graph.
+            
             sortingCriterion = string(sortingCriterion);
             
             if strcmp(sortingCriterion, "descend outdegree")
@@ -156,21 +150,8 @@ classdef GraphWrapper < handle
         function outIds = subGraphOfNode(obj, nodeIds)
             %SUBGRAPHOFNODE(G, I) Get the sub-graph IDs to which one or
             %more nodes were assigned.
+            
             outIds = obj.Graph.subGraphOfNode(nodeIds);
-        end
-        
-        function isFullyAssigned = checkFullAssignment(obj)
-            %CHECKFULLASSIGNMENT(G) Check that all the nodes in the graph
-            %were assigned to sub-graphs.
-            isFullyAssigned = ~any(amsla.common.isNullId( ...
-                obj.Graph.subGraphOfNode(obj.Graph.listOfNodes())));
-        end
-        
-        function resetAllAssignments(obj)
-            %RESETALLASSIGNMENTS(G) Reset all node-to-sub-graph
-            %assignments.
-            obj.Graph.resetSubGraphs();
-            obj.Map.resetSubGraphs();
         end
         
         function [childrenIds, subGraphIds] = childrenOfNodeReadyForAssignment(obj, nodeIds)
@@ -185,41 +166,10 @@ classdef GraphWrapper < handle
             %   of the chidlren that are ready for assignment and the
             %   corresponding sub-graph IDs to assign them to.
             
-            childrenIds = obj.Graph.childrenOfNode(nodeIds);
-            if iscell(childrenIds)
-                childrenIds = cell2mat(childrenIds);
-            end
-            childrenIds = unique(childrenIds);
-            
+            childrenIds = obj.childrenOfNode(nodeIds);
             % Sort children by the current sorting
             childrenIds = obj.sortNodes(childrenIds);
-            % No children must have been assigned to a sub-graph already
-            assert(all(amsla.common.isNullId(obj.Graph.subGraphOfNode(childrenIds))), ...
-                "One or more nodes were assigned to a sub-graph before their parents.");
-            
-            % Retrieve candidate sub-graph IDs
-            parentIds = obj.Graph.parentsOfNode(childrenIds);
-            if iscell(parentIds)
-                subGraphIds = cellfun(@iGetSubGraphCandidateGivenParentIds, parentIds, ...
-                    'UniformOutput', true);
-            else
-                subGraphIds = iGetSubGraphCandidateGivenParentIds(parentIds);
-            end
-            
-            % Filter out nodes that are not ready
-            filterSel = amsla.common.isNullId(subGraphIds);
-            subGraphIds(filterSel) = [];
-            childrenIds(filterSel) = [];
-            
-            % Helper function
-            function subGraphCandidateId = iGetSubGraphCandidateGivenParentIds(parentIds)
-                parentSubGraphs = obj.Graph.subGraphOfNode(parentIds);
-                if ~any(amsla.common.isNullId(parentSubGraphs))
-                    subGraphCandidateId = max(parentSubGraphs);
-                else
-                    subGraphCandidateId = amsla.common.nullId();
-                end
-            end
+            [childrenIds, subGraphIds] = obj.nodesReadyForAssignment(childrenIds);            
         end
         
     end
