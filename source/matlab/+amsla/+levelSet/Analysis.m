@@ -55,6 +55,11 @@ classdef Analysis < handle
             %PARTITION(A) Partition the graph according to the level-set
             %algorithm.
             
+            if obj.IsProducingPlot
+                progressPlotter = amsla.common.GraphPlotter;
+                progressPlotter.plot(obj.Graph);
+            end
+            
             % Clear any previous tentative
             obj.Graph.resetAllAssignments();
             
@@ -64,7 +69,9 @@ classdef Analysis < handle
             while ~isempty(currentNodes)
                 % Assign nodes to sub-graphs
                 obj.Graph.assignNodeToSubGraph(currentNodes, currentSubGraphId);
-                obj.refreshPlot();
+                if obj.IsProducingPlot
+                    progressPlotter.plot(obj.Graph);
+                end
                 
                 currentSubGraphId = currentSubGraphId+1;
                 currentNodes = obj.Graph.childrenOfNodeReadyForAssignment(currentNodes);
@@ -73,23 +80,7 @@ classdef Analysis < handle
             assert(obj.Graph.checkFullAssignment(), "Partitioning was not succesful.");
         end
         
-    end
-    
-    %% PRIVATE METHODS
-    
-    methods (Access=private)
-        
-        function refreshPlot(obj)
-            % Produces or refreshes the plot of the graph.
-            if ~obj.IsProducingPlot
-                return;
-            end
-            
-            obj.Graph.plot();
-            pause(0.01);
-        end
-        
-    end
+    end        
     
 end
 

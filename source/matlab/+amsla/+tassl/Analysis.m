@@ -78,6 +78,11 @@ classdef Analysis < handle
             % Try partitioning the graph given a node sorting criterion and
             % an initial sub-graph density.
             
+            if obj.IsProducingPlot
+                progressPlotter = amsla.common.GraphPlotter;
+                progressPlotter.plot(obj.Graph);
+            end
+            
             % Clear any previous tentative
             obj.Graph.resetAllAssignments();
             
@@ -93,7 +98,10 @@ classdef Analysis < handle
                 try
                     % Assign nodes to sub-graphs
                     obj.Graph.assignNodeToSubGraph(nodeIds, subGraphIds);
-                    obj.refreshPlot();
+                    if obj.IsProducingPlot
+                        progressPlotter.plot(obj.Graph);
+                    end
+                    
                     % Get new nodes for assignment
                     [nodeIds, subGraphIds] = obj.Graph.childrenOfNodeReadyForAssignment(nodeIds);
                 catch matlabException
@@ -115,17 +123,7 @@ classdef Analysis < handle
                 (isSuccessful && obj.Graph.checkFullAssignment()) || ...
                 (~isSuccessful && ~obj.Graph.checkFullAssignment()), ...
                 "Inconsistent result of the tentative to partition the graph.");
-        end
-        
-        function refreshPlot(obj)
-            % Produces or refreshes the plot of the graph.
-            if ~obj.IsProducingPlot
-                return;
-            end
-            
-            obj.Graph.plot();
-            pause(0.01);
-        end
+        end                
         
     end
     
@@ -147,11 +145,11 @@ numSortingCriteria = numel(sortingCriterionList);
 densityList = 2.^(-(0:1:8));
 numDensity = numel(densityList);
 
+assert(tentativeNumber<=numSortingCriteria*numDensity, "Cannot partition the graph. No more sorting criteria or densities to try.");
+
 % Pick density and sorting criterion
 density = densityList(mod(tentativeNumber-1, numDensity)+1);
 criterion = sortingCriterionList(floor((tentativeNumber-1)/numDensity)+1);
-
-assert(tentativeNumber<=numSortingCriteria*numDensity, "Cannot partition the graph. No more sorting criteria or densities to try.");
 
 end
 

@@ -58,9 +58,9 @@ classdef GraphWrapper < handle
             obj.Graph = amsla.common.EnhancedGraph(I, J, V);
         end
         
-        function h = plot(obj)
+        function h = plot(obj, varargin)
             %PLOT(G) Produce a plot of the graph.
-            h = obj.Graph.plot();
+            h = obj.Graph.plot(varargin{:});
         end
         
         function assignNodeToSubGraph(obj, nodeIds, subGraphIds)
@@ -158,8 +158,5 @@ end
 if iscell(subGraphIds)
     subGraphIds = cell2mat(subGraphIds);
 end
-if isscalar(subGraphIds)
-    subGraphIds = subGraphIds.*ones(size(nodeIds));
-end
-assert(numel(nodeIds)==numel(subGraphIds), "The number of node indexes doesn't match the number of sub-graphs.");
+% assert(numel(nodeIds)==numel(subGraphIds), "The number of node indexes doesn't match the number of sub-graphs.");
 end

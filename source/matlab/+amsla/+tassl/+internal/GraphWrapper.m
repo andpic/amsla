@@ -119,7 +119,7 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             % Helper function
             function subgAssignmentsOneComp = iDistributeRootsToSubGraphsForOneComponent(roots, subgs)
                 % Select a subset of sub-graphs based on density
-                numUsableSubgs = round(numel(subgs)*density);
+                numUsableSubgs = ceil(numel(subgs)*density);
                 subgs = sort(subgs);
                 subgs = subgs(1:numUsableSubgs);
                 % Sort roots by the current criterion
