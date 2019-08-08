@@ -1,4 +1,4 @@
-classdef PartitioningResult
+classdef PartitioningResult < amsla.common.PartitioningResult
     %AMSLA.TASSL.PARTITIONINGRESULT Record the results of the partitioning
     %of a graph with the TASSL algorithm.
     %
@@ -23,10 +23,7 @@ classdef PartitioningResult
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    properties(GetAccess=public,SetAccess=immutable)
-        
-        % True if the graph was correctly partitioned.
-        WasPartitioned
+    properties(GetAccess=public,SetAccess=immutable)        
         
         % Number of partitioning tentatives.
         NumberOfTentatives
@@ -54,7 +51,7 @@ classdef PartitioningResult
             %   - using the criterion F,
             %   - with R root nodes per obtained sub-graph.
             
-            obj.WasPartitioned = wasPartitioned;
+            obj = obj@amsla.common.PartitioningResult(wasPartitioned);
             obj.NumberOfTentatives = numberOfTentatives;
             obj.FinalCriterion = finalCriterion;
             obj.RootNodeDensity = rootNodeDensity;

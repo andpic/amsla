@@ -51,7 +51,7 @@ classdef Analysis < handle
             obj.Graph = amsla.levelSet.internal.GraphWrapper(I, J, V);
         end
         
-        function partition(obj)
+        function partitioningResult = partition(obj)
             %PARTITION(A) Partition the graph according to the level-set
             %algorithm.
             
@@ -77,10 +77,11 @@ classdef Analysis < handle
                 currentNodes = obj.Graph.childrenOfNodeReadyForAssignment(currentNodes);
             end
             
-            assert(obj.Graph.checkFullAssignment(), "Partitioning was not succesful.");
+            partitioningResult = ...
+                amsla.levelSet.PartitioningResult(obj.Graph.checkFullAssignment());
         end
         
-    end        
+    end
     
 end
 

@@ -28,10 +28,10 @@ title("Level-set");
 partition(levelSetMatrix);
 
 %% TASSL algorithm
-tasslMatrix = amsla.tassl.Analysis(I, J, V, 'Plot', true);
+tasslMatrix = amsla.tassl.Analysis(I, J, V, 10, 'Plot', true);
 subplot(subPlotFormat{:}, 2);
 title("TASSL");
-partition(tasslMatrix)
+partition(tasslMatrix);
 
 %% HELPER FUNCTIONS
 
@@ -46,6 +46,6 @@ rng('default');
 
 % Generate a sparse triangular matrix
 aMatrix =  sprand(matrixSize, matrixSize, matrixDensity);
-aMatrix = tril(aMatrix);
+aMatrix = tril(aMatrix) + speye(size(aMatrix));
 [I, J, V] = find(aMatrix);
 end

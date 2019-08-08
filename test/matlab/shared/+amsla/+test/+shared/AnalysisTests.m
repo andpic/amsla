@@ -15,14 +15,40 @@ classdef(Abstract) AnalysisTests < amsla.test.tools.AmslaTest
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    methods(Abstract)
-        analysisObject = createAnalysisObject(obj, I, J, V, maxSubg);
+    methods(Access=protected, Abstract)
+        analysisObject = createAnalysisObject(testCase, I, J, V, maxSubg);
+        
+        verifyPartitioningResultOfExampleGraph(testCase, actualPartitioningResult);
     end    
 
+    %% Graph is correctly reset
+    
+    properties(TestParameter)
+        
+        ExampleGraph = struct( ...
+            'LowerTriangularWithDiagonal',     iGenerateMatrixWithDiagonal(), ...
+            'LowerTriangularWithoutDiagonal',  iGenerateMatrixWithoutDiagonal());
+        
+    end
+    
+    methods(Test)
+        function exampleGraphIsPartitionedAsExpected(testCase, ExampleGraph)
+            % Check that the input graph is partitioned as expected.
+            
+            [I, J, V] = find(ExampleGraph);
+            
+            % Partition the matix
+            amslaMatrix = testCase.createAnalysisObject(I, J, V, 10);
+            partitioningResult = partition(amslaMatrix);                        
+            
+            % Verify partitioning results
+            testCase.verifyPartitioningResultOfExampleGraph(partitioningResult);            
+        end
+    end
 
     %% Manage corner cases for a single root in the sub-graph
     methods (Test)
-        function managesSingleRootInSubGraph(~)
+        function managesSingleRootInSubGraph(testCase)
             % Check that distributing the roots into the sub-graphs does
             % not give an error if there is only one root in the whole graph.
             
@@ -30,8 +56,30 @@ classdef(Abstract) AnalysisTests < amsla.test.tools.AmslaTest
             aMatrix = tril(aMatrix);
             [I, J, V] = find(aMatrix);
             
-            objectUnderTest = amsla.levelSet.Analysis(I, J, V);
+            objectUnderTest = testCase.createAnalysisObject(I, J, V, 10);
             objectUnderTest.partition();
         end
     end
+end
+
+%% HELPER FUNCTIONS
+
+function aMatrix = iGenerateMatrixWithoutDiagonal()
+
+% Re-initialise RNG to ensure repeatability
+oldRng = rng;
+restoreRng = onCleanup(@() rng(oldRng));
+rng('default');
+
+matrixSize = 200;
+matrixDensity = 0.025;
+
+% Generate a sparse triangular matrix
+aMatrix =  sprand(matrixSize, matrixSize, matrixDensity);
+aMatrix = tril(aMatrix);
+end
+
+function aMatrix = iGenerateMatrixWithDiagonal()
+baseMatrix = iGenerateMatrixWithoutDiagonal();
+aMatrix = baseMatrix + speye(size(baseMatrix));
 end

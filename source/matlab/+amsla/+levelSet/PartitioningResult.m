@@ -1,5 +1,10 @@
-classdef tAnalysis < amsla.test.shared.AnalysisTests
-    %TANALYSIS Tests for the class amsla.levelSet.Analysis
+classdef PartitioningResult < amsla.common.PartitioningResult
+    %AMSLA.LEVELSET.PARTITIONINGRESULT Record the results of the partitioning
+    %of a graph with the level-set algorithm.
+    %
+    %   Properties of PARTITIONINGRESULT:
+    %       WasPartitioned          - True if the graph was correctly
+    %                                 partitioned.
     
     % Copyright 2019 Andrea Picciau
     %
@@ -15,14 +20,4 @@ classdef tAnalysis < amsla.test.shared.AnalysisTests
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    methods(Access=protected)
-        function analysisObject = createAnalysisObject(~, I, J, V, ~)
-            analysisObject = amsla.levelSet.Analysis(I, J, V);
-        end
-        
-        function verifyPartitioningResultOfExampleGraph(testCase, partitioningResult)
-            testCase.verifyTrue(partitioningResult.WasPartitioned, ...
-                "The level-set algorithm could not partition the given graph.");
-        end
-    end
 end
