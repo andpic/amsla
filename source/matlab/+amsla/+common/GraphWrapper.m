@@ -89,9 +89,7 @@ classdef GraphWrapper < handle
             %RESETALLASSIGNMENTS(G) Reset all node-to-sub-graph
             %assignments.
             obj.Graph.resetSubGraphs();
-        end
-        
-        
+        end        
         
     end
     

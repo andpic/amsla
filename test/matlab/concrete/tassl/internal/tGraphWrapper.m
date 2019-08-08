@@ -169,6 +169,7 @@ classdef tGraphWrapper < amsla.test.tools.AmslaTest
             % this stage
             isCleared = amsla.common.isNullId(aGraph.subGraphOfNode(1:10));
             
+            
             import matlab.unittest.constraints.EveryElementOf;
             import matlab.unittest.constraints.IsTrue;
             testCase.assumeThat(EveryElementOf(isCleared), IsTrue());

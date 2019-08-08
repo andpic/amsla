@@ -6,7 +6,7 @@ classdef Analysis < handle
     %       partition        - Partitions the matrix according to the TASSL
     %                          algorithm.
     
-    % Copyright 2018 Andrea Picciau
+    % Copyright 2018-2019 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -53,18 +53,25 @@ classdef Analysis < handle
             obj.Graph = amsla.tassl.internal.GraphWrapper(I, J, V, maxSubGraph);
         end
         
-        function partition(obj)
+        function partitioningResult = partition(obj)
             %PARTITION(A) Partition the graph according to the TASSL
             %algorithm.
             
-            tentativeNumber = 1;
+            tentativeNumber = 0;
             isSuccesful = false;
             
-            while ~isSuccesful
-                [criterion, density] = iSetNewTentative(tentativeNumber);
-                fprintf("%d === Criterion: %s, Density %.3f\n", tentativeNumber, criterion, density);
-                isSuccesful = obj.tentativePartitioning(criterion, density);
+            while ~isSuccesful && tentativeNumber<=50
                 tentativeNumber = tentativeNumber + 1;
+                [criterion, density] = iSetNewTentative(tentativeNumber);
+                isSuccesful = obj.tentativePartitioning(criterion, density);
+            end
+            
+            % Writing out the result
+            partitioningResult = amsla.tassl.PartitioningResult(...
+                isSuccesful, tentativeNumber, criterion, density);
+            if ~isSuccesful
+                
+                error("amsla:couldNotPartition", "Could not partition the given matrix.");
             end
         end
         
@@ -123,7 +130,7 @@ classdef Analysis < handle
                 (isSuccessful && obj.Graph.checkFullAssignment()) || ...
                 (~isSuccessful && ~obj.Graph.checkFullAssignment()), ...
                 "Inconsistent result of the tentative to partition the graph.");
-        end                
+        end
         
     end
     

@@ -172,6 +172,14 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             [childrenIds, subGraphIds] = obj.nodesReadyForAssignment(childrenIds);            
         end
         
+        function resetAllAssignments(obj)
+            %RESETALLASSIGNMENTS(G) Reset all node-to-sub-graph
+            %assignments.
+            
+            resetAllAssignments@amsla.common.GraphWrapper(obj);
+            obj.Map.resetSubGraphs();
+        end  
+        
     end
     
     %% PRIVATE METHODS
