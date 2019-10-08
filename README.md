@@ -1,33 +1,34 @@
-A²MSLA: algorithm-architecture-matching sparse linear algebra
-=============================================================
+![amsla-logo.png](https://i.postimg.cc/QdpfZ4Rn/amsla-logo.png)
 
-A sparse linear algebra library for many-core and multi-core processors that
+**Algorithm-architecture-matching for sparse linear algebra**. AMSLA is 
+a sparse linear algebra library for many-core and multi-core processors that
 automatically optimizes the data structures and their parameters based on the
 processors' architectures.
 
-Background
-----------
+## Background
+
 Sparse linear algebra is at the core of the simulation and optimization of
 mathematical models used in physics and engineering.
 
-A²MSLA explores the performance and numerics of sparse linear algebra on
+AMSLA explores the performance and numerics of sparse linear algebra on
 many-core and multi-core computer processors. Inside these processors, when
 sparse linear algebra algorithms are executed, the pattern of accesses to
 memory is irregular. Because of this, the application's performance is
 completely dependent on the problem's structure, which is captured by the
 sparsity patterns of the corresponding matrix.
 
-A²MSLA selects the data structure representing the problem's sparse matrix and
+AMSLA selects the data structure representing the problem's sparse matrix and
 optimizes its parameters, matching them to the processor's architecture.
 
-References
-----------
+## References
+
 *A. Picciau*. Concurrency and data locality for sparse linear algebra on modern
 processors. PhD thesis. August 2017. Supervised by Prof. G.A.  Constantinides
 and Dr. E.C. Kerrigan. 
+[PDF](https://spiral.imperial.ac.uk/handle/10044/1/58884)
 
-Copyright
----------
+## Copyright
+
 Copyright 2018-2019 Andrea Picciau
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
