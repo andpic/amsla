@@ -1,4 +1,4 @@
-classdef GraphWrapper < handle
+classdef(Abstract) GraphWrapper < handle
     %AMSLA.COMMON.GRAPHWRAPPER Wrapper to a graph to be used for the analysis phase.
     %
     %   G = AMSLA.COMMON.GRAPHWRAPPER(I, J, V) Create a wrapper to a graph
