@@ -49,6 +49,16 @@ classdef GraphWrapper < amsla.common.GraphWrapper
         %A criterion to sort the nodes in the graph.
         NodeSortingCriterion
         
+        %True if the components in the graph were correctly identified and
+        %initialised.
+        IsMapInitialised
+    end
+    
+    properties(GetAccess=private,SetAccess=immutable)
+        
+        %Maximum number of vertices in a sub-graph.
+        MaxSize
+        
     end
     
     %% PUBLIC METHDOS
@@ -61,12 +71,12 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             
             % Initialise the graph
             obj = obj@amsla.common.GraphWrapper(I, J, V);
-            
-            % Initialise the map of components to sub-graphs
-            obj.Graph.computeComponents();
-            [componentIds, componentSizes] = obj.Graph.listOfComponents();
-            obj.Map = amsla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, maxSize);
+            obj.Map = [];
+            obj.NodeSortingCriterion = [];
+            obj.IsMapInitialised = false;
+            obj.MaxSize = maxSize;
         end
+        
         
         function setSortingCriterion(obj, sortingCriterion)
             %SETSORTINGCRITERION(G, K) Set the sorting criterion K for the
@@ -102,6 +112,11 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             %   [R, S] = DISTRIBUTEROOTSTOSUBGRAPHS(G,D) Distribute the
             %   roots of nodes in G to sub-graphs. Get the root node IDs
             %   and the sub-graph IDs S.
+            
+            % Initialise the map if it hasn't been initialised yet.
+            if ~obj.IsMapInitialised
+                obj.initialiseMapWithComponents();
+            end
             
             % Retrieve root and sub-graph IDs
             [rootIds, mergedComponentIds] = obj.rootsOfMergedComponents();
@@ -141,6 +156,10 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             % Sort with the given criterion
             [nodeIds, sorting] = obj.sortNodes(nodeIds);
             subGraphIds = subGraphIds(sorting);
+            % Initialise the map if it hasn't been initialised yet.
+            if ~obj.IsMapInitialised
+                obj.initialiseMapWithComponents();
+            end
             % Check actual possible assignments
             subGraphIds = obj.Map.addElementToSubGraph(subGraphIds);
             % Assign sub-graphs
@@ -169,7 +188,7 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             childrenIds = obj.childrenOfNode(nodeIds);
             % Sort children by the current sorting
             childrenIds = obj.sortNodes(childrenIds);
-            [childrenIds, subGraphIds] = obj.nodesReadyForAssignment(childrenIds);            
+            [childrenIds, subGraphIds] = obj.nodesReadyForAssignment(childrenIds);
         end
         
         function resetAllAssignments(obj)
@@ -177,14 +196,27 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             %assignments.
             
             resetAllAssignments@amsla.common.GraphWrapper(obj);
-            obj.Map.resetSubGraphs();
-        end  
+            % Reset map if it is already initialised.
+            if obj.IsMapInitialised
+                obj.Map.resetSubGraphs();
+            end
+        end
         
     end
     
     %% PRIVATE METHODS
     
     methods (Access=private)
+        
+        function initialiseMapWithComponents(obj)
+            %INITIALISECOMPONENTS(G) Find the weakly connected components in the graph.
+            
+            % Initialise the map of components to sub-graphs
+            obj.Graph.computeComponents();
+            [componentIds, componentSizes] = obj.Graph.listOfComponents();
+            obj.Map = amsla.tassl.internal.ComponentSubGraphMap(componentIds, componentSizes, obj.MaxSize);
+            obj.IsMapInitialised = true;
+        end
         
         function [outIds, mergedComponentIds] = subGraphsOfMergedComponents(obj)
             %SUBGRAPHSOFMERGEDCOMPONENTS(G) Get the list of the sub-graphs
@@ -196,6 +228,11 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             %
             %   [S, C] = SUBGRAPHSOFMERGEDCOMPONENTS(G) Get the list of
             %   sub-graph IDs and the corresponding merged component IDs.
+            
+            % Initialise the map if it hasn't been initialised yet.
+            if ~obj.IsMapInitialised
+                obj.initialiseMapWithComponents();
+            end
             mergedComponentIds = sort(obj.Map.listOfMergedComponents());
             outIds = obj.Map.subGraphsOfMergedComponent(mergedComponentIds);
         end
@@ -209,6 +246,11 @@ classdef GraphWrapper < amsla.common.GraphWrapper
             %
             %   [R, C] = ROOTSOFMERGEDCOMPONENTS(G) Get both the list of
             %   root node IDs and the corresponding merged component IDs.
+            
+            % Initialise the map if it hasn't been initialised yet.
+            if ~obj.IsMapInitialised
+                obj.initialiseMapWithComponents();
+            end
             
             % Map is not aware of component roots and Graph is not aware
             % of merged components

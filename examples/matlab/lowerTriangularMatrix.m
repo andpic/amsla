@@ -16,9 +16,9 @@
 % limitations under the License.
 
 matrixSize = 200;
-matrixDensity = 0.025;
+blockSize = 20;
 
-[I, J, V] = iGenerateLowerTriangularMatrix(matrixSize, matrixDensity);
+[I, J, V] = iGenerateLowerTriangularMatrix(matrixSize, blockSize);
 subPlotFormat = {1, 2};
 
 %% Level-set algorithm
@@ -28,14 +28,14 @@ title("Level-set");
 partition(levelSetMatrix);
 
 %% TASSL algorithm
-tasslMatrix = amsla.tassl.Analysis(I, J, V, 10, 'Plot', true);
+tasslMatrix = amsla.tassl.Analysis(I, J, V, blockSize, 'Plot', true);
 subplot(subPlotFormat{:}, 2);
 title("TASSL");
 partition(tasslMatrix);
 
 %% HELPER FUNCTIONS
 
-function [I, J, V] = iGenerateLowerTriangularMatrix(matrixSize, matrixDensity)
+function [I, J, V] = iGenerateLowerTriangularMatrix(matrixSize, blockSize)
 % Generate a sparse lower triangular matrix with a semi-random sparsity
 % pattern.
 
@@ -45,7 +45,21 @@ restoreRng = onCleanup(@() rng(oldRng));
 rng('default');
 
 % Generate a sparse triangular matrix
-aMatrix =  sprand(matrixSize, matrixSize, matrixDensity);
-aMatrix = tril(aMatrix) + speye(size(aMatrix));
+aMatrix = sparse(matrixSize, matrixSize);
+numBlocks = floor(matrixSize/blockSize);
+
+for blockNumber = 1:numBlocks
+    startRow = 1 + blockSize*(blockNumber-1);
+    endRow = blockSize*blockNumber;
+    aMatrix(startRow:endRow, startRow:endRow) = sprandsym(blockSize, 0.5); %#ok<SPRIX>
+end
+numConnections = numBlocks;
+lastDensity = numConnections/(blockSize*matrixSize);
+aMatrix((end-blockSize+1):end, :) = ...
+    aMatrix((end-blockSize+1):end, :) + sprand(blockSize, matrixSize, lastDensity);
+
+aMatrix = aMatrix + speye(size(aMatrix));
+aMatrix = tril(aMatrix);
+
 [I, J, V] = find(aMatrix);
 end
