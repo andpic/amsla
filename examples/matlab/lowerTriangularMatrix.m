@@ -22,13 +22,13 @@ blockSize = 20;
 subPlotFormat = {1, 2};
 
 %% Level-set algorithm
-levelSetMatrix = amsla.levelSet.Analysis(I, J, V, 'Plot', true);
+levelSetMatrix = amsla.levelSet.Analyser(I, J, V, 'Plot', true);
 subplot(subPlotFormat{:}, 1);
 title("Level-set");
 partition(levelSetMatrix);
 
 %% TASSL algorithm
-tasslMatrix = amsla.tassl.Analysis(I, J, V, blockSize, 'Plot', true);
+tasslMatrix = amsla.tassl.Analyser(I, J, V, blockSize, 'Plot', true);
 subplot(subPlotFormat{:}, 2);
 title("TASSL");
 partition(tasslMatrix);

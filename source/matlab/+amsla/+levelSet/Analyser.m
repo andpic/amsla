@@ -1,8 +1,8 @@
-classdef Analysis < handle
-    %ANALYSIS Construct an object that carries out the analysis of a matrix
+classdef Analyser < handle
+    %ANALYSER Construct an object that carries out the analysis of a matrix
     %according to the level-set algorithm
     %
-    %   Methods of Analysis:
+    %   Methods of Analyser:
     %       partition        - Partitions the matrix according to the
     %                          level-set algorithm.
     
@@ -35,15 +35,15 @@ classdef Analysis < handle
     
     methods(Access=public)
         
-        function obj = Analysis(varargin)
-            %ANALYSIS Construct an object that executes the
+        function obj = Analyser(varargin)
+            %ANALYSER Construct an object that executes the
             %analysis of a matrix according to the level-set algorithm.
             %
             % Use:
-            %   A = ANALYSIS(I, J, V)
+            %   A = ANALYSER(I, J, V)
             %       Partition the sparse matrix defined by the arrays I, J,
             %       and V.
-            %   A = ANALYSIS(__, 'Plot', true)
+            %   A = ANALYSER(__, 'Plot', true)
             %       Plot the progress of the partitioning algorithm.
             
             % Initialise the graph

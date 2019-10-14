@@ -1,2 +1,7 @@
+# Temp files
 *.*~
 .*.sw*
+
+# MATLAB project files
+*.prj
+resources/*
