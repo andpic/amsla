@@ -75,6 +75,23 @@ classdef Analyser < handle
             end
         end
         
+        function scheduleOperations(obj)
+            %SCHEDULEOPERATIONS(A) Distribute the numerical operations over
+            %time-slots
+            
+            % External edges
+            currentNodes = getRootsBySubGraph(obj.Graph);
+            currentTimeSlot = -1;
+            currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
+            
+            % Internal edges
+            currentTimeSlot = 1;
+            while ~iAllEmpty(currentNodes)
+                currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
+                currentTimeSlot = currentTimeSlot + 1;
+            end
+        end
+        
     end
     
     %% PRIVATE METHODS
@@ -132,8 +149,15 @@ classdef Analyser < handle
                 "Inconsistent result of the tentative to partition the graph.");
         end
         
+        function currentNodes = assignEnteringEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
+            % Assign the entering edges of 'currentNodes' to the time slot
+            % 'currentTimeSlot'
+            
+            currentEnteringEdges = obj.getEnteringEdges(currentNodes);
+            obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
+            currentNodes = obj.Graph.getReadyChildrenOfNode(currentNodes);
+        end
     end
-    
 end
 
 
@@ -179,4 +203,13 @@ J = parser.Results.J;
 V = parser.Results.V;
 maxSubGraph = parser.Results.maxSubGraph;
 isPlot = parser.Results.Plot;
+end
+
+function tf = iAllEmpty(array)
+% Check that all cells of an array of cells are empty.
+if iscell(array)
+    tf = all(cellfun(@isempty, array, "UniformOutput", true));
+else
+    tf = all(isempty(array));
+end
 end

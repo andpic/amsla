@@ -261,6 +261,26 @@ classdef EnhancedGraph < handle
             %the original state.
             obj.BaseGraph.Nodes.SubGraphId = amsla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
         end
+        
+        %% Edge-level operations
+        
+        function outIds = timeSlotOfEdge(obj, edgeIds)
+            %TIMESLOTOFEDGE(G, ID) Get the time-slot IDs of one or more edges.
+            outIds = obj.BaseGraph.Edges.TimeSlot(edgeIds);
+        end
+        
+        function setTimeSlotOfEdge(obj, edgeIds, timeSlotIds)
+            %SETTIMESLOTOFEDGE(G, ID) Get the time-slot IDs of one or more edges.
+            obj.BaseGraph.Edges.TimeSlot(edgeIds) = timeSlotIds;
+        end
+        
+        function resetTimeSlots(obj)
+            %RESETTIMESLOTS(G) Reset all time-slot IDs. Reset to the
+            %initial status.
+            obj.BaseGraph.Edges.TimeSlot = ...
+                amsla.common.nullId(size(obj.BaseGraph.Edges.TimeSlot));
+        end
+        
     end
     
     %% PRIVATE METHODS
