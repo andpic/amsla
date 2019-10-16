@@ -1,6 +1,7 @@
 # Temp files
 *.*~
 .*.sw*
+*.asv
 
 # MATLAB project files
 *.prj

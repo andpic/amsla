@@ -21,17 +21,19 @@ blockSize = 20;
 [I, J, V] = iGenerateLowerTriangularMatrix(matrixSize, blockSize);
 subPlotFormat = {1, 2};
 
+figure();
+
 %% Level-set algorithm
-levelSetMatrix = amsla.levelSet.Analyser(I, J, V, 'Plot', true);
+levelSetMatrix = amsla.SparseMatrix(I, J, V, "Level-set");
 subplot(subPlotFormat{:}, 1);
 title("Level-set");
-partition(levelSetMatrix);
+levelSetMatrix = analyse(levelSetMatrix, "PlotProgress", true);
 
 %% TASSL algorithm
-tasslMatrix = amsla.tassl.Analyser(I, J, V, blockSize, 'Plot', true);
+tasslMatrix = amsla.SparseMatrix(I, J, V, "TASSL");
 subplot(subPlotFormat{:}, 2);
 title("TASSL");
-partition(tasslMatrix);
+tasslMatrix = analyse(tasslMatrix, blockSize, "PlotProgress", true);
 
 %% HELPER FUNCTIONS
 

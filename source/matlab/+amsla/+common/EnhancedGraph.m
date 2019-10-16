@@ -8,9 +8,6 @@ classdef EnhancedGraph < handle
     %   row indices (I), column indices (J), and values (V) of the edges in
     %   the graph.
     %
-    %   G = ENHANCEDGRAPH(L) Construct an EnhancedGraph object given a sparse
-    %   matrix L.
-    %
     %   EnhancedGraph methods:
     %      listOfNodes           - Get the list of the IDs of all the nodes in
     %                              the graph.
@@ -83,22 +80,10 @@ classdef EnhancedGraph < handle
         
         %% General
         
-        function obj = EnhancedGraph(varargin)
+        function obj = EnhancedGraph(I, J, V)
             %ENHANCEDGRAPH Construct an EnhancedGraph object.
             
             % TODO: parse inputs
-            
-            if nargin==1 && issparse(varargin{1})
-                % If the input is sparse, extract row indices, column
-                % indices, and values
-                [I,J,V] = find(varargin{1});
-            elseif nargin==3 && all(cellfun(@isnumeric, varargin))
-                I = varargin{1};
-                J = varargin{2};
-                V = varargin{3};
-            else
-                error("Bad inputs");
-            end
             
             % Initialise internal data
             obj.BaseGraph = iInitialiseEnhancedGraph(I,J,V);
@@ -394,7 +379,7 @@ classdef EnhancedGraph < handle
             end
             varargout{1} = outIds;
             
-            % Compute the number of vertices in the graphset
+            % Compute the number of nodes in the graphset
             if nargout==2
                 numelGraphSet = arrayfun(@iGetNodesInOneGraphSet, outIds, 'UniformOutput', true);
                 varargout{2} = numelGraphSet;
@@ -523,10 +508,10 @@ function iCheckAssignmentAmbiguity(ids, assignTo)
 % Check that there is no ambiguity between elements (graph nodes or edges)
 % with indices IDS and the sets to which they're being assigned (assignTo).
 %
-%   Example:
-%       % Try assigning the same element with index 1 to two separate
-%       % sets with indices 1 and 2
-%       checkAssignmentAmbiguity([1, 1], [1, 2]);
+% Example:
+%	% Try assigning the same element with index 1 to two separate
+%	% sets with indices 1 and 2
+%	checkAssignmentAmbiguity([1, 1], [1, 2]);
 
 % Turn arrays into columns
 ids = reshape(ids,[length(ids), 1]);
