@@ -42,7 +42,7 @@ addpath(sharedTestsDir);
 restorePath = onCleanup(@() path(oldPath));
 
 % Test suite
-concreteTests = fullfile(matlabTestDir, "concrete");
+concreteTests = fullfile(matlabTestDir, "suite");
 suite = TestSuite.fromFolder(concreteTests, "IncludingSubfolders", true);
 
 % Test runner
@@ -50,7 +50,8 @@ runner = TestRunner.withTextOutput("LoggingLevel", 3, "OutputDetail", 3);
 
 % Check for plugin
 if nargin==2 && strcmp(varargin{1}, "CodeCoverage") && varargin{2}
-    runner.addPlugin(CodeCoveragePlugin.forFolder(matlabSourceDir, "IncludeSubFolders", true));
+    runner.addPlugin(CodeCoveragePlugin.forFolder(matlabSourceDir, ...
+        "IncludeSubFolders", true));
 end
 
 % Run tests
