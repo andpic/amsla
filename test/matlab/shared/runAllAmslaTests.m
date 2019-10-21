@@ -1,16 +1,16 @@
-function testResults = amslaTests(varargin)
-%AMSLATESTS(NAME, VALUE, ...) Execute all the tests in the A²MSLA test
+function testResults = runAllAmslaTests(varargin)
+%RUNALLAMSLATESTS(NAME, VALUE, ...) Execute all the tests in the AMSLA test
 %suite.
 %
-%   TR = AMSLATESTS() Execute all the available tests. Returns the test
+%   TR = RUNALLAMSLATESTS() Execute all the available tests. Returns the test
 %   results.
 %
-%   TR = AMSLATESTS(NAME, VALUE, ...) Execute the tests with added
+%   TR = RUNALLAMSLATESTS(NAME, VALUE, ...) Execute the tests with added
 %   settings. Currently supported name-value paris are:
 %       'CodeCoverage'      - If true, prints out a code coverage report.
 %
 
-% Copyright 2018 Andrea Picciau
+% Copyright 2018-2019 Andrea Picciau
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
