@@ -260,7 +260,7 @@ J = [1, 1, 1, 2, 3, 4, 4, 5, 5,  3,  6,  6,  7,  8,  6,  9,  9, 10];
 I = [1, 2, 3, 2, 3, 4, 5, 5, 6,  6,  6,  7,  7,  8,  8, 10,  9, 10];
 numberOfElements = numel(J);
 V = ones(1, numberOfElements);
-aGraph = amsla.common.EnhancedGraph(I, J, V);
+aGraph = amsla.common.DataStructure(I, J, V);
 end
 
 function [sortedI, sortedJ] = iSortEdges(I,J)

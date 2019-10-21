@@ -50,8 +50,10 @@ classdef SparseMatrix
         function obj = SparseMatrix(varargin)
             %SPARSEMATRIX Construct an instance of this class
             
-            [obj.DataStructure, obj.Format] = ...
+            [I, J, V, obj.Format] = ...
                 iParseConstructorArguments(varargin{:});
+            objConstructor = iGetPackageObject("DataStructure", obj.Format);
+            obj.DataStructure = objConstructor(I, J, V);
         end
         
         function [obj, partitioningResults] = analyse(obj, varargin)
@@ -73,20 +75,14 @@ classdef SparseMatrix
             % Choose partitioner and scheduler according to the storage
             % format.
             
-            switch obj.Format
-                case "TASSL"
-                    obj.Partitioner = amsla.tassl.Partitioner(obj.DataStructure, ...
-                        maxSize, ...
-                        "PlotProgress", plotProgress);
-                    obj.Scheduler = amsla.tassl.Scheduler(obj.DataStructure);
-                case "Level-set"                    
-                    obj.Partitioner = amsla.levelSet.Partitioner(obj.DataStructure, ...
-                        maxSize, ...
-                        "PlotProgress", plotProgress);
-                    obj.Scheduler = [];
-                otherwise
-                    error("amsla:invalidFormat", "Invalid matrix format.");
-            end
+            partitionerConstructor = iGetPackageObject("Partitioner", obj.Format);
+            obj.Partitioner = partitionerConstructor(...
+                obj.DataStructure, ...
+                maxSize, ...
+                "PlotProgress", plotProgress);
+            
+            schedulerConstructor = iGetPackageObject("Scheduler", obj.Format);
+            obj.Scheduler = schedulerConstructor(obj.DataStructure);
         end
         
     end
@@ -94,19 +90,19 @@ end
 
 %% HELPER METHODS
 
-function [dataStructure, format] = iParseConstructorArguments(varargin)
+function [I, J, V, format] = iParseConstructorArguments(varargin)
 % Parse the inputs to the constructor
 
 if nargin==2
     % If the input is a sparse MATLAB matrix, extract row indices, column
     % indices, and values
-    sparseMatrix = varargin{1};    
+    sparseMatrix = varargin{1};
     validateattributes(sparseMatrix, ...
         {'numeric'}, {'sparse', 'square', 'nonempty'});
     [I, J, V] = find(sparseMatrix);
     
-    format = varargin{2};            
-elseif nargin==4 
+    format = varargin{2};
+elseif nargin==4
     % Input is the matrix elements in the coordinate form
     I = varargin{1};
     J = varargin{2};
@@ -115,23 +111,21 @@ elseif nargin==4
     requiredAttributes = {'vector', 'nonsparse', 'finite', 'nonempty', 'numel', numel(I)};
     validateattributes(I, {'numeric'}, requiredAttributes);
     validateattributes(J, {'numeric'}, requiredAttributes);
-    validateattributes(V, {'numeric'}, requiredAttributes);    
+    validateattributes(V, {'numeric'}, requiredAttributes);
     
-    format = varargin{4};    
+    format = varargin{4};
 else
     error("amsla:badInputs", "Bad inputs to the matrix constructor");
 end
 
 % Validate the matrix format
 validateattributes(format, {'string', 'char'}, {'nonempty', 'scalartext'});
-validatestring(format, ...
-    ["TASSL", "Level-set"]);
-
-format = string(format);
-dataStructure = amsla.common.EnhancedGraph(I, J, V);
+format = validatestring(format, iGetSupportedFormats());
 end
 
 function [maxSize, plotProgress] = iParseAnalyseArguments(varargin)
+% Parse the inputs to the method "analyse"
+
 parser = inputParser;
 addOptional(parser,'MaxSize', [], @(x) isnumeric(x) && isscalar(x));
 addParameter(parser,'PlotProgress', false, @(x) islogical(x) && isscalar(x));
@@ -140,4 +134,28 @@ parse(parser, varargin{:});
 
 maxSize = parser.Results.MaxSize;
 plotProgress = parser.Results.PlotProgress;
+end
+
+function formatList = iGetSupportedFormats()
+% Return the list of supported formats.
+
+% Find all amsla.* packages, remove those about tests and common
+% interfaces.
+mainPackage = meta.package.fromName("amsla");
+amslaPackages = mainPackage.PackageList;
+amslaPackageNames = string({amslaPackages.Name}');
+amslaPackageNames(amslaPackageNames == "amsla.test" | amslaPackageNames == "amsla.common") = ...
+    [];
+formatList = erase(amslaPackageNames, "amsla.");
+end
+
+function objectConstructor = iGetPackageObject(objectName, formatName)
+% Get the required object given the format/amsla package name. If the
+% object is not available in the package, search in the "common" package.
+
+fullObjectName = "amsla." + formatName + "." + objectName;
+if ~exist(fullObjectName, "class")
+    fullObjectName = "amsla.common." + objectName;
+end
+objectConstructor = str2func(fullObjectName);
 end

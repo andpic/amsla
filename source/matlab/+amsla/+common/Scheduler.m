@@ -42,9 +42,9 @@ classdef Scheduler < handle
             %       matrix represented by the graph G.
             
             validateattributes(aGraph, ...
-                {'amsla.common.EnhancedGraph'}, ...
+                {'amsla.common.DataStructureInterface'}, ...
                 {'scalar', 'nonempty'});
-            obj.Graph = amsla.tassl.internal.SchedulerGraphWrapper(aGraph);
+            obj.Graph = amsla.common.internal.SchedulerGraphWrapper(aGraph);
         end
         
         function scheduleOperations(obj)
@@ -74,7 +74,7 @@ classdef Scheduler < handle
             % Assign the entering edges of 'currentNodes' to the time slot
             % 'currentTimeSlot'
             
-            currentEnteringEdges = obj.getEnteringEdges(currentNodes);
+            currentEnteringEdges = obj.Graph.getEnteringEdges(currentNodes);
             obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
             currentNodes = obj.Graph.getReadyChildrenOfNode(currentNodes);
         end

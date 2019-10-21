@@ -24,7 +24,7 @@ subPlotFormat = {1, 2};
 figure();
 
 %% Level-set algorithm
-levelSetMatrix = amsla.SparseMatrix(I, J, V, "Level-set");
+levelSetMatrix = amsla.SparseMatrix(I, J, V, "LevelSet");
 subplot(subPlotFormat{:}, 1);
 title("Level-set");
 levelSetMatrix = analyse(levelSetMatrix, "PlotProgress", true);

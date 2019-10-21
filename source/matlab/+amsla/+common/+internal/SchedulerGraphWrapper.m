@@ -1,5 +1,5 @@
 classdef SchedulerGraphWrapper
-    %AMSLA.TASSL.INTERNAL.SCHEDULERGRAPHWRAPPER Wraps a graph object to
+    %AMSLA.COMMON.INTERNAL.SCHEDULERGRAPHWRAPPER Wraps a graph object to
     %carry out the scheduling of numerical operations.
     %
     %   Methods of SchedulerGraphWrapper:
@@ -37,7 +37,7 @@ classdef SchedulerGraphWrapper
             %SCHEDULERGRAPHWRAPPER Create a SchedulerGraphWrapper object.
             
             validateattributes(aGraph, ...
-                {'amsla.common.EnhancedGraph'}, ...
+                {'amsla.common.DataStructureInterface'}, ...
                 {'scalar', 'nonempty'});
             obj.Graph = aGraph;
         end

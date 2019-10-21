@@ -1,14 +1,14 @@
-classdef EnhancedGraph < handle
-    %ENHANCEDGRAPH Implementation of a graph object to be used in
-    %partitioning and scheduling algorithms. An EnhancedGraph is a graph
+classdef DataStructure < amsla.common.DataStructureInterface
+    %AMSLA.COMMON.DATASTRUCTURE Implementation of a graph object to be used in
+    %partitioning and scheduling algorithms. An DataStructure is a graph
     %whose nodes can be associated with sub-graphs, and whose edges can
     %be associated with time-slots.
     %
-    %	G = ENHANCEDGRAPH(I,J,V) Construct an EnhancedGraph object given the
-    %   row indices (I), column indices (J), and values (V) of the edges in
-    %   the graph.
+    %	G = AMSLA.COMMON.DATASTRUCTURE(I,J,V) Construct an DataStructure object 
+    %   given the row indices (I), column indices (J), and values (V) of the 
+    %   edges in the graph.
     %
-    %   EnhancedGraph methods:
+    %   DataStructure methods:
     %      listOfNodes           - Get the list of the IDs of all the nodes in
     %                              the graph.
     %      childrenOfNode        - Get the children of a node.
@@ -35,9 +35,9 @@ classdef EnhancedGraph < handle
     %      setSubGraphOfNode     - Assign a node to a sub-graph.
     %      resetSubGraphs        - Reset all sub-graphs to a null value.
     %
-    %      plot                  - Plot an EnhancedGraph.
+    %      plot                  - Plot a DataStructure.
     
-    % Copyright 2018 Andrea Picciau
+    % Copyright 2018-2019 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -80,13 +80,13 @@ classdef EnhancedGraph < handle
         
         %% General
         
-        function obj = EnhancedGraph(I, J, V)
-            %ENHANCEDGRAPH Construct an EnhancedGraph object.
+        function obj = DataStructure(I, J, V)
+            %ENHANCEDGRAPH Construct an DataStructure object.
             
             % TODO: parse inputs
             
             % Initialise internal data
-            obj.BaseGraph = iInitialiseEnhancedGraph(I,J,V);
+            obj.BaseGraph = iInitialiseDataStructure(I,J,V);
         end
         
         function h = plot(obj, varargin)
@@ -474,7 +474,7 @@ end
 
 %% HELPER FUNCTIONS
 
-function outGraph = iInitialiseEnhancedGraph(I, J, V)
+function outGraph = iInitialiseDataStructure(I, J, V)
 % Initialises the digraph object and the overall object
 outGraph = digraph(I, J, V);
 

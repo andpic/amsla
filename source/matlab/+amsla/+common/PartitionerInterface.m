@@ -90,7 +90,7 @@ end
 
 function [aGraph, maxSubGraph, isPlottingProgress] = iParseConstructorArguments(varargin)
 parser = inputParser;
-addRequired(parser,'Graph', @(x) isa(x, "amsla.common.EnhancedGraph") && isscalar(x));
+addRequired(parser,'Graph', @(x) isa(x, "amsla.common.DataStructureInterface") && isscalar(x));
 addOptional(parser,'MaxSubGraph', 10, @isnumeric);
 addParameter(parser,'PlotProgress', false, @islogical);
 
