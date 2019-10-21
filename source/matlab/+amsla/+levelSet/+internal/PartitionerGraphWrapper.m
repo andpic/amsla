@@ -1,5 +1,5 @@
 classdef PartitionerGraphWrapper < amsla.common.internal.PartitionerGraphWrapperInterface
-    %AMSLA.LEVELSET.INTERNAL.PARTITIONERGRAPHWRAPPER Wrapper to a graph to 
+    %AMSLA.LEVELSET.INTERNAL.PARTITIONERGRAPHWRAPPER Wrapper to a graph to
     %be used for the analysis phase with the level-set approach.
     %
     %   G = AMSLA.LEVELSET.INTERNAL.PARTITIONERGRAPHWRAPPER(G) Create a wrapper
@@ -44,8 +44,8 @@ classdef PartitionerGraphWrapper < amsla.common.internal.PartitionerGraphWrapper
             %FINDROOTS(G) Find the root nodes of the graph.
             %
             % Use:
-            %   [R] = FINDROOTS(G) 
-            %       Find the root nodes in the graph G. Returns the root node 
+            %   [R] = FINDROOTS(G)
+            %       Find the root nodes in the graph G. Returns the root node
             %       IDs.
             
             % Retrieve list of all node IDs
@@ -68,8 +68,8 @@ classdef PartitionerGraphWrapper < amsla.common.internal.PartitionerGraphWrapper
             %these children were assigned to sub-graphs.
             %
             % Use:
-            %   C = CHILDRENOFNODEREADYFORASSIGNMENT(G, I) 
-            %       Get the IDs of the children IDs that are ready for 
+            %   C = CHILDRENOFNODEREADYFORASSIGNMENT(G, I)
+            %       Get the IDs of the children IDs that are ready for
             %       assignment.
             
             childrenIds = obj.childrenOfNode(nodeIds);

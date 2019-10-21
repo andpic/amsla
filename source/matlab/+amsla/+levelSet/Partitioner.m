@@ -59,7 +59,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
             %PARTITION(A) Partition the graph according to the level-set
             %algorithm.
             
-            obj.updateProgressPlot();        
+            obj.updateProgressPlot();
             
             % Clear any previous tentative
             obj.GraphWrapper.resetAllAssignments();
@@ -70,7 +70,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
             while ~isempty(currentNodes)
                 % Assign nodes to sub-graphs
                 obj.GraphWrapper.assignNodeToSubGraph(currentNodes, currentSubGraphId);
-                obj.updateProgressPlot();        
+                obj.updateProgressPlot();
                 
                 currentSubGraphId = currentSubGraphId+1;
                 currentNodes = obj.GraphWrapper.childrenOfNodeReadyForAssignment(currentNodes);

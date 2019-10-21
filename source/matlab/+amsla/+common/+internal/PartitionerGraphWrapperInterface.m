@@ -1,5 +1,5 @@
 classdef(Abstract) PartitionerGraphWrapperInterface < handle
-    %AMSLA.COMMON.INTERNAL.PARTITIONERGRAPHWRAPPERINTERFACE Interface for 
+    %AMSLA.COMMON.INTERNAL.PARTITIONERGRAPHWRAPPERINTERFACE Interface for
     %graph wrappers to be used for partitioning.
     %
     %   PartitionerGraphWrapperInterface methods:

@@ -1,6 +1,6 @@
 classdef PartitionerGraphWrapper < ...
         amsla.common.internal.PartitionerGraphWrapperInterface
-    %AMSLA.TASSL.INTERNAL.PARTITIONERGRAPHWRAPPER Wrapper to a graph to be 
+    %AMSLA.TASSL.INTERNAL.PARTITIONERGRAPHWRAPPER Wrapper to a graph to be
     %used for the analysis phase with the TASSL approach.
     %
     %   W = AMSLA.TASSL.INTERNAL.PARTITIONERGRAPHWRAPPER(G, MAXSIZE) Create a
@@ -67,7 +67,7 @@ classdef PartitionerGraphWrapper < ...
     methods(Access=public)
         
         function obj = PartitionerGraphWrapper(aGraph, maxSize)
-            %PARTITIONERGRAPHWRAPPER(G, MAXSIZE) Constructs a graph wrapper 
+            %PARTITIONERGRAPHWRAPPER(G, MAXSIZE) Constructs a graph wrapper
             %to be used for the analysis phase with the TASSL approach.
             
             % Initialise the graph
@@ -151,7 +151,7 @@ classdef PartitionerGraphWrapper < ...
         end
         
         function assignNodeToSubGraph(obj, nodeIds, subGraphIds)
-            %ASSIGNNODETOSUBGRAPH(G, NODEIDS, SUBGIDS) Assign one or more nodes 
+            %ASSIGNNODETOSUBGRAPH(G, NODEIDS, SUBGIDS) Assign one or more nodes
             %with ID NODEIDS to sub-graphs with IDs SUBGIDS.
             
             [nodeIds, subGraphIds] = iGetIndexArrayForm(nodeIds, subGraphIds);

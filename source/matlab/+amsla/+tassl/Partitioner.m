@@ -1,8 +1,8 @@
 classdef Partitioner < amsla.common.PartitionerInterface
-    %AMSLA.TASSL.PARTITIONER Construct an object that carries out the 
+    %AMSLA.TASSL.PARTITIONER Construct an object that carries out the
     %partitioning of a graph using the TASSL algorithm.
     %
-    %   P = AMSLA.TASSL.PARTITIONER(G, MAXSIZE) Create a partitioner for the 
+    %   P = AMSLA.TASSL.PARTITIONER(G, MAXSIZE) Create a partitioner for the
     %   graph G and request that the maximum size of sub-graphs is MAXSIZE.
     %
     %   Methods of Partitioner:
@@ -95,7 +95,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
                 try
                     % Assign nodes to sub-graphs
                     obj.GraphWrapper.assignNodeToSubGraph(nodeIds, subGraphIds);
-                    obj.updateProgressPlot();                    
+                    obj.updateProgressPlot();
                     
                     % Get new nodes for assignment
                     [nodeIds, subGraphIds] = obj.GraphWrapper.childrenOfNodeReadyForAssignment(nodeIds);

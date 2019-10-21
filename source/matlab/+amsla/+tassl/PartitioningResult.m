@@ -23,7 +23,7 @@ classdef PartitioningResult < amsla.common.PartitioningResult
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    properties(GetAccess=public,SetAccess=immutable)        
+    properties(GetAccess=public,SetAccess=immutable)
         
         % Number of partitioning tentatives.
         NumberOfTentatives

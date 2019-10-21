@@ -4,8 +4,8 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %whose nodes can be associated with sub-graphs, and whose edges can
     %be associated with time-slots.
     %
-    %	G = AMSLA.COMMON.DATASTRUCTURE(I,J,V) Construct an DataStructure object 
-    %   given the row indices (I), column indices (J), and values (V) of the 
+    %	G = AMSLA.COMMON.DATASTRUCTURE(I,J,V) Construct an DataStructure object
+    %   given the row indices (I), column indices (J), and values (V) of the
     %   edges in the graph.
     %
     %   DataStructure methods:
