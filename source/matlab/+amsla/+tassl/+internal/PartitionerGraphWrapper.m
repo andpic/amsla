@@ -220,25 +220,6 @@ classdef PartitionerGraphWrapper < ...
             obj.IsMapInitialised = true;
         end
         
-        function [outIds, mergedComponentIds] = subGraphsOfMergedComponents(obj)
-            %SUBGRAPHSOFMERGEDCOMPONENTS(G) Get the list of the sub-graphs
-            %IDs associated with every merged component in the graph G and the
-            %corresponding merged component IDs.
-            %
-            %   S = SUBGRAPHSOFMERGEDCOMPONENTS(G) Get the list of
-            %   sub-graph IDs only.
-            %
-            %   [S, C] = SUBGRAPHSOFMERGEDCOMPONENTS(G) Get the list of
-            %   sub-graph IDs and the corresponding merged component IDs.
-            
-            % Initialise the map if it hasn't been initialised yet.
-            if ~obj.IsMapInitialised
-                obj.initialiseMapWithComponents();
-            end
-            mergedComponentIds = sort(obj.Map.listOfMergedComponents());
-            outIds = obj.Map.subGraphsOfMergedComponent(mergedComponentIds);
-        end
-        
         function [outRootIds, outMergedComponentIds] = rootsOfMergedComponents(obj)
             %ROOTSOFMERGEDCOMPONENTS(G) Retrieve the roots of every merged
             %component in the graph G and the component IDs.

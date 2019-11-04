@@ -119,16 +119,9 @@ classdef Partitioner < amsla.common.PartitionerInterface
                 (~isSuccessful && ~obj.GraphWrapper.checkFullAssignment()), ...
                 "Inconsistent result of the tentative to partition the graph.");
         end
-        
-        function currentNodes = assignEnteringEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
-            % Assign the entering edges of 'currentNodes' to the time slot
-            % 'currentTimeSlot'
-            
-            currentEnteringEdges = obj.getEnteringEdges(currentNodes);
-            obj.GraphWrapper.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
-            currentNodes = obj.GraphWrapper.getReadyChildrenOfNode(currentNodes);
-        end
+
     end
+    
 end
 
 

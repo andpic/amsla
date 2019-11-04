@@ -24,7 +24,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check the method "childrenOfNode" with a vector input.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             nodes = 1:10;
             expectedOutput = {[2, 3], [], 6, 5, 6, [7, 8], [], [], 10, []};
@@ -38,7 +38,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check method "exitingEdgesOfNode" with vector inputs.
             
             % Create a graph
-            [aGraph, I, J, ~] = iGetASimpleMatrix();
+            [aGraph, I, J, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             nodes = 1:10;
             
@@ -56,7 +56,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check the method "parentsOfNode" with a vector input.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             nodes = 1:10;
             
@@ -71,7 +71,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check the method "parentsOfNode" with a vector input and duplicates.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             nodes = [6, 2, 6];
             
@@ -86,7 +86,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check method "exitingEdgesOfNode" with vector inputs.
             
             % Create a graph
-            [aGraph, I, J, ~] = iGetASimpleMatrix();
+            [aGraph, I, J, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             nodes = 1:10;
             % Expected output is obtained by edges sorted by row first and
@@ -103,7 +103,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check method "exitingEdgesOfNode" with vector inputs.
             
             % Create a graph
-            [aGraph, I, J, ~] = iGetASimpleMatrix();
+            [aGraph, I, J, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             nodes = 1:10;
             % Expected output is obtained by edges sorted by row first and
@@ -121,7 +121,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % computed.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             expectedOutput = [];
             
@@ -135,7 +135,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % computed.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             aGraph.computeComponents();
             
@@ -151,7 +151,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % computed.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             aGraph.computeComponents();
             
@@ -174,7 +174,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % computed.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             aGraph.computeComponents();
             
@@ -190,7 +190,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % computed, when inputs are a vector.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             aGraph.computeComponents();
             
@@ -206,7 +206,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Check method "setSubGraphOfNode" when inputs are a vector.
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             inputs = 1:10;
             subGraphs = 100-inputs;
@@ -224,7 +224,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % with duplicate entries
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             inputs = [1, 1, 1, 2, 3];
             subGraphs = 100-inputs;
@@ -242,7 +242,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % with duplicate and ambiguous entries
             
             % Create a graph
-            [aGraph, ~, ~, ~] = iGetASimpleMatrix();
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
             inputs = [1, 1, 1, 2, 3];
             subGraphs = [1, 2, 1, 2, 3];
@@ -255,13 +255,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
     end
 end
 
-function [aGraph, I, J, V] = iGetASimpleMatrix()
-J = [1, 1, 1, 2, 3, 4, 4, 5, 5,  3,  6,  6,  7,  8,  6,  9,  9, 10];
-I = [1, 2, 3, 2, 3, 4, 5, 5, 6,  6,  6,  7,  7,  8,  8, 10,  9, 10];
-numberOfElements = numel(J);
-V = ones(1, numberOfElements);
-aGraph = amsla.common.DataStructure(I, J, V);
-end
+%% HELPER FUNCTIONS
 
 function [sortedI, sortedJ] = iSortEdges(I,J)
 sortedEdges = sortrows([I', J'], [1, 2]);
