@@ -16,15 +16,30 @@ classdef tScheduler < matlab.unittest.TestCase
     % limitations under the License.
         
     
+    properties(TestParameter)
+        
+        InputGraph = struct( ...
+            'SimpleLowerTriangular', struct( ...
+            ));
+        
+    end
+    
+    methods(Test)
+        
+        function timeSlotAssignmentMatchesExpected(testCase, InputGraph)
+        end
+        
+    end
+    
 end
 
 %% HELPER FUNCTIONS
 
-function aGraph = 
-  
-% J         = [1, 1, 1, 2, 3, 4, 4, 5, 5,  3,  6,  6,  7,  8,  6,  9,  9, 10];
-% I         = [1, 2, 3, 2, 3, 4, 5, 5, 6,  6,  6,  7,  7,  8,  8, 10,  9, 10];
-timeSlots   = [   1, 1,          1,    2,  2,      3,          3,  1        ];
-
-
+function [I, J, V, timeSlots] = iSimpleLowerTriangular()
+aGraph = ;
+J         = [  1, 1, 1,   2,   3,   4, 4,   5, 5, 3,   6, 6,   7,   8, 6,  9,   9,  10];
+I         = [  1, 2, 3,   2,   3,   4, 5,   5, 6, 6,   6, 7,   7,   8, 8, 10,   9,  10];
+V         = [  1, 1, 1,   1,   1,   1, 1,   1, 1, 1,   1, 1,   1,   1, 1,  1,   1,   1];
+timeSlots = [nan, 1, 1, nan, nan, nan, 1, nan, 2, 2, nan, 3, nan, nan, 3,  1, nan, nan];
 end
+
