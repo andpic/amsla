@@ -14,19 +14,50 @@ classdef tScheduler < matlab.unittest.TestCase
     % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     % See the License for the specific language governing permissions and
     % limitations under the License.
-        
+    
     
     properties(TestParameter)
         
-        InputGraph = struct( ...
+        GraphAssignmentPair = struct( ...
             'SimpleLowerTriangular', struct( ...
-            ));
+            'InputGraph',           { iSimpleLowerTriangularGraph() }, ...
+            'ExpectedAssignment',   { iSimpleLowerTriangularAssignment() }) ...
+            );
         
     end
     
     methods(Test)
         
-        function timeSlotAssignmentMatchesExpected(testCase, InputGraph)
+        function timeSlotAssignmentMatchesExpected(testCase, GraphAssignmentPair)
+            % Check that the edge time-slot assignment matches what is
+            % expected.
+            
+            inputGraph = GraphAssignmentPair.InputGraph;
+            scheduler = amsla.common.Scheduler(inputGraph);
+            
+            testCase.verifyWarningFree(@() scheduler.scheduleOperations(), ...
+                "The method 'scheduleOperations' did not complete without problems.");
+            
+            testCase.verifyTimeSlotAssignment(inputGraph, expectedAssignment);            
+        end
+        
+    end
+    
+    %% HELPER METHODS
+    
+    methods(Access=private)
+       
+        function verifyTimeSlotAssignment(inputGraph, expectedAssignment)
+           %verifyTimeSlotAssignment - Verify that the edge time-slot
+           %assignment matches what is expected.
+           
+           verifyattributes(inputGraph, {'amsla.common.Scheduler'}, {'nonempty', 'scalar'});
+           verifyattributes(expectedAssignment, {'table'}, {'nonempty', 'scalar'});
+           
+           listOfNodes = inputGraph.listOfNodes;
+           for currNode = listOfNodes
+               
+           end            
         end
         
     end
@@ -35,8 +66,18 @@ end
 
 %% HELPER FUNCTIONS
 
+function aGraph = iSimpleLowerTriangularGraph()
+[I, J, V] = iSimpleLowerTriangular();
+aGraph = amsla.common.DataStructure(I, J, V);
+end
+
+function expectedAssignment = iSimpleLowerTriangularAssignment()
+[I, J, ~, timeSlots] = iSimpleLowerTriangular();
+expectedAssignment = table(J', I', timeSlots', ...
+    'VariableNames', {'I', 'J', 'TimeSlot'});
+end
+
 function [I, J, V, timeSlots] = iSimpleLowerTriangular()
-aGraph = ;
 J         = [  1, 1, 1,   2,   3,   4, 4,   5, 5, 3,   6, 6,   7,   8, 6,  9,   9,  10];
 I         = [  1, 2, 3,   2,   3,   4, 5,   5, 6, 6,   6, 7,   7,   8, 8, 10,   9,  10];
 V         = [  1, 1, 1,   1,   1,   1, 1,   1, 1, 1,   1, 1,   1,   1, 1,  1,   1,   1];
