@@ -1,6 +1,9 @@
 classdef Scheduler < handle
-    %AMSLA.TASSL.SCHEDULER An object that carries out the scheduling of the
+    %AMSLA.COMMON.SCHEDULER An object that carries out the scheduling of the
     %numerical operations in a matrix.
+    %
+    %   S = AMSLA.COMMON.SCHEDULER(G) Create a scheduler object to operate 
+    %   on the sparse matrix represented by the graph G.
     %
     %   Methods of Scheduler:
     %       scheduleOperations - Schedule the numerical operations in the
@@ -35,11 +38,6 @@ classdef Scheduler < handle
         
         function obj = Scheduler(aGraph)
             %SCHEDULER Create a scheduler object.
-            %
-            % Use:
-            %   S = SCHEDULER(G)
-            %       Create a scheduler object to operate on the sparse
-            %       matrix represented by the graph G.
             
             validateattributes(aGraph, ...
                 {'amsla.common.DataStructureInterface'}, ...
@@ -53,6 +51,10 @@ classdef Scheduler < handle
             
             % External edges
             currentNodes = getRootsBySubGraph(obj.Graph);
+            if isempty(currentNodes)
+                currentNodes = getRootsOfGraph(obj.Graph);
+            end
+            
             currentTimeSlot = -1;
             currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
             

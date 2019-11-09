@@ -2,6 +2,9 @@ classdef SchedulerGraphWrapper
     %AMSLA.COMMON.INTERNAL.SCHEDULERGRAPHWRAPPER Wraps a graph object to
     %carry out the scheduling of numerical operations.
     %
+    %   W = AMSLA.COMMON.INTERNAL.SCHEDULERGRAPHWRAPPER(G) Create a wrapper
+    %   for the graph G.
+    %
     %   Methods of SchedulerGraphWrapper:
     %       scheduleOperations - Schedule the numerical operations in the
     %                            sparse matrix.
@@ -42,6 +45,16 @@ classdef SchedulerGraphWrapper
             obj.Graph = aGraph;
         end
         
+        function outIds = getRootsOfGraph(obj)
+            %GETROOTSOFGRAPH Get the IDs of the nodes without a parent in 
+            %the whole graph.
+            
+            allNodeIds = listOfNodes(obj.Graph);
+            outIds = parentsOfNode(obj.Graph, allNodeIds);
+            whichEmpty = arrayfun(@isempty, outIds, 'UniformOutput', true);
+            outIds = allNodeIds(whichEmpty);
+        end
+        
         function rootIds = getRootsBySubGraph(obj)
             %GETROOTSBYSUBGRAPH	Retrieve the root nodes in the graph,
             %organised by sub-graph.
@@ -72,7 +85,7 @@ classdef SchedulerGraphWrapper
             %       Assign the edges with IDs EDGEID to the time-slots with
             %       edged TSLOTID.
             
-            obj.Graph.assignEdgesToTimeSlot(edgeIds, timeSlotIds);
+            obj.Graph.setTimeSlotOfEdge(edgeIds, timeSlotIds);
         end
         
         

@@ -19,6 +19,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %      enteringEdgesOfNode   - Get the edges entering a node.
     %      loopEdgesOfNode       - Get the edges entering and exiting the
     %                              same node.
+    %      rootsOfGraph          - Get the nodes without entering edges.
     %
     %      listOfComponents      - Get the list of weakly connected
     %                              components.
