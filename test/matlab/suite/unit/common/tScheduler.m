@@ -38,7 +38,8 @@ classdef tScheduler < matlab.unittest.TestCase
             testCase.verifyWarningFree(@() scheduler.scheduleOperations(), ...
                 "The method 'scheduleOperations' did not complete without problems.");
             
-            testCase.verifyTimeSlotAssignment(inputGraph, expectedAssignment);            
+            testCase.verifyTimeSlotAssignment(inputGraph, ...
+                GraphAssignmentPair.ExpectedAssignment);
         end
         
     end
@@ -46,18 +47,34 @@ classdef tScheduler < matlab.unittest.TestCase
     %% HELPER METHODS
     
     methods(Access=private)
-       
-        function verifyTimeSlotAssignment(inputGraph, expectedAssignment)
-           %verifyTimeSlotAssignment - Verify that the edge time-slot
-           %assignment matches what is expected.
-           
-           verifyattributes(inputGraph, {'amsla.common.Scheduler'}, {'nonempty', 'scalar'});
-           verifyattributes(expectedAssignment, {'table'}, {'nonempty', 'scalar'});
-           
-           listOfNodes = inputGraph.listOfNodes;
-           for currNode = listOfNodes
-               
-           end            
+        
+        function verifyTimeSlotAssignment(testCase, inputGraph, expectedAssignment)
+            %verifyTimeSlotAssignment - Verify that the edge time-slot
+            %assignment matches what is expected.
+            
+            validateattributes(inputGraph, {'amsla.common.DataStructure'}, {'nonempty', 'scalar'});
+            validateattributes(expectedAssignment, {'table'}, {'nonempty'});
+            
+            listOfNodes = inputGraph.listOfNodes();
+            for currNode = listOfNodes
+                
+                % Verify that exiting edges match the expected assignment
+                exitingEdges = inputGraph.exitingEdgesOfNode(currNode);
+                
+                for currEdge = exitingEdges                    
+                    currExitingNode = inputGraph.exitingNodeOfEdge(currEdge);
+                    actualTimeSlot = inputGraph.timeSlotOfEdge(currEdge);
+                    
+                    expectedTimeSlot = expectedAssignment.TimeSlot( ...
+                        expectedAssignment.I == currExitingNode & ...
+                        expectedAssignment.J == currNode);
+                    
+                    testCase.verifyEqual(actualTimeSlot, expectedTimeSlot, ...
+                        sprintf("Mismatch in assignment for time slot ID %d (%d -> %d)", ...
+                        currEdge, currNode, currExitingNode));                    
+                end
+                
+            end
         end
         
     end
@@ -74,13 +91,13 @@ end
 function expectedAssignment = iSimpleLowerTriangularAssignment()
 [I, J, ~, timeSlots] = iSimpleLowerTriangular();
 expectedAssignment = table(J', I', timeSlots', ...
-    'VariableNames', {'I', 'J', 'TimeSlot'});
+    'VariableNames', {'J', 'I', 'TimeSlot'});
 end
 
 function [I, J, V, timeSlots] = iSimpleLowerTriangular()
 J         = [  1, 1, 1,   2,   3,   4, 4,   5, 5, 3,   6, 6,   7,   8, 6,  9,   9,  10];
 I         = [  1, 2, 3,   2,   3,   4, 5,   5, 6, 6,   6, 7,   7,   8, 8, 10,   9,  10];
-V         = [  1, 1, 1,   1,   1,   1, 1,   1, 1, 1,   1, 1,   1,   1, 1,  1,   1,   1];
 timeSlots = [nan, 1, 1, nan, nan, nan, 1, nan, 2, 2, nan, 3, nan, nan, 3,  1, nan, nan];
-end
 
+V         = [  1, 1, 1,   1,   1,   1, 1,   1, 1, 1,   1, 1,   1,   1, 1,  1,   1,   1];
+end

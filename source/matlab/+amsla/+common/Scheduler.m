@@ -1,9 +1,9 @@
 classdef Scheduler < handle
-    %AMSLA.TASSL.SCHEDULER An object that carries out the scheduling of the
+    %AMSLA.COMMON.SCHEDULER An object that carries out the scheduling of the
     %numerical operations in a matrix.
     %
-    %   S = SCHEDULER(G) Create a scheduler object to operate on the sparse
-    %   matrix represented by the graph G.
+    %   S = AMSLA.COMMON.SCHEDULER(G) Create a scheduler object to operate
+    %   on the sparse matrix represented by the graph G.
     %
     %   Methods of Scheduler:
     %       scheduleOperations - Schedule the numerical operations in the
@@ -51,6 +51,11 @@ classdef Scheduler < handle
             
             % External edges
             currentNodes = getRootsBySubGraph(obj.Graph);
+            if isempty(currentNodes)
+                currentNodes = getRootsOfGraph(obj.Graph);
+            end
+            currentNodes = obj.Graph.getChildrenOfOnlyNodesInSet(currentNodes);
+            
             currentTimeSlot = -1;
             currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
             
@@ -73,7 +78,10 @@ classdef Scheduler < handle
             % 'currentTimeSlot'
             
             currentEnteringEdges = obj.Graph.getEnteringEdges(currentNodes);
-            obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
+            if ~iAllEmpty(currentEnteringEdges)
+                currentEnteringEdges = iCreateArray(currentEnteringEdges);
+                obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
+            end
             currentNodes = obj.Graph.getReadyChildrenOfNode(currentNodes);
         end
         
@@ -88,5 +96,15 @@ if iscell(array)
     tf = all(cellfun(@isempty, array, "UniformOutput", true));
 else
     tf = all(isempty(array));
+end
+end
+
+
+function array = iCreateArray(cells)
+% Convert a cell array to an array
+if iscell(cells)
+    array = cell2mat(cells);
+else
+    array = cells;
 end
 end

@@ -17,8 +17,11 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %      sortNodesByIndegree   - Sort the input nodes by in-degree.
     %      sortNodesByOutdegree  - Sort the input nodes by out-degree.
     %      enteringEdgesOfNode   - Get the edges entering a node.
+    %      exitingNodeOfEdge     - Get the node at the exiting end of an
+    %                              edge.
     %      loopEdgesOfNode       - Get the edges entering and exiting the
     %                              same node.
+    %      rootsOfGraph          - Get the nodes without entering edges.
     %
     %      listOfComponents      - Get the list of weakly connected
     %                              components.
@@ -143,6 +146,13 @@ classdef DataStructure < amsla.common.DataStructureInterface
             outIds = getEdgesConnectedToNode(obj, nodeIds, "Entering");
         end
         
+        function outIds = exitingNodeOfEdge(obj, edgeIds)
+            %EXITINNODEOFEDGE(G, EDGE) Get the IDs of nodes exiting one or
+            %more edges in the graph.
+            
+            outIds = getNodeConnectedToEdge(obj, edgeIds, "Exiting");
+        end
+        
         function outIds = loopEdgesOfNode(obj, nodeIds)
             %LOOPEDGESOFNODE(G, NODE) Get the IDs of edges looping over one
             %or more nodes in the graph.
@@ -247,7 +257,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
             obj.BaseGraph.Nodes.SubGraphId = amsla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
         end
         
-        %% Edge-level operations
+        %% Time-slot operations
         
         function outIds = timeSlotOfEdge(obj, edgeIds)
             %TIMESLOTOFEDGE(G, ID) Get the time-slot IDs of one or more edges.
@@ -365,6 +375,39 @@ classdef DataStructure < amsla.common.DataStructureInterface
             function edgesId = iFindLoopEdgesOfOneNode(nodeId)
                 edgesId = find(obj.BaseGraph.Edges.EndNodes(:, 1)==nodeId & ...
                     obj.BaseGraph.Edges.EndNodes(:, 2)==nodeId)';
+            end
+        end
+        
+        function outIds = getNodeConnectedToEdge(obj, edgeIds, nodeProperty)
+            % Get the nodes exiting or entering one edge.
+            
+            % Check which property to retrieve
+            nodeProperty = string(nodeProperty);
+            if strcmp(nodeProperty, "Entering")
+                finderFunction = @iFindEnteringNodeOfOneEdge;
+                uniformOutput = false;
+            elseif strcmp(nodeProperty, "Exiting")
+                finderFunction = @iFindExitingNodeOfOneEdge;
+                uniformOutput = false;
+            else
+                error("Invalid node property");
+            end
+            
+            if isscalar(edgeIds)
+                outIds = finderFunction(edgeIds);
+            else
+                outIds = arrayfun(finderFunction, edgeIds, 'UniformOutput', uniformOutput);
+            end
+            
+            % Helper functions
+            function nodeId = iFindEnteringNodeOfOneEdge(edgeId)
+                nodeId = obj.BaseGraph.Edges.EndNodes( ...
+                    obj.BaseGraph.Edges.Id==edgeId, 2)';
+            end
+            
+            function nodeId = iFindExitingNodeOfOneEdge(edgeId)
+                nodeId = obj.BaseGraph.Edges.EndNodes( ...
+                    obj.BaseGraph.Edges.Id==edgeId, 1)';
             end
         end
         
