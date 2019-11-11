@@ -99,7 +99,6 @@ else
 end
 end
 
-
 function array = iCreateArray(cells)
 % Convert a cell array to an array
 if iscell(cells)

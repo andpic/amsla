@@ -1,4 +1,4 @@
-classdef tScheduler < matlab.unittest.TestCase
+classdef tScheduler < amsla.test.tools.AmslaTest
     %TSCHEDULER Tests for the class amsla.common.Scheduler
     
     % Copyright 2019 Andrea Picciau
