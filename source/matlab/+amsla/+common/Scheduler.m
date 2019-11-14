@@ -30,6 +30,9 @@ classdef Scheduler < handle
         %Graph  Graph object representing a sparse matrix.
         Graph
         
+        %UsesSubGraphs True if the graph is partitioned, meaning scheduling has
+        %to take sub-graphs into consideration.
+        UsesSubGraphs
     end
     
     %% PUBLIC METHDOS
@@ -43,6 +46,7 @@ classdef Scheduler < handle
                 {'amsla.common.DataStructureInterface'}, ...
                 {'scalar', 'nonempty'});
             obj.Graph = amsla.common.internal.SchedulerGraphWrapper(aGraph);
+            obj.UsesSubGraphs = false;
         end
         
         function scheduleOperations(obj)
@@ -51,16 +55,20 @@ classdef Scheduler < handle
             
             % External edges
             currentNodes = getRootsBySubGraph(obj.Graph);
-            if isempty(currentNodes)
+            if ~isempty(currentNodes)
+                initialTimeSlot = -1;
+                currentTimeSlot = 1;
+                obj.UsesSubGraphs = true;
+            else
+                initialTimeSlot = 1;
+                currentTimeSlot = 2;
                 currentNodes = getRootsOfGraph(obj.Graph);
             end
-            currentNodes = obj.Graph.getChildrenOfOnlyNodesInSet(currentNodes);
             
-            currentTimeSlot = -1;
-            currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
+            currentNodes = obj.Graph.getChildrenOfOnlyNodesInSet(currentNodes);
+            currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, initialTimeSlot);
             
             % Internal edges
-            currentTimeSlot = 1;
             while ~iAllEmpty(currentNodes)
                 currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
                 currentTimeSlot = currentTimeSlot + 1;
@@ -76,13 +84,25 @@ classdef Scheduler < handle
         function currentNodes = assignEnteringEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
             % Assign the entering edges of 'currentNodes' to the time slot
             % 'currentTimeSlot'
-            
+                        
             currentEnteringEdges = obj.Graph.getEnteringEdges(currentNodes);
+            
             if ~iAllEmpty(currentEnteringEdges)
                 currentEnteringEdges = iCreateArray(currentEnteringEdges);
                 obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
             end
-            currentNodes = obj.Graph.getReadyChildrenOfNode(currentNodes);
+            currentNodes = obj.getReadyChildrenOfNode(currentNodes);
+        end
+        
+        function nodeIds = getReadyChildrenOfNode(obj, nodeIds)
+            % Get the children of the nodes in nodeIds that are ready for
+            % processing.
+            
+           if obj.UsesSubGraphs
+               nodeIds = obj.Graph.getReadyChildrenOfNodeBySubGraph(nodeIds);
+           else
+               nodeIds = obj.Graph.getReadyChildrenOfNode(nodeIds);
+           end               
         end
         
     end

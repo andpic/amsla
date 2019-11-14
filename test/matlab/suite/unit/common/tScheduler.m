@@ -97,7 +97,11 @@ end
 function [I, J, V, timeSlots] = iSimpleLowerTriangular()
 J         = [  1, 1, 1,   2,   3,   4, 4,   5, 5, 3,   6, 6,   7,   8, 6,  9,   9,  10];
 I         = [  1, 2, 3,   2,   3,   4, 5,   5, 6, 6,   6, 7,   7,   8, 8, 10,   9,  10];
-timeSlots = [nan, 1, 1, nan, nan, nan, 1, nan, 2, 2, nan, 3, nan, nan, 3,  1, nan, nan];
+timeSlots = [ iN, 1, 1,  iN,  iN,  iN, 1,  iN, 2, 2,  iN, 3,  iN,  iN, 3,  1,  iN,  iN];
 
 V         = [  1, 1, 1,   1,   1,   1, 1,   1, 1, 1,   1, 1,   1,   1, 1,  1,   1,   1];
+end
+
+function val = iN()
+val = amsla.common.nullId();
 end
