@@ -63,9 +63,10 @@ classdef Scheduler < handle
                 initialTimeSlot = 1;
                 currentTimeSlot = 2;
                 currentNodes = getRootsOfGraph(obj.Graph);
-            end
+            end 
             
-            currentNodes = obj.Graph.getChildrenOfOnlyNodesInSet(currentNodes);
+            obj.Graph.markNodeAsProcessed(currentNodes);
+            currentNodes = obj.Graph.getReadyChildrenOfNode(currentNodes);
             currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, initialTimeSlot);
             
             % Internal edges
@@ -91,6 +92,7 @@ classdef Scheduler < handle
                 currentEnteringEdges = iCreateArray(currentEnteringEdges);
                 obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
             end
+            obj.Graph.markNodeAsProcessed(currentNodes);
             currentNodes = obj.getReadyChildrenOfNode(currentNodes);
         end
         

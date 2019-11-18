@@ -1,4 +1,4 @@
-classdef SchedulerGraphWrapper
+classdef SchedulerGraphWrapper < handle
     %AMSLA.COMMON.INTERNAL.SCHEDULERGRAPHWRAPPER Wraps a graph object to
     %carry out the scheduling of numerical operations.
     %
@@ -10,10 +10,12 @@ classdef SchedulerGraphWrapper
     %       getRootsBySubGraph      - Get the roots by sub-graph.
     %       getEnteringEdges        - Get the entering edges of a node.
     %       assignEdgesToTimeSlot   - Assign edges to time slot.
-    %       getReadyChildrenOfNode  - Get the children of a node whose
-    %                                 entering edges have been assigned.
-    %       getChildrenOfOnlyNodesInSet - Given a set of nodes, get the
-    %                                     children of only nodes in that set.
+    %       markNodeAsProcessed     - Mark given nodes as processed.
+    %       getReadyChildrenOfNode           - Get the children of a node whose
+    %                                          entering edges have been assigned.
+    %       getReadyChildrenOfNodeBySubGraph - Get the children of a node in the
+    %                                          same sub-graph, if all the entering
+    %                                          entering edges have been assigned.
     
     % Copyright 2018-2019 Andrea Picciau
     %
@@ -36,6 +38,9 @@ classdef SchedulerGraphWrapper
         %The graph associated with a sparse matrix.
         Graph
         
+        %True if the node was processed
+        ProcessedNodeMap
+        
     end
     
     %% PUBLIC METHDOS
@@ -49,6 +54,11 @@ classdef SchedulerGraphWrapper
                 {'amsla.common.DataStructureInterface'}, ...
                 {'scalar', 'nonempty'});
             obj.Graph = aGraph;
+            listOfNodes = aGraph.listOfNodes();
+            obj.ProcessedNodeMap = table( ...
+                reshape(listOfNodes, [numel(listOfNodes), 1]), ...
+                false([numel(listOfNodes), 1]), ...
+                'VariableNames', {'NodeId', 'IsProcessed'});
         end
         
         function outIds = getRootsOfGraph(obj)
@@ -98,71 +108,29 @@ classdef SchedulerGraphWrapper
             obj.Graph.setTimeSlotOfEdge(edgeIds, timeSlotIds);
         end
         
-        function nodeIds = getChildrenOfNode(obj, parentNodeIds)
-            %GETCHILDRENOFNODE Get the IDs of the children of a given
-            %nodes.
+        function markNodeAsProcessed(obj, nodeIds)
+            %MARKNODEASPROCESSED Mark the node as processed and enable its
+            %children to be processed.
             
-            nodeIds = obj.Graph.childrenOfNode(parentNodeIds);
-        end
-        
-        function nodeIds = getChildrenOfNodeBySubGraph(obj, parentNodeIds)
-            %GETCHILDRENOFNODEBYSUBGRAPH Get the IDs of the children of given
-            %nodes that are in the same sub-graph.
-            
-            subGraphIds = obj.Graph.subGraphOfNode(parentNodeIds);
-            if any(amsla.common.isNull(subGraphIds))
-                error("amsla:SchedulerGraphWrapper:badSubGraphs", ...
-                    "Not all nodes were assigned to sub-graphs. " + ...
-                    "It's meaningless to look for the children of nodes by sub-graph.");
-            end
-            
-            nodeIds = obj.Graph.childrenOfNode(parentNodeIds);
-            if iscell(nodeIds)
-                subGraphIds = num2cell(subGraphIds);
-                nodeIds = cellfun(@nodesInCurrentSubGraph, nodeIds, subGraphIds);
-            else
-                nodeIds = nodesInCurrentSubGraph(nodeIds, subGraphIds);
-            end
-            
-            function nodeIds = nodesInCurrentSubGraph(nodeIds, subGraphId)
-                nodeSubGraphIds = obj.Graph.subGraphOfNode(nodeIds);
-                nodeIds = nodeIds(nodeSubGraphIds == subGraphId);
-            end
+            obj.ProcessedNodeMap.IsProcessed( ...
+                ismember(obj.ProcessedNodeMap.NodeId, nodeIds)) = true;
         end
         
         function nodeIds = getReadyChildrenOfNode(obj, parentNodeIds)
             %GETREADYCHILDRENOFNODE Given a node, retrieve the list those of
             %its children whose entering edges have all been assigned.
             
-            nodeIds = obj.selectChildren(parentNodeIds, @isNodeReady);
-            
-            function tf = isNodeReady(nodeIds)
-                tf = obj.isNodeReady(nodeIds, @getEnteringEdges);
-            end
-        end        
+            nodeIds = obj.getReadyChildrenBySelector(parentNodeIds, ...
+                @(x) obj.getChildrenOfNode(x));
+        end
         
         function nodeIds = getReadyChildrenOfNodeBySubGraph(obj, parentNodeIds)
             %GETREADYCHILDRENOFNODEBYSUBGRAPH Given a node, retrieve the list
             %of its children in the same sub-graph whose entering edges have
             %all been assigned.
             
-            nodeIds = obj.selectChildren(parentNodeIds, @isNodeReady);
-            
-            function tf = isNodeReady(nodeIds)
-                tf = obj.isNodeReady(nodeIds, @getEnteringEdgesBySubGraph);
-            end
-        end
-        
-        function nodeIds = getChildrenOfOnlyNodesInSet(obj, parentNodeIds)
-            %GETCHILDRENOFONLYNODESINSET Given a node, retrieve the list of
-            %its children whose entering edges have all been assigned.
-            
-            nodeIds = obj.selectChildren(parentNodeIds, @hasOnlyParentsInThisSet);
-            
-            function tf = hasOnlyParentsInThisSet(nodeIds)
-                parentsOfNode =  obj.Graph.parentsOfNode(nodeIds);
-                tf = all(ismember(parentsOfNode, parentNodeIds));
-            end
+            nodeIds = obj.getReadyChildrenBySelector(parentNodeIds, ...
+                @(x) obj.getChildrenOfNodeBySubGraph(x));
         end
     end
     
@@ -177,35 +145,69 @@ classdef SchedulerGraphWrapper
             timeSlotIds = obj.Graph.timeSlotOfEdge(edgeIds);
         end
         
-        function nodeIds = selectChildren(obj, parentNodeIds, selectorFunction)
-            % SELECTCHILDREN Common logic to select the children giving some
-            % parent nodes
+        function nodeIds = getReadyChildrenBySelector(obj, parentNodeIds, childSelector)
+            %GETREADYCHILDRENBYSELECTOR Get the children that are ready
+            %using a specific criterion for selection. Common logic for the
+            %"getReadyChildrenOfNode***" methods.
             
-            allChildrenIds = obj.Graph.childrenOfNode(parentNodeIds);
-            if iscell(allChildrenIds)
-                allChildrenIds = cell2mat(allChildrenIds);
+            childrenNodes = childSelector(parentNodeIds);
+            if iscell(childrenNodes)
+                childrenNodes = cell2mat(childrenNodes);
             end
-            
-            readyNodes = arrayfun(selectorFunction, allChildrenIds, ...
-                "UniformOutput", true);
-            nodeIds = unique(allChildrenIds(readyNodes));
+            isNodeReady = arrayfun(@(x) obj.isNodeReady(x), childrenNodes, ...
+                'UniformOutput', true);
+            nodeIds = childrenNodes(isNodeReady);
         end
         
-        function tf = isNodeReady(obj, nodeIds, enteringEdgesSelectionFunction)
+        function nodeIds = getChildrenOfNode(obj, parentNodeIds)
+            %GETCHILDRENOFNODE Get the IDs of the children of a given
+            %nodes.
+            
+            nodeIds = obj.Graph.childrenOfNode(parentNodeIds);
+        end
+        
+        function nodeIds = getChildrenOfNodeBySubGraph(obj, parentNodeIds)
+            %GETCHILDRENOFNODEBYSUBGRAPH Get the IDs of the children of given
+            %nodes that are in the same sub-graph.
+            
+            subGraphIds = obj.Graph.subGraphOfNode(parentNodeIds);
+            if any(amsla.common.isNullId(subGraphIds))
+                error("amsla:SchedulerGraphWrapper:badSubGraphs", ...
+                    "Not all nodes were assigned to sub-graphs. " + ...
+                    "It's meaningless to look for the children of nodes by sub-graph.");
+            end
+            
+            nodeIds = obj.Graph.childrenOfNode(parentNodeIds);
+            if iscell(nodeIds)
+                % Turn subGraphIds into a cell array with every cell
+                % containing one repetition of the subGraphId per child.
+                numChildren = cellfun(@numel, nodeIds, 'UniformOutput', true);
+                subGraphIds = arrayfun(@(x, y) repmat(x, [1, y]), ...
+                    subGraphIds, numChildren, ...
+                    'UniformOutput', false);
+                
+                nodeIds = cell2mat(nodeIds);
+                subGraphIds = cell2mat(subGraphIds);
+            end
+            
+            nodeSubGraphIds = obj.Graph.subGraphOfNode(nodeIds);
+            nodeIds = nodeIds(nodeSubGraphIds == subGraphIds);
+        end
+        
+        function tf = isNodeReady(obj, nodeIds)
             %ISNODEREADY Given a ScheduleGraphWrapper method that selects
             %the edges, tells whether a node is ready or not for
             %processing.
             
-            enteringEdgeIds =  enteringEdgesSelectionFunction(obj, nodeIds);
-            timeSlotIds = obj.getTimeSlotOfEdge(enteringEdgeIds);
-            tf = ~any(iIsNull(timeSlotIds));
+            parentNodes = obj.Graph.parentsOfNode(nodeIds);
+            tf = all(obj.isNodeProcessed(parentNodes));
+        end
+        
+        function tf = isNodeProcessed(obj, nodeIds)
+            %ISNODEPROCESSED Check whether a node has been processed or not.
+            
+            tf = obj.ProcessedNodeMap.IsProcessed( ...
+                ismember(obj.ProcessedNodeMap.NodeId, nodeIds));
         end
     end
-    
-end
-
-%% HELPER FUNCTIONS
-
-function tf = iIsNull(id)
-tf = amsla.common.isNullId(id);
 end

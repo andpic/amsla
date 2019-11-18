@@ -61,7 +61,7 @@ classdef tScheduler < amsla.test.tools.AmslaTest
                 % Verify that exiting edges match the expected assignment
                 exitingEdges = inputGraph.exitingEdgesOfNode(currNode);
                 
-                for currEdge = exitingEdges                    
+                for currEdge = exitingEdges
                     currExitingNode = inputGraph.exitingNodeOfEdge(currEdge);
                     actualTimeSlot = inputGraph.timeSlotOfEdge(currEdge);
                     
@@ -71,7 +71,7 @@ classdef tScheduler < amsla.test.tools.AmslaTest
                     
                     testCase.verifyEqual(actualTimeSlot, expectedTimeSlot, ...
                         sprintf("Mismatch in assignment for time slot ID %d (%d -> %d)", ...
-                        currEdge, currNode, currExitingNode));                    
+                        currEdge, currNode, currExitingNode));
                 end
                 
             end
