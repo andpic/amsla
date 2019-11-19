@@ -175,6 +175,13 @@ classdef DataStructure < amsla.common.DataStructureInterface
             outIds = nodeIds(sorter);
         end
         
+        function value = weightOfEdge(obj, edgeIds)
+            %WEIGHTOFEDGE(G, EDGEID) Get the weight of one or more edges.
+            
+            value = obj.BaseGraph.Edges.Weight( ...
+                ismember(obj.BaseGraph.Edges.Id, edgeIds));
+        end
+        
         function [outIds, inDegree] = sortNodesByIndegree(obj, nodeIds)
             %SORTNODESBYINDEGREE(G, NODEID) Sort the input nodes by
             %in-degree.

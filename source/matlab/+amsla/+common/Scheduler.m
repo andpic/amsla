@@ -56,23 +56,21 @@ classdef Scheduler < handle
             % External edges
             currentNodes = getRootsBySubGraph(obj.Graph);
             if ~isempty(currentNodes)
-                initialTimeSlot = -1;
+                initialTimeSlot = -2;
                 currentTimeSlot = 1;
                 obj.UsesSubGraphs = true;
             else
                 initialTimeSlot = 1;
                 currentTimeSlot = 2;
                 currentNodes = getRootsOfGraph(obj.Graph);
-            end 
+            end
             
-            obj.Graph.markNodeAsProcessed(currentNodes);
-            currentNodes = obj.Graph.getReadyChildrenOfNode(currentNodes);
             currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, initialTimeSlot);
             
             % Internal edges
             while ~iAllEmpty(currentNodes)
-                currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
-                currentTimeSlot = currentTimeSlot + 1;
+                [currentNodes, currentTimeSlot] = ...
+                    obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
             end
         end
         
@@ -82,16 +80,16 @@ classdef Scheduler < handle
     
     methods (Access=private)
         
-        function currentNodes = assignEnteringEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
+        function [currentNodes, currentTimeSlot] = assignEnteringEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
             % Assign the entering edges of 'currentNodes' to the time slot
             % 'currentTimeSlot'
-                        
-            currentEnteringEdges = obj.Graph.getEnteringEdges(currentNodes);
             
-            if ~iAllEmpty(currentEnteringEdges)
-                currentEnteringEdges = iCreateArray(currentEnteringEdges);
-                obj.Graph.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
-            end
+            currentEnteringEdges = obj.Graph.getEnteringEdges(currentNodes);
+            currentTimeSlot = obj.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
+            
+            loopingEdges = obj.Graph.getLoopingEdges(currentNodes);
+            currentTimeSlot = obj.assignEdgesToTimeSlot(loopingEdges, currentTimeSlot);
+            
             obj.Graph.markNodeAsProcessed(currentNodes);
             currentNodes = obj.getReadyChildrenOfNode(currentNodes);
         end
@@ -100,11 +98,23 @@ classdef Scheduler < handle
             % Get the children of the nodes in nodeIds that are ready for
             % processing.
             
-           if obj.UsesSubGraphs
-               nodeIds = obj.Graph.getReadyChildrenOfNodeBySubGraph(nodeIds);
-           else
-               nodeIds = obj.Graph.getReadyChildrenOfNode(nodeIds);
-           end               
+            if obj.UsesSubGraphs
+                nodeIds = obj.Graph.getReadyChildrenOfNodeBySubGraph(nodeIds);
+            else
+                nodeIds = obj.Graph.getReadyChildrenOfNode(nodeIds);
+            end
+        end
+        
+        function newTimeSlot = assignEdgesToTimeSlot(obj, edgesId, timeSlotId)
+            % Assign the given edges to a time slot
+            
+            if ~iAllEmpty(edgesId)
+                edgesId = iCreateArray(edgesId);
+                obj.Graph.assignEdgesToTimeSlot(edgesId, timeSlotId);
+                newTimeSlot = timeSlotId + 1;
+            else
+                newTimeSlot = timeSlotId;
+            end
         end
         
     end

@@ -9,6 +9,7 @@ classdef SchedulerGraphWrapper < handle
     %       getRootsOfGraph         - Get the roots in the graph object.
     %       getRootsBySubGraph      - Get the roots by sub-graph.
     %       getEnteringEdges        - Get the entering edges of a node.
+    %       getLoopingEdges         - Get the edges looping over a node.
     %       assignEdgesToTimeSlot   - Assign edges to time slot.
     %       markNodeAsProcessed     - Mark given nodes as processed.
     %       getReadyChildrenOfNode           - Get the children of a node whose
@@ -91,9 +92,18 @@ classdef SchedulerGraphWrapper < handle
         
         function edgeIds = getEnteringEdges(obj, nodeIds)
             %GETENTERINGEDGES Retrieve the IDs of the edges entering the
-            %given nodes
+            %given nodes.
             
             edgeIds = obj.Graph.enteringEdgesOfNode(nodeIds);
+        end
+        
+        function edgeIds = getLoopingEdges(obj, nodeIds)
+            %GETLOOPING Retrieve the IDs of the edges looping over a
+            %vertex. Only the edges with a wegiht that is not 1 are
+            %considered.
+            
+            edgeIds = obj.Graph.loopEdgesOfNode(nodeIds);
+            edgeIds = edgeIds(obj.Graph.weightOfEdge(edgeIds)~=1);
         end
         
         function assignEdgesToTimeSlot(obj, edgeIds, timeSlotIds)
