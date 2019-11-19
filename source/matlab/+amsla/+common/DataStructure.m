@@ -462,13 +462,17 @@ classdef DataStructure < amsla.common.DataStructureInterface
             function nodesWithNoParents = iFindNodesWithNoParents(nodesInComponent)
                 parentsByNode = obj.parentsOfNode(nodesInComponent);
                 if isscalar(nodesInComponent)
-                    hasNoParents = ~ismember(parentsByNode, nodesInComponent);
+                    hasNoParents = iNoneInSet(parentsByNode, nodesInComponent);
                 else
-                    hasNoParents = cellfun(@(x) ~any(ismember(x, nodesInComponent)), ...
+                    hasNoParents = cellfun(@(x) iNoneInSet(x, nodesInComponent), ...
                         parentsByNode, ...
                         'UniformOutput', true);
                 end
                 nodesWithNoParents = nodesInComponent(hasNoParents)';
+            end
+            
+            function tf = iNoneInSet(someElements, aSet)
+                tf = ~any(ismember(someElements, aSet));
             end
         end
         

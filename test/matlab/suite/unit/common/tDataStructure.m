@@ -185,6 +185,24 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
                 expectedOutput);
         end
         
+        function checkRootsOfSubGraphWithOnlyOneElement(testCase)
+            % Check method "rootsOfSubGraph" when a sub-graph has only one
+            % element.
+            
+            % Create a graph
+            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
+            
+            aGraph.setSubGraphOfNode( ...
+                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ...
+                [1, 1, 1, 2, 2, 3, 4, 4, 5, 5]);
+            
+            expectedOutput = 6;
+            
+            testCase.verifyEqual( ...
+                rootsOfSubGraph(aGraph, 3), ...
+                expectedOutput);
+        end
+        
         function checkComponentOfNodeVector(testCase)
             % Check method "componentOfNode" after components have been
             % computed, when inputs are a vector.

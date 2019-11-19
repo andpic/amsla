@@ -63,6 +63,7 @@ classdef SparseMatrix
             
             obj = obj.setupAnalysisAccordingToFormat(maxSize, plotProgress);
             partitioningResults = obj.Partitioner.partition();
+            obj.Scheduler.scheduleOperations();
         end
         
     end
