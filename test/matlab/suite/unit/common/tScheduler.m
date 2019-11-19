@@ -21,8 +21,11 @@ classdef tScheduler < amsla.test.tools.AmslaTest
         GraphAssignmentPair = struct( ...
             'SimpleLowerTriangular', struct( ...
             'InputGraph',           { iSimpleLowerTriangularGraph() }, ...
-            'ExpectedAssignment',   { iSimpleLowerTriangularAssignment() }) ...
-            );
+            'ExpectedAssignment',   { iSimpleLowerTriangularAssignment() }), ...
+            ...
+            'SimpleLowerTriangularWithSubGraphs', struct( ...
+            'InputGraph',           { iSimpleLowerTriangularGraphWithSubGraphs() }, ...
+            'ExpectedAssignment',   { iSimpleLowerTriangularAssignmentWithSubGraphs() }));
         
     end
     
@@ -99,6 +102,27 @@ J         = [  1, 1, 1,   2,   3,   4, 4,   5, 5, 3,   6, 6,   7,   8, 6,  9,   
 I         = [  1, 2, 3,   2,   3,   4, 5,   5, 6, 6,   6, 7,   7,   8, 8, 10,   9,  10];
 timeSlots = [  1, 2, 2,  iN,  iN,  iN, 2,  iN, 3, 3,   4, 5,  iN,  iN, 5,  2,  iN,  iN];
 V         = [  3, 1, 1,   1,   1,   1, 1,   1, 1, 1,   3, 1,   1,   1, 1,  2,   1,   1];
+end
+
+function aGraph = iSimpleLowerTriangularGraphWithSubGraphs()
+[I, J, V] = iSimpleLowerTriangularWithSubGraphs();
+aGraph = amsla.common.DataStructure(I, J, V);
+aGraph.setSubGraphOfNode( ...
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], ...
+    [1, 1, 1, 2, 2, 3, 3, 3, 4,  4,  4]);
+end
+
+function expectedAssignment = iSimpleLowerTriangularAssignmentWithSubGraphs()
+[I, J, ~, timeSlots] = iSimpleLowerTriangularWithSubGraphs();
+expectedAssignment = table(J', I', timeSlots', ...
+    'VariableNames', {'J', 'I', 'TimeSlot'});
+end
+
+function [I, J, V, timeSlots] = iSimpleLowerTriangularWithSubGraphs()
+J         = [  1, 1, 1,   2,   3,   4, 4,   5,  5,  3,  6, 6,  7,  8, 6,  9,   9,  10, 10, 11];
+I         = [  1, 2, 3,   2,   3,   4, 5,   5,  6,  6,  6, 7,  7,  8, 8, 10,   9,  10, 11, 11];
+timeSlots = [ -1, 1, 1,  iN,  iN,  iN, 1,  iN, -2, -2, -1, 1, iN, iN, 1,  1,  iN,  iN,  2,  3];
+V         = [  3, 1, 1,   1,   1,   1, 1,   1,  1,  1,  3, 1,  1,  1, 1,  2,   1,   1,  1,  3];
 end
 
 function val = iN()

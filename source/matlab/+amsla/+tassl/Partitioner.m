@@ -119,7 +119,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
                 (~isSuccessful && ~obj.GraphWrapper.checkFullAssignment()), ...
                 "Inconsistent result of the tentative to partition the graph.");
         end
-
+        
     end
     
 end

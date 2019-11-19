@@ -200,8 +200,10 @@ classdef SchedulerGraphWrapper < handle
                 subGraphIds = cell2mat(subGraphIds);
             end
             
-            nodeSubGraphIds = obj.Graph.subGraphOfNode(nodeIds);
-            nodeIds = nodeIds(nodeSubGraphIds == subGraphIds);
+            if ~isempty(nodeIds)
+                nodeSubGraphIds = obj.Graph.subGraphOfNode(nodeIds);
+                nodeIds = nodeIds(nodeSubGraphIds == subGraphIds);
+            end
         end
         
         function tf = isNodeReady(obj, nodeIds)

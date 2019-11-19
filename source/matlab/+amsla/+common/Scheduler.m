@@ -59,6 +59,7 @@ classdef Scheduler < handle
                 initialTimeSlot = -2;
                 currentTimeSlot = 1;
                 obj.UsesSubGraphs = true;
+                currentNodes = iCreateArray(currentNodes);
             else
                 initialTimeSlot = 1;
                 currentTimeSlot = 2;
