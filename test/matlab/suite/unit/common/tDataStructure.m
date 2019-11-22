@@ -126,7 +126,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             ...
             'Vector', struct( ...
             'InputEdge', { [1, 3, 5] }, ...
-            'ExitNode',  { [1, 3, 3] }));
+            'ExitNode',  { [1, 2, 3] }));
         
     end
     
@@ -247,22 +247,22 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             % Create a graph
             [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
             
-            subGraphIds = aGraph.listOfSubgraphs();
+            subGraphIds = aGraph.listOfSubGraphs();
             testCase.verifyEmpty(subGraphIds, ...
                 "The list of sub-graphs should be empty when the graph hasn't been partitioned.");
         end
         
-        function listOfSubGraphShouldNotBeEmptyIfAtLeastOne(testCase)
-            % The method "listOfSubGraph" should not return an empty array if
-            % at least one node has been assigned to a sub-graph.
+        function listOfSubGraphShouldBeEmptyIfNotAllNodesAreAssigned(testCase)
+            % The method "listOfSubGraph" should return an empty array if
+            % not all nodes have been assigned.
             
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
+            % Create a partially-assigned graph
+            aGraph = iFullAssignedSimpleGraph();
+            aGraph.setSubGraphOfNode(1, iNullId());
             
-            aGraph.setSubGraphOfNode(1, 1);
-            subGraphIds = aGraph.listOfSubgraphs();
-            testCase.verifyNotEmpty(subGraphIds, ...
-                "The list of sub-graphs should not be empty when at least one node has been assigned.");
+            subGraphIds = aGraph.listOfSubGraphs();
+            testCase.verifyEmpty(subGraphIds, ...
+                "The list of sub-graphs should be empty when at least one node is not assigned.");
         end
         
         function listOfSubGraphShouldMatchOnFullPartitioning(testCase)
@@ -271,7 +271,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             
             aGraph = iFullAssignedSimpleGraph();
             
-            subGraphIds = aGraph.listOfSubgraphs();
+            subGraphIds = aGraph.listOfSubGraphs();
             testCase.verifyEqual(subGraphIds, 1:5, ...
                 "The list of sub-graphs is incorrect.");
         end
@@ -283,7 +283,7 @@ classdef tDataStructure < amsla.test.tools.AmslaTest
             aGraph = iFullAssignedSimpleGraph();
             aGraph.resetSubGraphs();
             
-            subGraphIds = aGraph.listOfSubgraphs();
+            subGraphIds = aGraph.listOfSubGraphs();
             testCase.verifyEmpty(subGraphIds, ...
                 "The list of sub-graphs should be empty after a reset.");
         end

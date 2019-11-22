@@ -295,23 +295,19 @@ classdef DataStructure < amsla.common.DataStructureInterface
             selNodes = ismember(obj.BaseGraph.Nodes.Id, nodeIds);
             
             % Check which property to retrieve
-            nodeProperty = string(nodeProperty);
+            nodeProperty = validatestring(nodeProperty, ["Parents", "Children"]);
             if strcmp(nodeProperty, "Parents")
                 tableColumn = "ParentsId";
                 cachingFunction = @iCacheParentsOfOneNode;
             elseif strcmp(nodeProperty, "Children")
                 tableColumn = "ChildrenId";
                 cachingFunction = @iCacheChildrenOfOneNode;
-            else
-                error("Invalid node property");
             end
             
             % Cache the children indices that have never been cached
             cacheContent = obj.BaseGraph.Nodes.(tableColumn)(selNodes)';
             if iscell(cacheContent)
                 hasNeverBeenCached = cellfun(@(x) any(amsla.common.isNullId(x)), cacheContent, 'UniformOutput', true);
-            else
-                hasNeverBeenCached = any(amsla.common.isNullId(cacheContent));
             end
             if any(hasNeverBeenCached)
                 nodesToCache = nodeIds(hasNeverBeenCached);
@@ -348,7 +344,8 @@ classdef DataStructure < amsla.common.DataStructureInterface
             % Get the edges entering one or more nodes
             
             % Check which property to retrieve
-            edgeProperty = string(edgeProperty);
+            edgeProperty = validatestring(edgeProperty, ...
+                ["Entering", "Exiting", "Loop"]);
             if strcmp(edgeProperty, "Entering")
                 finderFunction = @iFindEnteringEdgesOfOneNode;
                 uniformOutput = false;
@@ -358,8 +355,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
             elseif strcmp(edgeProperty, "Loop")
                 finderFunction = @iFindLoopEdgesOfOneNode;
                 uniformOutput = true;
-            else
-                error("Invalid edge property");
             end
             
             if isscalar(nodeIds)
@@ -389,21 +384,18 @@ classdef DataStructure < amsla.common.DataStructureInterface
             % Get the nodes exiting or entering one edge.
             
             % Check which property to retrieve
-            nodeProperty = string(nodeProperty);
+            nodeProperty = validatestring(nodeProperty, ...
+                ["Entering", "Exiting"]);
             if strcmp(nodeProperty, "Entering")
                 finderFunction = @iFindEnteringNodeOfOneEdge;
-                uniformOutput = false;
             elseif strcmp(nodeProperty, "Exiting")
                 finderFunction = @iFindExitingNodeOfOneEdge;
-                uniformOutput = false;
-            else
-                error("Invalid node property");
             end
             
             if isscalar(edgeIds)
                 outIds = finderFunction(edgeIds);
             else
-                outIds = arrayfun(finderFunction, edgeIds, 'UniformOutput', uniformOutput);
+                outIds = arrayfun(finderFunction, edgeIds, 'UniformOutput', true);
             end
             
             % Helper functions
@@ -465,8 +457,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
                     hasNoParents = iNoneInSet(parentsByNode, nodesInComponent);
                 else
                     hasNoParents = cellfun(@(x) iNoneInSet(x, nodesInComponent), ...
-                        parentsByNode, ...
-                        'UniformOutput', true);
+                        parentsByNode, 'UniformOutput', true);
                 end
                 nodesWithNoParents = nodesInComponent(hasNoParents)';
             end
@@ -491,15 +482,13 @@ classdef DataStructure < amsla.common.DataStructureInterface
             
             tableColumn = iGetTableColumnByGraphSetType(graphSetType);
             
-            accessType = string(accessType);
+            accessType = validatestring(accessType, ["Set", "Get"]);
             if strcmp(accessType, "Set")
                 % Check ambiguity of inputs
                 iCheckAssignmentAmbiguity(nodeIds, graphSetId);
                 accessor = @iSetGraphSetIdOfOneNode;
             elseif strcmp(accessType, "Get")
-                accessor = @iGetGraphSetIdOfOneNode;
-            else
-                error("Invalid access mode to graph set.");
+                accessor = @iGetGraphSetIdOfOneNode;           
             end
             
             outIds = arrayfun(accessor, nodeIds, graphSetId, 'UniformOutput', true);
@@ -551,13 +540,11 @@ outGraph.Edges.IsExternal = amsla.common.nullId(numEdges, 1);
 end
 
 function tableColumn = iGetTableColumnByGraphSetType(graphSetType)
-graphSetType = string(graphSetType);
+graphSetType = validatestring(graphSetType, ["Component", "Sub-graph"]);
 if strcmp(graphSetType, "Component")
     tableColumn = "ComponentId";
 elseif strcmp(graphSetType, "Sub-graph")
     tableColumn = "SubGraphId";
-else
-    error("Invalid type of graph set.");
 end
 end
 
