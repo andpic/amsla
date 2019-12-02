@@ -63,6 +63,7 @@ classdef SparseMatrix
             
             obj = obj.setupAnalysisAccordingToFormat(maxSize, plotProgress);
             partitioningResults = obj.Partitioner.partition();
+            subGraphLevels = amsla.common.findSubGraphLevels(obj.DataStructure);
             obj.Scheduler.scheduleOperations();
         end
         

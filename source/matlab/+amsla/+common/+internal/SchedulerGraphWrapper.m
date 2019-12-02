@@ -99,7 +99,7 @@ classdef SchedulerGraphWrapper < handle
         
         function edgeIds = getLoopingEdges(obj, nodeIds)
             %GETLOOPING Retrieve the IDs of the edges looping over a
-            %vertex. Only the edges with a wegiht that is not 1 are
+            %node. Only the edges with a wegiht that is not 1 are
             %considered.
             
             edgeIds = obj.Graph.loopEdgesOfNode(nodeIds);

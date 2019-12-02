@@ -27,7 +27,7 @@ classdef(Abstract) PartitionerInterface < handle
         %Handle to the graph being partitioned
         Graph
         
-        %Maximum allowed number of vertices in a sub-graph
+        %Maximum allowed number of nodes in a sub-graph
         MaxSubGraphSize
         
         %Progress plot manager.
