@@ -488,7 +488,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
                 iCheckAssignmentAmbiguity(nodeIds, graphSetId);
                 accessor = @iSetGraphSetIdOfOneNode;
             elseif strcmp(accessType, "Get")
-                accessor = @iGetGraphSetIdOfOneNode;           
+                accessor = @iGetGraphSetIdOfOneNode;
             end
             
             outIds = arrayfun(accessor, nodeIds, graphSetId, 'UniformOutput', true);

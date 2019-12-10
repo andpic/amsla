@@ -1,5 +1,5 @@
-classdef tPartitionerGraphWrapper < amsla.test.tools.AmslaTest
-    %TPARTITIONERGRAPHWRAPPER Tests for the class
+classdef test_PartitionerGraphWrapper < amsla.test.tools.AmslaTest
+    %TEST_PARTITIONERGRAPHWRAPPER Tests for the class
     %amsla.tassl.internal.PartitionerGraphWrapper
     
     % Copyright 2018 Andrea Picciau

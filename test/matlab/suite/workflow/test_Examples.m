@@ -1,5 +1,5 @@
-classdef tExamples < amsla.test.tools.AmslaTest
-    %TEXAMPLES Runs examples as workflow tests.
+classdef test_Examples < amsla.test.tools.AmslaTest
+    %TEST_EXAMPLES Runs examples as workflow tests.
     
     % Copyright 2019 Andrea Picciau
     %

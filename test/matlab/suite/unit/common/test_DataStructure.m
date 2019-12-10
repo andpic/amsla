@@ -1,5 +1,5 @@
-classdef tDataStructure < amsla.test.tools.AmslaTest
-    %TDATASTRUCTURE Tests for class amsla.common.DataStructure
+classdef test_DataStructure < amsla.test.tools.AmslaTest
+    %TEST_DATASTRUCTURE Tests for class amsla.common.DataStructure
     
     % Copyright 2018-2019 Andrea Picciau
     %

@@ -1,5 +1,5 @@
-classdef tScheduler < amsla.test.tools.AmslaTest
-    %TSCHEDULER Tests for the class amsla.common.Scheduler
+classdef test_Scheduler < amsla.test.tools.AmslaTest
+    %TEST_SCHEDULER Tests for the class amsla.common.Scheduler
     
     % Copyright 2019 Andrea Picciau
     %

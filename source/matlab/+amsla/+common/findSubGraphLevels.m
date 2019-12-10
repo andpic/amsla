@@ -25,16 +25,15 @@ validateattributes(aGraph, {'amsla.common.DataStructure'}, {'nonempty', 'scalar'
 subGraphLevelTable = iExtractDataBySubGraph(aGraph);
 
 % Find the sub-graphs in the first sub-graph level
-isInFirstLevel = arrayfun(@iIsInFirstLevel, subGraphLevelTable.SubGraphId, ...
-    'UniformOutput', true);
+isInFirstLevel = arrayfun( ...
+    @iIsInFirstLevel, subGraphLevelTable.SubGraphId, 'UniformOutput', true);
 subGraphLevelTable.SubGraphLevel(isInFirstLevel) = 1;
 
     function tf = iIsInFirstLevel(subGraphId)
         % Returns true if the sub-graphID is in the first level
         
         tf = ~any(cellfun( ...
-            @(x) ismember(subGraphId, x), subGraphLevelTable.ToSubGraphId, ...
-            'UniformOutput', true));
+            @(x) ismember(subGraphId, x), subGraphLevelTable.ToSubGraphId, 'UniformOutput', true));
     end
 
 % Initialise the algorithm with the sub-graphs that are below the ones in
@@ -64,7 +63,9 @@ while ~isempty(currentSubGraphs)
     currentSubGraphLevel = currentSubGraphLevel+1;
 end
 
+% Check final result
 assert(~any(amsla.common.isNullId(subGraphLevelTable.SubGraphLevel)), ...
+    "amsla:findSubGraphLevels:NonDagDependencies", ...
     "Identification of sub-graph levels failed.");
 end
 
@@ -82,12 +83,20 @@ function subGraphLevelTable = iExtractDataBySubGraph(aGraph)
 fromNodes = aGraph.listOfNodes();
 fromSubGraph = aGraph.subGraphOfNode(fromNodes);
 
+assert(~any(amsla.common.isNullId(fromSubGraph)), "amsla:findSubGraphLevels:NotPartitioned", ...
+    "Cannot find sub-graph levels for a non-partitioned input.");
+
 % Sub-graphs of output nodes
 toNodes = aGraph.childrenOfNode(fromNodes);
-if ~isscalar(toNodes)
+if iscell(toNodes)
     toSubGraph = cellfun(@iFindDownstreamSubGraphs, toNodes, 'UniformOutput', false);
 else
     toSubGraph = iFindDownstreamSubGraphs(toNodes);
+end
+
+% Deal with corner cases for toSubGraph
+if ~iscell(toSubGraph)
+    toSubGraph = { toSubGraph };
 end
 
 % Create a table with non-unique rows

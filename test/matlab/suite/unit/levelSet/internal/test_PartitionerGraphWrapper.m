@@ -1,5 +1,5 @@
-classdef tPartitionerGraphWrapper < amsla.test.tools.AmslaTest
-    %TPARTITIONERGRAPHWRAPPER Tests for the class
+classdef test_PartitionerGraphWrapper < amsla.test.tools.AmslaTest
+    %TEST_PARTITIONERGRAPHWRAPPER Tests for the class
     %amsla.levelSet.internal.PartitionerGraphWrapper
     
     % Copyright 2019 Andrea Picciau
@@ -28,7 +28,7 @@ classdef tPartitionerGraphWrapper < amsla.test.tools.AmslaTest
     methods(Test)
         
         function rootsAreIdentifiedInAllGraphTypes(testCase, GraphToTest)
-            % Root vertices are identified correctly whether the vertex has
+            % Root nodes are identified correctly whether the node has
             % a loop over itself or not.
             
             actualRoots = GraphToTest.findRoots();

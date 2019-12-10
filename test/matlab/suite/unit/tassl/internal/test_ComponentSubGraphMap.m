@@ -1,5 +1,6 @@
-classdef tComponentSubGraphMap < amsla.test.tools.AmslaTest
-    %TCOMPONENTSUBGRAPHMAP Tests for class amsla.tassl.internal.ComponentSubGraphMap
+classdef test_ComponentSubGraphMap < amsla.test.tools.AmslaTest
+    %TEST_COMPONENTSUBGRAPHMAP Tests for class
+    % amsla.tassl.internal.ComponentSubGraphMap
     
     % Copyright 2018 Andrea Picciau
     %

@@ -1,5 +1,5 @@
-classdef tPartitioner < amsla.test.shared.PartitionerTests
-    %TPARTITIONER Tests for the class amsla.tassl.Partitioner
+classdef test_Partitioner < amsla.test.shared.PartitionerTests
+    %TEST_PARTITIONER Tests for the class amsla.levelSet.Partitioner
     
     % Copyright 2019 Andrea Picciau
     %
@@ -17,8 +17,8 @@ classdef tPartitioner < amsla.test.shared.PartitionerTests
     
     methods(Access=protected, Static)
         
-        function analyserObject = createPartitionerObject(underlyingObject, maxSubGraphSize)
-            analyserObject = amsla.tassl.Partitioner(underlyingObject, maxSubGraphSize);
+        function analyserObject = createPartitionerObject(underlyingObject, ~)
+            analyserObject = amsla.levelSet.Partitioner(underlyingObject, []);
         end
         
     end
@@ -27,15 +27,8 @@ classdef tPartitioner < amsla.test.shared.PartitionerTests
         
         function verifyPartitioningResultOfExampleGraph(testCase, partitioningResult)
             testCase.verifyTrue(partitioningResult.WasPartitioned, ...
-                "TASSL could not partition the given graph.");
-            testCase.verifyEqual(partitioningResult.NumberOfTentatives, 3, ...
-                "TASSL should have taken 3 tentatives to partition this graph.");
-            testCase.verifyEqual(partitioningResult.FinalCriterion, "descend outdegree", ...
-                "TASSL should have used 'descend outdegree' to partition this graph.");
-            testCase.verifyEqual(partitioningResult.RootNodeDensity, 0.250, ...
-                "Wrong number of root nodes per sub-graph to partition this graph with TASSL.");
+                "The level-set algorithm could not partition the given graph.");
         end
         
     end
-    
 end

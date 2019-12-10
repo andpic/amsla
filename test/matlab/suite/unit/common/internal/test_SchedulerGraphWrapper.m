@@ -1,5 +1,5 @@
-classdef tSchedulerGraphWrapper < amsla.test.tools.AmslaTest
-    %TSCHEDULERGRAPHWRAPPER Tests for
+classdef test_SchedulerGraphWrapper < amsla.test.tools.AmslaTest
+    %TEST_SCHEDULERGRAPHWRAPPER Tests for
     %amsla.common.internal.SchedulerGraphWrapper.
     
     % Copyright 2019 Andrea Picciau
