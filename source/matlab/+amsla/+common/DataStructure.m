@@ -8,21 +8,22 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %   given the row indices (I), column indices (J), and values (V) of the
     %   edges in the graph.
     %
-    %   DataStructure methods:
+    %   DataStructure edge/node-level methods:
     %      listOfNodes           - Get the list of the IDs of all the nodes in
     %                              the graph.
     %      childrenOfNode        - Get the children of a node.
-    %      exitingEdgesOfNode    - Get the edges coming out of  a node.
     %      parentsOfNode         - Get the parents of a node.
-    %      sortNodesByIndegree   - Sort the input nodes by in-degree.
-    %      sortNodesByOutdegree  - Sort the input nodes by out-degree.
+    %      exitingEdgesOfNode    - Get the edges coming out of  a node.
     %      enteringEdgesOfNode   - Get the edges entering a node.
-    %      exitingNodeOfEdge     - Get the node at the exiting end of an
-    %                              edge.
+    %      exitingNodeOfEdge     - Get the node at the end of an edge.
+    %      enteringNodeOfEdge    - Get the node at the start end of an edge.
     %      loopEdgesOfNode       - Get the edges entering and exiting the
     %                              same node.
-    %      rootsOfGraph          - Get the nodes without entering edges.
+    %      sortNodesByOutdegree  - Sort the input nodes by out-degree.
+    %      sortNodesByIndegree   - Sort the input nodes by in-degree.
+    %      weightOfEdge          - Get the weight of an edge.
     %
+    %   DataStructure component-level methods:
     %      listOfComponents      - Get the list of weakly connected
     %                              components.
     %      rootsOfComponent      - Get the root nodes of a weakly connected
@@ -31,6 +32,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %                              belongs.
     %      computeComponents     - Compute the weakly connected components.
     %
+    %   DataStructure sub-graph-level methods:
     %      listOfSubGraphs       - Get the list of sub-graphs.
     %      rootsOfSubGraph       - Get the root nodes of a sub-graph.
     %      subGraphOfNode        - Get the sub-graph to which a node
@@ -38,9 +40,23 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %      setSubGraphOfNode     - Assign a node to a sub-graph.
     %      resetSubGraphs        - Reset all sub-graphs to a null value.
     %
+    %   DataStructure time-slot-level methods:
+    %      edgesInSubGraphAndTimeSlot   - Get the edges in the given
+    %                                     time-slot for the given
+    %                                     sub-graph.
+    %      timeSlotsInSubGraph          - Get a list of all the time-slots
+    %                                     in the graph.
+    %      timeSlotOfEdge               - Get the time-slot ID of one or
+    %                                     more edges.
+    %      setTimeSlotOfEdge            - Get the time-slot ID of one or
+    %                                     more edges.
+    %      resetTimeSlots               - Void all assignments of edges to
+    %                                     time-slots.
+    %
+    %   Other DataStructure methods:
     %      plot                  - Plot a DataStructure.
     
-    % Copyright 2018-2019 Andrea Picciau
+    % Copyright 2018-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -128,16 +144,16 @@ classdef DataStructure < amsla.common.DataStructureInterface
             outIds = getNodesConnectedToNode(obj, nodeIds, "Children");
         end
         
-        function outIds = exitingEdgesOfNode(obj, nodeIds)
-            %EXITINGEDGESOFNODE(G, NODEID) Get the IDs of the edges exiting
-            % one or more nodes in the graph.
-            outIds = getEdgesConnectedToNode(obj, nodeIds, "Exiting");
-        end
-        
         function outIds = parentsOfNode(obj, nodeIds)
             %PARENTSOFNODE(G, NODEID) Get the IDs of the parents of one or
             % more nodes in the graph.
             outIds = getNodesConnectedToNode(obj, nodeIds, "Parents");
+        end
+        
+        function outIds = exitingEdgesOfNode(obj, nodeIds)
+            %EXITINGEDGESOFNODE(G, NODEID) Get the IDs of the edges exiting
+            % one or more nodes in the graph.
+            outIds = getEdgesConnectedToNode(obj, nodeIds, "Exiting");
         end
         
         function outIds = enteringEdgesOfNode(obj, nodeIds)
@@ -147,10 +163,17 @@ classdef DataStructure < amsla.common.DataStructureInterface
         end
         
         function outIds = exitingNodeOfEdge(obj, edgeIds)
-            %EXITINNODEOFEDGE(G, EDGE) Get the IDs of nodes exiting one or
-            %more edges in the graph.
+            %EXITINNODEOFEDGE(G, EDGE) Get the IDs of nodes at the end node
+            %of one or more edges in the graph.
             
             outIds = getNodeConnectedToEdge(obj, edgeIds, "Exiting");
+        end
+        
+        function outIds = enteringNodeOfEdge(obj, edgeIds)
+            %ENTERINGNODEOFEDGE(G, EDGE) Get the IDs of nodes at the start
+            %node of one or more edges in the graph.
+            
+            outIds = getNodeConnectedToEdge(obj, edgeIds, "Entering");
         end
         
         function outIds = loopEdgesOfNode(obj, nodeIds)
@@ -175,13 +198,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
             outIds = nodeIds(sorter);
         end
         
-        function value = weightOfEdge(obj, edgeIds)
-            %WEIGHTOFEDGE(G, EDGEID) Get the weight of one or more edges.
-            
-            value = obj.BaseGraph.Edges.Weight( ...
-                ismember(obj.BaseGraph.Edges.Id, edgeIds));
-        end
-        
         function [outIds, inDegree] = sortNodesByIndegree(obj, nodeIds)
             %SORTNODESBYINDEGREE(G, NODEID) Sort the input nodes by
             %in-degree.
@@ -196,6 +212,13 @@ classdef DataStructure < amsla.common.DataStructureInterface
             inDegree = obj.BaseGraph.outdegree(nodeIds);
             [inDegree, sorter] = sort(inDegree, 'descend');
             outIds = nodeIds(sorter);
+        end
+        
+        function value = weightOfEdge(obj, edgeIds)
+            %WEIGHTOFEDGE(G, EDGEID) Get the weight of one or more edges.
+            
+            value = obj.BaseGraph.Edges.Weight( ...
+                ismember(obj.BaseGraph.Edges.Id, edgeIds));
         end
         
         %% Component-level operations
@@ -261,10 +284,28 @@ classdef DataStructure < amsla.common.DataStructureInterface
         function resetSubGraphs(obj)
             %RESETSUBGRAPHS(G) Reset all sub-graph IDs. Revert the graph to
             %the original state.
-            obj.BaseGraph.Nodes.SubGraphId = amsla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
+            obj.BaseGraph.Nodes.SubGraphId = ...
+                amsla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
         end
         
         %% Time-slot operations
+        
+        function edgeIds = edgesInSubGraphAndTimeSlot(obj, subGraphId, timeSlotId)
+            %EDGESINSUBGRAPHANDTIMESLOT(G, GID) Get the time-slot IDs in the current
+            %sub-graph.
+            
+            edgeSelector = obj.edgesInSubGraph(subGraphId);
+            edgeSelector = ismember(timeSlotId, obj.BaseGraph.Edges.TimeSlot(edgeSelector));
+            edgeIds = obj.BaseGraph.Edges(edgeSelector);
+        end
+        
+        function timeSlotIds = timeSlotsInSubGraph(obj, subGraphId)
+            %TIMESLOTSINSUBGRAPH(G, GID) Get the time-slot IDs in the current
+            %sub-graph.
+            
+            edgeSelector = obj.edgesInSubGraph(subGraphId);
+            timeSlotIds = obj.BaseGraph.Edges.TimeSlot(edgeSelector);
+        end
         
         function outIds = timeSlotOfEdge(obj, edgeIds)
             %TIMESLOTOFEDGE(G, ID) Get the time-slot IDs of one or more edges.
@@ -272,7 +313,8 @@ classdef DataStructure < amsla.common.DataStructureInterface
         end
         
         function setTimeSlotOfEdge(obj, edgeIds, timeSlotIds)
-            %SETTIMESLOTOFEDGE(G, ID) Get the time-slot IDs of one or more edges.
+            %SETTIMESLOTOFEDGE(G, ID) Assign one or more edges to the given
+            %time-slot IDs.
             obj.BaseGraph.Edges.TimeSlot(edgeIds) = timeSlotIds;
         end
         
@@ -288,6 +330,13 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %% PRIVATE METHODS
     
     methods (Access=private)
+        
+        function edgeSel = edgesInSubGraph(obj, subGraphId)
+            % Select the edges in the given sub-graph.
+            
+            nodeIds = obj.BaseGraph.Nodes.SubGraphId == subGraphId;
+            edgeSel = ismember(nodeIds, obj.BaseGraph.Edges.EndNodes(:, 1));
+        end
         
         function outIds = getNodesConnectedToNode(obj, nodeIds, nodeProperty)
             % Get parents or children of one or more nodes

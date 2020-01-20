@@ -1,7 +1,7 @@
 classdef test_findSubGraphLevels < amsla.test.tools.AmslaTest
-    %TEST_FINDSUBGRAPHLEVEL     Tests for amsla.common.findSubGraphLevels
+    %TEST_FINDSUBGRAPHLEVEL Tests for amsla.common.internal.findSubGraphLevels
     
-    % Copyright 2019 Andrea Picciau
+    % Copyright 2019-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ classdef test_findSubGraphLevels < amsla.test.tools.AmslaTest
             % Check that the output of the function matches the expected output
             % in simple sub-graphs that can be also partitioned by hand.
             
-            actualOutput = amsla.common.findSubGraphLevels(PartitionedGraph.InputGraph);
+            actualOutput = amsla.common.internal.findSubGraphLevels(PartitionedGraph.InputGraph);
             expectedOutput = PartitionedGraph.ExpectedOutput;
             
             testCase.verifyTableProperties(actualOutput);
@@ -65,7 +65,7 @@ classdef test_findSubGraphLevels < amsla.test.tools.AmslaTest
             % an error.
             
             aGraph = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            testCase.verifyError(@() amsla.common.findSubGraphLevels(aGraph), ...
+            testCase.verifyError(@() amsla.common.internal.findSubGraphLevels(aGraph), ...
                 "amsla:findSubGraphLevels:NotPartitioned", ...
                 "The function is expected to throw an error if the input graph is not partitioned.");
         end
@@ -87,7 +87,7 @@ classdef test_findSubGraphLevels < amsla.test.tools.AmslaTest
                 [1, 2], ...
                 [1, 2]);
             
-            testCase.verifyError(@() amsla.common.findSubGraphLevels(aGraph), ...
+            testCase.verifyError(@() amsla.common.internal.findSubGraphLevels(aGraph), ...
                 "amsla:findSubGraphLevels:NonDagDependencies", ...
                 "The function is expected to throw an error if the input graph is not partitioned.");
         end

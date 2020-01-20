@@ -9,7 +9,7 @@ classdef Scheduler < handle
     %       scheduleOperations - Schedule the numerical operations in the
     %                            sparse matrix.
     
-    % Copyright 2018-2019 Andrea Picciau
+    % Copyright 2018-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.

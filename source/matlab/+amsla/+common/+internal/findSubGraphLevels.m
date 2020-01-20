@@ -1,11 +1,11 @@
 function [subGraphLevelTable] = findSubGraphLevels(aGraph)
-%AMSLA.COMMON.FINDSUBGRAPHLEVELS Given a graph partitioned into sub-graphs,
-%divides the sub-graphs into sub-graph levels.
+%AMSLA.COMMON.INTERNAL.FINDSUBGRAPHLEVELS Given a graph partitioned into
+%sub-graphs, divides the sub-graphs into sub-graph levels.
 %
-%   SGLT = AMSLA.COMMON.FINDSUBGRAPHLEVELS(G) Organises the sub-graphs in
-%   graph G into sub-graph levels, and returns a table.
+%   SGLT = AMSLA.COMMON.INTERNAL.FINDSUBGRAPHLEVELS(G) Organises the
+%   sub-graphs in graph G into sub-graph levels, and returns a table.
 
-% Copyright 2019 Andrea Picciau
+% Copyright 2019-2020 Andrea Picciau
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

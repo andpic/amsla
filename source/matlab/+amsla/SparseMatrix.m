@@ -7,7 +7,7 @@ classdef SparseMatrix
     %   M = AMSLA.SPARSEMATRIX(A, FORMAT) Create a sparse matrix in the
     %   format FORMAT from MATLAB's sparse matrix A.
     
-    % Copyright 2019 Andrea Picciau
+    % Copyright 2019-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ classdef SparseMatrix
             
             obj = obj.setupAnalysisAccordingToFormat(maxSize, plotProgress);
             partitioningResults = obj.Partitioner.partition();
-            subGraphLevels = amsla.common.findSubGraphLevels(obj.DataStructure);
             obj.Scheduler.scheduleOperations();
         end
         
