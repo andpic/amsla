@@ -56,7 +56,7 @@ if nargin==2 && strcmp(varargin{1}, "CodeCoverage") && varargin{2}
 end
 
 % Write output to XML
-xmlFile = 'testResults.xml';
+xmlFile = fullfile(tempdir, "testResults.xml");
 runner.addPlugin(XMLPlugin.producingJUnitFormat(xmlFile));
 
 % Run tests
