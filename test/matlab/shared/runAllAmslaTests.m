@@ -10,7 +10,7 @@ function testResults = runAllAmslaTests(varargin)
 %       'CodeCoverage'      - If true, prints out a code coverage report.
 %
 
-% Copyright 2018-2019 Andrea Picciau
+% Copyright 2018-2020 Andrea Picciau
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ function testResults = runAllAmslaTests(varargin)
 import matlab.unittest.TestSuite;
 import matlab.unittest.TestRunner;
 import matlab.unittest.plugins.CodeCoveragePlugin;
+import matlab.unittest.plugins.XMLPlugin;
 
 % Setup directories
 matlabTestDir = amsla.test.tools.extractTestDir();
@@ -48,11 +49,15 @@ suite = TestSuite.fromFolder(concreteTests, "IncludingSubfolders", true);
 % Test runner
 runner = TestRunner.withTextOutput("LoggingLevel", 3, "OutputDetail", 3);
 
-% Check for plugin
+% Check for Code coverage plugin
 if nargin==2 && strcmp(varargin{1}, "CodeCoverage") && varargin{2}
     runner.addPlugin(CodeCoveragePlugin.forFolder(matlabSourceDir, ...
         "IncludeSubFolders", true));
 end
+
+% Write output to XML
+xmlFile = 'testResults.xml';
+runner.addPlugin(XMLPlugin.producingJUnitFormat(xmlFile));
 
 % Run tests
 testResults = runner.run(suite);

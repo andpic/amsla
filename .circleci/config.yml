@@ -1,0 +1,18 @@
+version: 2.1
+orbs:
+  matlab: mathworks/matlab@dev:alpha
+jobs:
+  build:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - matlab/install
+      - matlab/run-command: 
+          command: "cd test/matlab/shared; diary("matlabDiary.log"); runAllAmslaTests(); exit;"
+      - store_test_results:
+          path: testResults.xml
+      - store_artifacts:
+          path: testResults.xml
+      - store_artifacts:
+          path: matlabDiary.log
