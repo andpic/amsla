@@ -11,6 +11,6 @@ jobs:
       - matlab/run-command: 
           command: "cd test/matlab/shared; diary('/tmp/matlabDiary.log'); runAllAmslaTests(); exit;"
       - store_test_results:
-          path: /tmp/testResults.xml
+          path: /tmp/testResults
       - store_artifacts:
           path: /tmp/matlabDiary.log
