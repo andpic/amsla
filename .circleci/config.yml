@@ -1,0 +1,12 @@
+version: 2.1
+orbs:
+  matlab: mathworks/matlab@dev:alpha
+jobs:
+  run_all_tests:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - matlab/install
+      - matlab/run-command: 
+          command: "cd test/matlab/shared; amslaTests(); exit;"
