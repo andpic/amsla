@@ -50,10 +50,14 @@ classdef TriangularSolver
         function result = solve(obj, rhs)
             %SOLVE Solve a triangular linear system of equations.
             
+            result = rhs;
+            
             numLevels = obj.numberOfLevels();
             for currentLevel = 1:numLevels
                 subGraphIds = obj.subGraphsInLevel(currentLevel);
-                arrayfun(@(id) obj.traverseSubGraph(id, rhs), subGraphIds);
+                allResults = arrayfun(@(id) obj.traverseSubGraph(id, result), ...
+                    subGraphIds);
+                result = iUpdateVectorElements(result, allResults);
             end
             
         end
@@ -62,29 +66,54 @@ classdef TriangularSolver
     %% PRIVATE METHODS
     
     methods(Access=private)
-                
-        function rhsComponent = traverseSubGraph(obj, subGraphId, rhs)
-            %TRAVERSESUBGRAPH traverse the sub-graph of the 
-                        
+        
+        function result = traverseSubGraph(obj, subGraphId, rhs)
+            % Traverse a given sub-graph time-slot by time-slot.
+            
+            % Find the time-slots for the current sub-graph.
             timeSlotIds = obj.timeSlotsInSubGraph(subGraphId);
+            
+            % Initialise result with the right-hand side.
+            result = rhs;
+            
             for currentTimeSlot = timeSlotIds
-                if amsla.common.internal.isExternalTimeSlot(currentTimeSlot)
-                    
-                else
-                    
-                end
+                % Get the data of edges
+                [enteringNodes, exitingNodes, weights] = ...
+                    dataOfEdges(obj, subGraphId, currentTimeSlot);
+                uniqueEnteringNodes = unique(enteringNodes);
+                
+                allResults = arrayfun(@(x) nIterateOverEnteringEdges(x, result), ...
+                    uniqueEnteringNodes);
+                result = iUpdateVectorElements(result, allResults);
             end
             
-        end                
+            function result = nIterateOverEnteringEdges(currNode, result)
+                % Iterate over the entering edges of a node (equivalent
+                % to the elements in a given row in the matrix).
+                relevantEdges = find(enteringNodes==currNode);
+                for currEdge = relevantEdges
+                    currRow = enteringNodes(currEdge);
+                    currColumn = exitingNodes(currEdge);
+                    currWeight = weights(currEdge);
+                    
+                    result(currRow) = ...
+                        result(currRow)-currWeight*rhsComponent(currColumn);
+                end
+            end
+        end
         
-        function weights = weightsOfEdges(obj, subGraphId, timeSlotId)
+        function [enteringNodes, exitingNodes, weights] = dataOfEdges(obj, subGraphId, timeSlotId)
+            % Retrieve the data of the edges in the given sub-graph and
+            % time-slot.
+            
             edgeIds = obj.DataStructure.edgesInSubGraphAndTimeSlot(subGraphId, timeSlotId);
             weights = obj.DataStructure.weightOfEdge(edgeIds);
+            exitingNodes = obj.DataStructure.enteringNodeOfEdge(edgeIds);
+            enteringNodes = obj.DataStructure.exitingNodeOfEdge(edgeIds);
         end
         
         function subGraphIds = subGraphsInLevel(obj, levelId)
-            %SUBGRAPHSINLEVEL Retrieve the IDs of the sub-graphs in a given
-            %sub-graph level.
+            % Retrieve the IDs of the sub-graphs in a given sub-graph level.
             
             isLevel = obj.SubGraphLevelsTable.SubGraphLevel==levelId;
             subGraphIds = obj.SubGraphLevelsTable.SubGraphId(isLevel);
@@ -94,12 +123,47 @@ classdef TriangularSolver
             %NUMBEROFLEVELS Number of sub-graph levels.
             
             numLevels = numel(unique(obj.SubGraphLevelsTable.SubGraphLevel));
-        end 
+        end
         
         function numTimeSlots = timeSlotsInSubGraph(obj, subGraphId)
-           %TIMESLOTSINSUBGRAPH Time-slots in the given sub-graph.
-           
-           numTimeSlots = obj.DataStructure.timeSlotsInSubGraph(subGraphId);
+            %TIMESLOTSINSUBGRAPH Time-slots in the given sub-graph.
+            
+            numTimeSlots = obj.DataStructure.timeSlotsInSubGraph(subGraphId);
         end
     end
+end
+
+%% HELPER FUNCTIONS
+
+function outData = iUpdateVectorElements(initialValue, currentResults)
+% Updates a vector (initialValue) given multiple results (currentResults).
+
+validateattributes(initialValue, {'numeric'}, {'nonempty', 'vector'});
+validateattributes(initialValue, {'currentResults'}, {'nonempty'});
+
+currentResultsSize = size(currentResults);
+initialValueSize = size(initialValue);
+
+if any(currentResultsSize==1)
+    outData = currentResults;
+else
+    whichChanged = currentResults~=initialValue;
+    [rowIndices, colIndices] = find(whichChanged);
+    elementIndices = sub2ind(size(currentResults), rowIndices, colIndices);
+    
+    outData = initialValue;
+    
+    % Corner case: nothing to change, return initialValue.
+    if isempty(elementIndices)
+        return;
+    end
+    
+    if initialValueSize(2)~=1
+        % initialValue is a row vector: index by column.
+        outData(colIndices) = currentResults(elementIndices);
+    else
+        % initialValue is not a row vector: index by row.
+        outData(rowIndices) = currentResults(elementIndices);
+    end
+end
 end
