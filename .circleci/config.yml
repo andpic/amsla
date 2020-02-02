@@ -9,7 +9,7 @@ jobs:
       - checkout
       - matlab/install
       - matlab/run-command: 
-          command: "cd test/matlab/shared; diary('/tmp/matlabDiary.log'); runAllAmslaTests(); exit;"
+          command: "cd test/matlab/shared; diary('/tmp/matlabDiary.log'); runAllAmslaTests();"
       - store_test_results:
           path: /tmp/testResults
       - store_artifacts:

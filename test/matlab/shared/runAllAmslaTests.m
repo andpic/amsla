@@ -63,4 +63,8 @@ runner.addPlugin(XMLPlugin.producingJUnitFormat(xmlFile));
 
 % Run tests
 testResults = runner.run(suite);
+
+% Check test output
+failedTests = [testResults.Failed];
+assert(~any(failedTests), "Some test failures occurred.");
 end
