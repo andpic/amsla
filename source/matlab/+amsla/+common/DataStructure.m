@@ -296,7 +296,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
             
             edgeSelector = obj.edgesInSubGraph(subGraphId);
             edgeSelector = ismember(timeSlotId, obj.BaseGraph.Edges.TimeSlot(edgeSelector));
-            edgeIds = obj.BaseGraph.Edges(edgeSelector);
+            edgeIds = obj.BaseGraph.Edges.Id(edgeSelector);
         end
         
         function timeSlotIds = timeSlotsInSubGraph(obj, subGraphId)
@@ -305,6 +305,8 @@ classdef DataStructure < amsla.common.DataStructureInterface
             
             edgeSelector = obj.edgesInSubGraph(subGraphId);
             timeSlotIds = obj.BaseGraph.Edges.TimeSlot(edgeSelector);
+            % Remove null IDs
+            timeSlotIds(amsla.common.isNullId(timeSlotIds)) = [];
         end
         
         function outIds = timeSlotOfEdge(obj, edgeIds)

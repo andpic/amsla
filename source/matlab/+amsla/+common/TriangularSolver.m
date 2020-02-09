@@ -43,8 +43,8 @@ classdef TriangularSolver
                 {'amsla.common.DataStructure'}, ...
                 {'scalar', 'nonempty'});
             obj.SubGraphLevelsTable =  ...
-                amsla.common.findSubGraphLevels(aDataStructure);
-            
+                amsla.common.internal.findSubGraphLevels(aDataStructure);
+            obj.DataStructure = aDataStructure;
         end
         
         function result = solve(obj, rhs)
@@ -56,7 +56,8 @@ classdef TriangularSolver
             for currentLevel = 1:numLevels
                 subGraphIds = obj.subGraphsInLevel(currentLevel);
                 allResults = arrayfun(@(id) obj.traverseSubGraph(id, result), ...
-                    subGraphIds);
+                    subGraphIds, ...
+                    'UniformOutput', false);
                 result = iUpdateVectorElements(result, allResults);
             end
             
@@ -83,7 +84,8 @@ classdef TriangularSolver
                 uniqueEnteringNodes = unique(enteringNodes);
                 
                 allResults = arrayfun(@(x) nIterateOverEnteringEdges(x, result), ...
-                    uniqueEnteringNodes);
+                    uniqueEnteringNodes, ...
+                    'UniformOutput', false);
                 result = iUpdateVectorElements(result, allResults);
             end
             
@@ -97,14 +99,14 @@ classdef TriangularSolver
                     currWeight = weights(currEdge);
                     
                     result(currRow) = ...
-                        result(currRow)-currWeight*rhsComponent(currColumn);
+                        result(currRow)-currWeight*result(currColumn);
                 end
             end
         end
         
         function [enteringNodes, exitingNodes, weights] = dataOfEdges(obj, subGraphId, timeSlotId)
-            % Retrieve the data of the edges in the given sub-graph and
-            % time-slot.
+            %DATAOFEDGES Retrieve the data of the edges in the given sub-graph
+            %and time-slot.
             
             edgeIds = obj.DataStructure.edgesInSubGraphAndTimeSlot(subGraphId, timeSlotId);
             weights = obj.DataStructure.weightOfEdge(edgeIds);
@@ -113,7 +115,8 @@ classdef TriangularSolver
         end
         
         function subGraphIds = subGraphsInLevel(obj, levelId)
-            % Retrieve the IDs of the sub-graphs in a given sub-graph level.
+            %SUBGRAPHSINLEVEL Retrieve the IDs of the sub-graphs in a given
+            %sub-graph level.
             
             isLevel = obj.SubGraphLevelsTable.SubGraphLevel==levelId;
             subGraphIds = obj.SubGraphLevelsTable.SubGraphId(isLevel);
@@ -125,10 +128,10 @@ classdef TriangularSolver
             numLevels = numel(unique(obj.SubGraphLevelsTable.SubGraphLevel));
         end
         
-        function numTimeSlots = timeSlotsInSubGraph(obj, subGraphId)
+        function timeSlotIDs = timeSlotsInSubGraph(obj, subGraphId)
             %TIMESLOTSINSUBGRAPH Time-slots in the given sub-graph.
             
-            numTimeSlots = obj.DataStructure.timeSlotsInSubGraph(subGraphId);
+            timeSlotIDs = obj.DataStructure.timeSlotsInSubGraph(subGraphId);
         end
     end
 end
@@ -139,8 +142,9 @@ function outData = iUpdateVectorElements(initialValue, currentResults)
 % Updates a vector (initialValue) given multiple results (currentResults).
 
 validateattributes(initialValue, {'numeric'}, {'nonempty', 'vector'});
-validateattributes(initialValue, {'currentResults'}, {'nonempty'});
+validateattributes(currentResults, {'cell'}, {'nonempty'});
 
+currentResults = cell2mat(reshape(currentResults, 1, []));
 currentResultsSize = size(currentResults);
 initialValueSize = size(initialValue);
 

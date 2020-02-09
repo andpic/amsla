@@ -1,4 +1,4 @@
-classdef test_Partitioner < amsla.test.shared.PartitionerTests
+classdef test_Partitioner < amsla.test.tools.AmslaTest
     %TEST_PARTITIONER Tests for the class amsla.tassl.Partitioner
     
     % Copyright 2019 Andrea Picciau
