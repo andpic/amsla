@@ -77,30 +77,33 @@ classdef TriangularSolver
             % Initialise result with the right-hand side.
             result = rhs;
             
-            for currentTimeSlot = timeSlotIds
+            numTimeSlots = numel(timeSlotIds);
+            for k = 1:numTimeSlots
+                currentTimeSlot = timeSlotIds(k);
+                
                 % Get the data of edges
                 [enteringNodes, exitingNodes, weights] = ...
-                    dataOfEdges(obj, subGraphId, currentTimeSlot);
+                    obj.dataOfEdges(subGraphId, currentTimeSlot);
                 uniqueEnteringNodes = unique(enteringNodes);
                 
-                allResults = arrayfun(@(x) nIterateOverEnteringEdges(x, result), ...
+                allResults = arrayfun(@(x) nIterateOverEnteringNodes(x, result), ...
                     uniqueEnteringNodes, ...
                     'UniformOutput', false);
                 result = iUpdateVectorElements(result, allResults);
             end
             
-            function result = nIterateOverEnteringEdges(currNode, result)
+            function result = nIterateOverEnteringNodes(currNode, result)
                 % Iterate over the entering edges of a node (equivalent
                 % to the elements in a given row in the matrix).
                 relevantEdges = find(enteringNodes==currNode);
-                for currEdge = relevantEdges
-                    currRow = enteringNodes(currEdge);
-                    currColumn = exitingNodes(currEdge);
-                    currWeight = weights(currEdge);
-                    
-                    result(currRow) = ...
-                        result(currRow)-currWeight*result(currColumn);
-                end
+                
+                currRow = currNode;
+                relevantColumns = exitingNodes(relevantEdges);
+                relevantWeights = weights(relevantEdges);
+                
+                result(currRow) = result(currRow)-sum(...
+                    relevantWeights.*result(relevantColumns), ...
+                    'all');
             end
         end
         

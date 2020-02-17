@@ -294,9 +294,11 @@ classdef DataStructure < amsla.common.DataStructureInterface
             %EDGESINSUBGRAPHANDTIMESLOT(G, GID) Get the time-slot IDs in the current
             %sub-graph.
             
-            edgeSelector = obj.edgesInSubGraph(subGraphId);
-            edgeSelector = ismember(timeSlotId, obj.BaseGraph.Edges.TimeSlot(edgeSelector));
-            edgeIds = obj.BaseGraph.Edges.Id(edgeSelector);
+            edgeSelector = (obj.edgesInSubGraph(subGraphId));
+            possibleTimeSlotIds = obj.BaseGraph.Edges.TimeSlot(edgeSelector);
+            possibleEdgeIds = obj.BaseGraph.Edges.Id(edgeSelector);
+            edgeSelector = ismember(possibleTimeSlotIds, timeSlotId);
+            edgeIds = possibleEdgeIds(edgeSelector);
         end
         
         function timeSlotIds = timeSlotsInSubGraph(obj, subGraphId)
@@ -307,6 +309,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
             timeSlotIds = obj.BaseGraph.Edges.TimeSlot(edgeSelector);
             % Remove null IDs
             timeSlotIds(amsla.common.isNullId(timeSlotIds)) = [];
+            timeSlotIds = unique(timeSlotIds);
         end
         
         function outIds = timeSlotOfEdge(obj, edgeIds)
@@ -336,8 +339,9 @@ classdef DataStructure < amsla.common.DataStructureInterface
         function edgeSel = edgesInSubGraph(obj, subGraphId)
             % Select the edges in the given sub-graph.
             
-            nodeIds = obj.BaseGraph.Nodes.SubGraphId == subGraphId;
-            edgeSel = ismember(nodeIds, obj.BaseGraph.Edges.EndNodes(:, 1));
+            nodeIds = obj.BaseGraph.Nodes.Id(...
+                obj.BaseGraph.Nodes.SubGraphId == subGraphId);
+            edgeSel = ismember(obj.BaseGraph.Edges.EndNodes(:, 1), nodeIds);
         end
         
         function outIds = getNodesConnectedToNode(obj, nodeIds, nodeProperty)
