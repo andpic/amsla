@@ -18,6 +18,8 @@ classdef test_TriangularSolver < amsla.test.tools.AmslaTest
     
     %% TEST METHODS
     
+    % Simple, small triangular linear system
+    
     properties(TestParameter)
         AnalysisAlgorithm = struct( ...
             'LevelSet', { @(ds) amsla.test.tools.levelSetAnalysis(ds) }, ...
@@ -33,13 +35,39 @@ classdef test_TriangularSolver < amsla.test.tools.AmslaTest
             [dataStructure, I, J, V] = ...
                 amsla.test.tools.getSimpleLowerTriangularMatrix();
             
+            testCase.verifyOutput(dataStructure, I, J, V, AnalysisAlgorithm);
+        end
+    end
+    
+    % Sparse matrices from the gallery
+    
+    properties(TestParameter)
+        GalleryMatrix = struct( ...
+            "Wathen", iTriangular(iWathen(2, 1)));
+    end
+    
+    methods(Test)
+        function galleryLinearSystems(testCase, GalleryMatrix, AnalysisAlgorithm)
+            % Check the output of over gallery matrices.
+            
+            [I, J, V] = find(GalleryMatrix);
+            dataStructure = amsla.common.DataStructure(I, J, V);
+            
+            testCase.verifyOutput(dataStructure, I, J, V, AnalysisAlgorithm);
+        end
+    end
+    
+    %% PRIVATE METHODS
+    
+    methods(Access=private)
+        function verifyOutput(testCase, dataStructure, I, J, V, analysisAlgorithm);
             % Expected output
             matrix = sparse(I, J, V);
             rhs = ones(size(matrix, 1), 1);
             expectedOutput = matrix\rhs;
             
             % Actual Output
-            AnalysisAlgorithm(dataStructure);
+            analysisAlgorithm(dataStructure);
             solver = amsla.common.TriangularSolver(dataStructure);
             actualOutput = solver.solve(rhs);
             
@@ -47,4 +75,15 @@ classdef test_TriangularSolver < amsla.test.tools.AmslaTest
                 "Wrong output of method 'solve'.");
         end
     end
+end
+
+%% HELPER FUNCTIONS
+
+function outData = iTriangular(inData)
+outData = tril(inData)+speye(size(inData));
+end
+
+function data = iWathen(a, b)
+rng('default');
+data = gallery('wathen', a, b);
 end
