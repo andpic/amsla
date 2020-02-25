@@ -60,7 +60,7 @@ classdef test_TriangularSolver < amsla.test.tools.AmslaTest
     %% PRIVATE METHODS
     
     methods(Access=private)
-        function verifyOutput(testCase, dataStructure, I, J, V, analysisAlgorithm);
+        function verifyOutput(testCase, dataStructure, I, J, V, analysisAlgorithm)
             % Expected output
             matrix = sparse(I, J, V);
             rhs = ones(size(matrix, 1), 1);
@@ -72,6 +72,8 @@ classdef test_TriangularSolver < amsla.test.tools.AmslaTest
             actualOutput = solver.solve(rhs);
             
             testCase.verifyEqual(actualOutput, expectedOutput, ...
+                "AbsTol", 1e-7, ...
+                "RelTol", 1e-6,  ...
                 "Wrong output of method 'solve'.");
         end
     end

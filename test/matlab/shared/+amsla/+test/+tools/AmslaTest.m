@@ -1,5 +1,5 @@
 classdef (Abstract) AmslaTest < matlab.unittest.TestCase
-    %AMSLATESTS Test for A²MSLA.
+    %AMSLATESTS Test for AMSLA.
     
     % Copyright 2019 Andrea Picciau
     %
@@ -32,7 +32,7 @@ classdef (Abstract) AmslaTest < matlab.unittest.TestCase
         
     end
     
-    %% VERIFICATION METHODS
+    %% HELPER METHODS
     
     methods (Access=protected)
         
@@ -42,8 +42,10 @@ classdef (Abstract) AmslaTest < matlab.unittest.TestCase
             testCase.verifyThat( ...
                 functionCall, ...
                 Throws(?MException));
-        end
+        end        
+   
         
+    
     end
 end
 

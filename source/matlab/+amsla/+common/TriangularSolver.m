@@ -99,11 +99,25 @@ classdef TriangularSolver
                 
                 currRow = currNode;
                 relevantColumns = exitingNodes(relevantEdges);
+                nonLoopingColumns = relevantColumns(relevantColumns~=currNode);
+                loopingColumn = relevantColumns(relevantColumns==currNode);
+                
+                % Non-looping and looping edges cannot be mixed in the same
+                % time slot.
+                assert( ...
+                    (numel(loopingColumn)==1 && numel(nonLoopingColumns)==0) || ...
+                    (numel(loopingColumn)==0 && numel(nonLoopingColumns)>0), ...
+                    "Looping and non-looping edges cannot be mixed in the same time slot");
+                
                 relevantWeights = weights(relevantEdges);
                 
-                result(currRow) = result(currRow)-sum(...
-                    relevantWeights.*result(relevantColumns), ...
-                    'all');
+                if isempty(loopingColumn)
+                    result(currRow) = result(currRow)-sum(...
+                        relevantWeights.*result(nonLoopingColumns), ...
+                        'all');
+                else
+                    result(currRow) = result(currRow)/relevantWeights;
+                end
             end
         end
         
