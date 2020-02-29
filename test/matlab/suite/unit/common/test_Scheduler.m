@@ -25,7 +25,16 @@ classdef test_Scheduler < amsla.test.tools.AmslaTest
             ...
             'SimpleLowerTriangularWithSubGraphs', struct( ...
             'InputGraph',           { iSimpleLowerTriangularGraphWithSubGraphs() }, ...
-            'ExpectedAssignment',   { iSimpleLowerTriangularAssignmentWithSubGraphs() }));
+            'ExpectedAssignment',   { iSimpleLowerTriangularAssignmentWithSubGraphs() }), ...
+            ...
+            'SmallWarthen', struct( ...
+            'InputGraph',           { iSmallWarthenGraph() }, ...
+            'ExpectedAssignment',   { iSmallWarthenAssignment() }), ...
+            ...
+            ...
+            'SmallWarthenNoSubGraphs', struct( ...
+            'InputGraph',           { iSmallWarthenNoSubGraphsGraph() }, ...
+            'ExpectedAssignment',   { iSmallWarthenNoSubGraphsAssignment() }));
         
     end
     
@@ -121,8 +130,73 @@ end
 function [I, J, V, timeSlots] = iSimpleLowerTriangularWithSubGraphs()
 J         = [  1, 1, 1,   2,   3,   4, 4,   5,  5,  3,  6, 6,  7,  8, 6,  9,   9,  10, 10, 11];
 I         = [  1, 2, 3,   2,   3,   4, 5,   5,  6,  6,  6, 7,  7,  8, 8, 10,   9,  10, 11, 11];
-timeSlots = [ -1, 1, 1,  iN,  iN,  iN, 1,  iN, -2, -2, -1, 1, iN, iN, 1,  1,  iN,  iN,  2,  3];
+timeSlots = [  1, 2, 2,  iN,  iN,  iN, 2,  iN, -1, -1,  1, 2, iN, iN, 2,  2,  iN,  iN,  3,  4];
 V         = [  3, 1, 1,   1,   1,   1, 1,   1,  1,  1,  3, 1,  1,  1, 1,  2,   1,   1,  1,  3];
+end
+
+function aGraph = iSmallWarthenGraph()
+[I, J, V] = iSmallWarthen();
+aGraph = amsla.common.DataStructure(I, J, V);
+aGraph.setSubGraphOfNode( ...
+    [1, 2, 3, 4, 5], ...
+    [1, 1, 1, 2, 2]);
+end
+
+function expectedAssignment = iSmallWarthenAssignment()
+[I, J, ~, timeSlots] = iSmallWarthen();
+expectedAssignment = table(J, I, timeSlots, ...
+    'VariableNames', {'J', 'I', 'TimeSlot'});
+end
+
+function [I, J, V, timeSlot] = iSmallWarthen()
+allData = [ ...
+    1, 1,  11.863, 1;
+    2, 1, -10.863, 2;
+    2, 2,  58.936, 3;
+    3, 1,   3.621, 4;
+    3, 2, -10.863, 4;
+    3, 3,   23.94, 5;
+    4, 3, -12.077, -1;
+    4, 4,  65.412, 1;
+    5, 3,  4.0257, -1;
+    5, 4, -12.077, 2;
+    5, 5,  13.077, 3];
+
+I = allData(:, 1);
+J = allData(:, 2);
+V = allData(:, 3);
+timeSlot = allData(:, 4);
+end
+
+function aGraph = iSmallWarthenNoSubGraphsGraph()
+[I, J, V] = iSmallWarthenNoSubGraphs();
+aGraph = amsla.common.DataStructure(I, J, V);
+end
+
+function expectedAssignment = iSmallWarthenNoSubGraphsAssignment()
+[I, J, ~, timeSlots] = iSmallWarthenNoSubGraphs();
+expectedAssignment = table(J, I, timeSlots, ...
+    'VariableNames', {'J', 'I', 'TimeSlot'});
+end
+
+function [I, J, V, timeSlot] = iSmallWarthenNoSubGraphs()
+allData = [ ...
+    1, 1,  11.863, 1;
+    2, 1, -10.863, 2;
+    2, 2,  58.936, 3;
+    3, 1,   3.621, 4;
+    3, 2, -10.863, 4;
+    3, 3,   23.94, 5;
+    4, 3, -12.077, 6;
+    4, 4,  65.412, 7;
+    5, 3,  4.0257, 8;
+    5, 4, -12.077, 8;
+    5, 5,  13.077, 9];
+
+I = allData(:, 1);
+J = allData(:, 2);
+V = allData(:, 3);
+timeSlot = allData(:, 4);
 end
 
 function val = iN()

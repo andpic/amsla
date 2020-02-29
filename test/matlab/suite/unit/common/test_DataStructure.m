@@ -34,6 +34,21 @@ classdef test_DataStructure < amsla.test.tools.AmslaTest
                 expectedOutput);
         end
         
+        function checkWeightsOfEdgeUnsortedAndRepetitions(testCase)
+            % Check method "weightsOfEdge" with vector inputs.
+            
+            % Create a graph
+            [aGraph, ~, ~, V] = amsla.test.tools.getSimpleLowerTriangularMatrix();
+            
+            edges = [3, 2, 2, 10, 5, 4];
+            expectedWeights = V(edges)';
+            
+            testCase.verifyEqual( ...
+                weightOfEdge(aGraph, edges), ...
+                expectedWeights, ...
+                "The weights do not match those expected.");
+        end
+        
         function checkExitingEdgesOfNodeVector(testCase)
             % Check method "exitingEdgesOfNode" with vector inputs.
             

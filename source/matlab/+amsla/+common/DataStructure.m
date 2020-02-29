@@ -9,10 +9,12 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %   edges in the graph.
     %
     %   DataStructure edge/node-level methods:
-    %      listOfNodes           - Get the list of the IDs of all the nodes in
-    %                              the graph.
+    %      listOfNodes           - Get the list of the IDs of all the nodes
+    %                              in the graph.
     %      childrenOfNode        - Get the children of a node.
     %      parentsOfNode         - Get the parents of a node.
+    %      listOfEdges           - Get the list of the IDs of all the edges
+    %                              in the graph.
     %      exitingEdgesOfNode    - Get the edges coming out of  a node.
     %      enteringEdgesOfNode   - Get the edges entering a node.
     %      exitingNodeOfEdge     - Get the node at the end of an edge.
@@ -88,7 +90,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
         %      Id            - Id of the edge
         %      EndNodes      - Input and output node
         %      TimeSlot      - Time slot to which the node belongs
-        %      IsExternal    - True if the edge is an external edge
         BaseGraph
         
     end
@@ -148,6 +149,11 @@ classdef DataStructure < amsla.common.DataStructureInterface
             %PARENTSOFNODE(G, NODEID) Get the IDs of the parents of one or
             % more nodes in the graph.
             outIds = getNodesConnectedToNode(obj, nodeIds, "Parents");
+        end
+        
+        function outIds = listOfEdges(obj)
+            %LISTOFEDGES(G) Get the IDs of all the edges in the graph.
+            outIds = unique(obj.BaseGraph.Edges.Id)';
         end
         
         function outIds = exitingEdgesOfNode(obj, nodeIds)
@@ -217,8 +223,10 @@ classdef DataStructure < amsla.common.DataStructureInterface
         function value = weightOfEdge(obj, edgeIds)
             %WEIGHTOFEDGE(G, EDGEID) Get the weight of one or more edges.
             
+            [edgeIds, inverseSorter] = iSorter(edgeIds);
             value = obj.BaseGraph.Edges.Weight( ...
                 ismember(obj.BaseGraph.Edges.Id, edgeIds));
+            value = value(inverseSorter);            
         end
         
         %% Component-level operations
@@ -591,7 +599,6 @@ outGraph.Nodes.SubGraphId = amsla.common.nullId(numNodes, 1);
 numEdges = numedges(outGraph);
 outGraph.Edges.Id = (1:numEdges)';
 outGraph.Edges.TimeSlot = amsla.common.nullId(numEdges, 1);
-outGraph.Edges.IsExternal = amsla.common.nullId(numEdges, 1);
 end
 
 function tableColumn = iGetTableColumnByGraphSetType(graphSetType)
@@ -625,4 +632,8 @@ uniqueIds = unique(ids);
 % index is being assigned to more than one different set
 assert(size(uniqueCouples, 1)==size(uniqueIds,1), ...
     "Ambiguous assignment");
+end
+
+function [data, inverseSorter] = iSorter(data)
+[data, ~, inverseSorter] = unique(data);
 end

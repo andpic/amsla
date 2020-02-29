@@ -2,7 +2,7 @@ classdef test_SchedulerGraphWrapper < amsla.test.tools.AmslaTest
     %TEST_SCHEDULERGRAPHWRAPPER Tests for
     %amsla.common.internal.SchedulerGraphWrapper.
     
-    % Copyright 2019 Andrea Picciau
+    % Copyright 2019-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.

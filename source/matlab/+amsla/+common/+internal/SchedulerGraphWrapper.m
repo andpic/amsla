@@ -6,19 +6,23 @@ classdef SchedulerGraphWrapper < handle
     %   for the graph G.
     %
     %   Methods of SchedulerGraphWrapper:
-    %       getRootsOfGraph         - Get the roots in the graph object.
-    %       getRootsBySubGraph      - Get the roots by sub-graph.
-    %       getEnteringEdges        - Get the entering edges of a node.
-    %       getLoopingEdges         - Get the edges looping over a node.
-    %       assignEdgesToTimeSlot   - Assign edges to time slot.
-    %       markNodeAsProcessed     - Mark given nodes as processed.
+    %       areAllEdgesAssigned         - Get a list of nodes in the graph.
+    %       getRootsOfGraph             - Get the roots in the graph object.
+    %       getRootsBySubGraph          - Get the roots by sub-graph.
+    %       getEnteringInternalEdges    - Get the internal entering edges of
+    %                                     a node.
+    %       getAllExternalEdges         - Get all the external edges in the
+    %                                     sub-graph.
+    %       getLoopingEdges             - Get the edges looping over a node.
+    %       assignEdgesToTimeSlot       - Assign edges to time slot.
+    %       markNodeAsProcessed         - Mark given nodes as processed.
     %       getReadyChildrenOfNode           - Get the children of a node whose
     %                                          entering edges have been assigned.
     %       getReadyChildrenOfNodeBySubGraph - Get the children of a node in the
     %                                          same sub-graph, if all the entering
     %                                          entering edges have been assigned.
     
-    % Copyright 2018-2019 Andrea Picciau
+    % Copyright 2018-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -90,12 +94,28 @@ classdef SchedulerGraphWrapper < handle
             rootIds = obj.Graph.rootsOfSubGraph(subGraphIds);
         end
         
-        function edgeIds = getEnteringEdges(obj, nodeIds)
-            %GETENTERINGEDGES Retrieve the IDs of the edges entering the
-            %given nodes.
+        function edgeIds = getEnteringInternalEdges(obj, nodeIds)
+            %GETENTERINGINTERNALEDGES Retrieve the IDs of the internal and
+            %non-looping edges entering the given nodes.
             
             edgeIds = obj.Graph.enteringEdgesOfNode(nodeIds);
+            if iscell(edgeIds)
+                edgeIds = cell2mat(edgeIds);
+            end
+            isInternal = ~obj.isExternalEdge(edgeIds);
+            edgeIds = edgeIds(isInternal);
         end
+        
+        function edgeIds = getAllExternalEdges(obj)
+            %GETALLEXTERNALEDGES Get the IDs of all the external edges in
+            %the graph.
+            
+            allEdgeIds = obj.Graph.listOfEdges();
+            isExternalEdge = obj.isExternalEdge(allEdgeIds);
+            
+            edgeIds = allEdgeIds(isExternalEdge);
+        end
+        
         
         function edgeIds = getLoopingEdges(obj, nodeIds)
             %GETLOOPING Retrieve the IDs of the edges looping over a
@@ -131,7 +151,8 @@ classdef SchedulerGraphWrapper < handle
             %its children whose entering edges have all been assigned.
             
             nodeIds = obj.getReadyChildrenBySelector(parentNodeIds, ...
-                @(x) obj.getChildrenOfNode(x));
+                @(x) obj.getChildrenOfNode(x), ...
+                @(x) obj.isNodeReady(x));
         end
         
         function nodeIds = getReadyChildrenOfNodeBySubGraph(obj, parentNodeIds)
@@ -140,7 +161,28 @@ classdef SchedulerGraphWrapper < handle
             %all been assigned.
             
             nodeIds = obj.getReadyChildrenBySelector(parentNodeIds, ...
-                @(x) obj.getChildrenOfNodeBySubGraph(x));
+                @(x) obj.getChildrenOfNodeBySubGraph(x), ...
+                @(x) obj.isNodeInSubGraphReady(x));
+        end
+        
+        function tf = areAllEdgesAssigned(obj)
+            %ALLEDGESAREASSIGNED Returns true if all the edges in the
+            %sub-graphs were assigned to time-slots.
+            
+            allEdges = obj.Graph.listOfEdges();
+            % Corner case
+            if isempty(allEdges)
+                tf = true;
+                return;
+            end
+            
+            enteringNodes = obj.Graph.enteringNodeOfEdge(allEdges)';
+            exitingNodes = obj.Graph.exitingNodeOfEdge(allEdges)';
+            weights = obj.Graph.weightOfEdge(allEdges);
+            timeSlots = obj.Graph.timeSlotOfEdge(allEdges);
+            timeSlots(enteringNodes==exitingNodes & weights==1) = [];
+            
+            tf = ~any(amsla.common.isNullId(timeSlots));
         end
     end
     
@@ -155,7 +197,38 @@ classdef SchedulerGraphWrapper < handle
             timeSlotIds = obj.Graph.timeSlotOfEdge(edgeIds);
         end
         
-        function nodeIds = getReadyChildrenBySelector(obj, parentNodeIds, childSelector)
+        function tf = isExternalEdge(obj, edgeIds)
+            %ISEXTERNALEDGE True if the edge ID refers to an external edge.
+            
+            if isempty(edgeIds)
+                tf = [];
+                return;
+            end
+            
+            [entering, exiting] = nodesOfEdge(obj, edgeIds);
+            
+            enteringNodeSubGraphs = obj.Graph.subGraphOfNode(entering);
+            exitingNodeSubGraphs = obj.Graph.subGraphOfNode(exiting);
+            
+            tf = enteringNodeSubGraphs~=exitingNodeSubGraphs & ...
+                ~amsla.common.isNullId(enteringNodeSubGraphs) & ...
+                ~amsla.common.isNullId(exitingNodeSubGraphs);
+        end
+        
+        function tf = isLoopingEdge(obj, edgeIds)
+            %ISLOOPINGEDGE True if the edge ID refers to a looping edge.
+            
+            if isempty(edgeIds)
+                tf = [];
+                return;
+            end
+            
+            [entering, exiting] = nodesOfEdge(obj, edgeIds);
+            tf = entering==exiting;
+        end
+        
+        function nodeIds = getReadyChildrenBySelector(obj, parentNodeIds, ...
+                childSelector, readinessEvaluator) %#ok<INUSL>
             %GETREADYCHILDRENBYSELECTOR Get the children that are ready
             %using a specific criterion for selection. Common logic for the
             %"getReadyChildrenOfNode***" methods.
@@ -164,9 +237,9 @@ classdef SchedulerGraphWrapper < handle
             if iscell(childrenNodes)
                 childrenNodes = cell2mat(childrenNodes);
             end
-            isNodeReady = arrayfun(@(x) obj.isNodeReady(x), childrenNodes, ...
+            isNodeReady = arrayfun(readinessEvaluator, childrenNodes, ...
                 'UniformOutput', true);
-            nodeIds = childrenNodes(isNodeReady);
+            nodeIds = unique(childrenNodes(isNodeReady));
         end
         
         function nodeIds = getChildrenOfNode(obj, parentNodeIds)
@@ -207,12 +280,24 @@ classdef SchedulerGraphWrapper < handle
         end
         
         function tf = isNodeReady(obj, nodeIds)
-            %ISNODEREADY Given a ScheduleGraphWrapper method that selects
-            %the edges, tells whether a node is ready or not for
-            %processing.
+            %ISNODEREADY Tells whether a node is ready or not for processing
+            % ignoring the graph's partitioning.
             
             parentNodes = obj.Graph.parentsOfNode(nodeIds);
+            
             tf = all(obj.isNodeProcessed(parentNodes));
+        end
+        
+        function tf = isNodeInSubGraphReady(obj, nodeIds)
+            %ISNODEINSUBGRAPHREADY Tells whether a node is ready or not for
+            %processing, considering the graph's partition.
+            
+            parentNodes = obj.Graph.parentsOfNode(nodeIds);
+            subGraph = obj.Graph.subGraphOfNode(nodeIds);
+            parentSubGraphs = obj.Graph.subGraphOfNode(parentNodes);
+            
+            parentsInSameSubGraph = parentNodes(parentSubGraphs==subGraph);
+            tf = all(obj.isNodeProcessed(parentsInSameSubGraph));
         end
         
         function tf = isNodeProcessed(obj, nodeIds)
@@ -220,6 +305,14 @@ classdef SchedulerGraphWrapper < handle
             
             tf = obj.ProcessedNodeMap.IsProcessed( ...
                 ismember(obj.ProcessedNodeMap.NodeId, nodeIds));
+        end
+        
+        
+        function [enteringNodes, exitingNodes] = nodesOfEdge(obj, edgeIds)
+            %NODESOFEDGE Get the entering and existing nodes of an edge.
+            
+            enteringNodes = obj.Graph.enteringNodeOfEdge(edgeIds);
+            exitingNodes = obj.Graph.exitingNodeOfEdge(edgeIds);
         end
     end
 end

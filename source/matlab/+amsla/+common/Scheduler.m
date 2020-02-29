@@ -30,9 +30,10 @@ classdef Scheduler < handle
         %Graph  Graph object representing a sparse matrix.
         Graph
         
-        %UsesSubGraphs True if the graph is partitioned, meaning scheduling has
-        %to take sub-graphs into consideration.
-        UsesSubGraphs
+        %IsGraphPartitioned True if the graph is partitioned, meaning
+        %scheduling has to take sub-graphs into consideration.
+        IsGraphPartitioned
+        
     end
     
     %% PUBLIC METHDOS
@@ -46,33 +47,28 @@ classdef Scheduler < handle
                 {'amsla.common.DataStructureInterface'}, ...
                 {'scalar', 'nonempty'});
             obj.Graph = amsla.common.internal.SchedulerGraphWrapper(aGraph);
-            obj.UsesSubGraphs = false;
+            obj.IsGraphPartitioned = false;
         end
         
         function scheduleOperations(obj)
             %SCHEDULEOPERATIONS(A) Distribute the numerical operations over
             %time-slots
             
-            % External edges
-            currentNodes = getRootsBySubGraph(obj.Graph);
-            if ~isempty(currentNodes)
-                initialTimeSlot = -2;
-                currentTimeSlot = 1;
-                obj.UsesSubGraphs = true;
-                currentNodes = iCreateArray(currentNodes);
-            else
-                initialTimeSlot = 1;
-                currentTimeSlot = 2;
-                currentNodes = getRootsOfGraph(obj.Graph);
-            end
+            currentNodes = obj.getRoots();
             
-            currentNodes = obj.assignEnteringEdgesToTimeSlot(currentNodes, initialTimeSlot);
+            % ExternalEdges
+            obj.assignExternalEdges();
             
             % Internal edges
+            currentTimeSlot = 1;
             while ~iAllEmpty(currentNodes)
                 [currentNodes, currentTimeSlot] = ...
-                    obj.assignEnteringEdgesToTimeSlot(currentNodes, currentTimeSlot);
+                    obj.assignInternalEdgesToTimeSlot(currentNodes, currentTimeSlot);
             end
+            
+            assert(obj.Graph.areAllEdgesAssigned(), ...
+                "amsla:Scheduler:incompleteAssignment", ...
+                "Not al edges were assigned to time-slots")
         end
         
     end
@@ -81,11 +77,11 @@ classdef Scheduler < handle
     
     methods (Access=private)
         
-        function [currentNodes, currentTimeSlot] = assignEnteringEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
-            % Assign the entering edges of 'currentNodes' to the time slot
-            % 'currentTimeSlot'
+        function [currentNodes, currentTimeSlot] = assignInternalEdgesToTimeSlot(obj, currentNodes, currentTimeSlot)
+            % Assign the internal entering edges of 'currentNodes' to the
+            % time slot 'currentTimeSlot'
             
-            currentEnteringEdges = obj.Graph.getEnteringEdges(currentNodes);
+            currentEnteringEdges = obj.Graph.getEnteringInternalEdges(currentNodes);
             currentTimeSlot = obj.assignEdgesToTimeSlot(currentEnteringEdges, currentTimeSlot);
             
             loopingEdges = obj.Graph.getLoopingEdges(currentNodes);
@@ -99,7 +95,7 @@ classdef Scheduler < handle
             % Get the children of the nodes in nodeIds that are ready for
             % processing.
             
-            if obj.UsesSubGraphs
+            if obj.IsGraphPartitioned
                 nodeIds = obj.Graph.getReadyChildrenOfNodeBySubGraph(nodeIds);
             else
                 nodeIds = obj.Graph.getReadyChildrenOfNode(nodeIds);
@@ -116,6 +112,32 @@ classdef Scheduler < handle
             else
                 newTimeSlot = timeSlotId;
             end
+        end
+        
+        function nodeIds = getRoots(obj)
+            % Get all the roots in the graph, by sub-graph if the graph is
+            % partitioned.
+            
+            currentNodes = getRootsBySubGraph(obj.Graph);
+            if ~isempty(currentNodes)
+                obj.IsGraphPartitioned = true;
+                nodeIds = iCreateArray(currentNodes);
+            else
+                nodeIds = getRootsOfGraph(obj.Graph);
+            end
+            
+        end
+        
+        function assignExternalEdges(obj)
+            % Assign all the external edges in the graph.
+            
+            if ~obj.IsGraphPartitioned
+                return;
+            end
+            
+            externalEdgeIds = getAllExternalEdges(obj.Graph);
+            obj.Graph.assignEdgesToTimeSlot(externalEdgeIds, ...
+                amsla.common.internal.externalTimeSlot(1));
         end
         
     end
