@@ -43,7 +43,9 @@ classdef test_TriangularSolver < amsla.test.tools.AmslaTest
     
     properties(TestParameter)
         GalleryMatrix = struct( ...
-            "Wathen", iTriangular(iWathen(2, 1)));
+            "Wathen",       iTriangular(iWathen(2, 1)), ...
+            "WathenLarge",  iTriangular(iWathen(10, 3)), ...
+            "Neumann",      iTriangular(gallery("neumann", 64)));
     end
     
     methods(Test)
