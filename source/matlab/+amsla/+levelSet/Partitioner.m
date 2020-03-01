@@ -46,7 +46,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
             obj@amsla.common.PartitionerInterface(varargin{:});
             
             if ~isempty(obj.getMaxSubGraphSize())
-                warning("amsla:sizeIgnored", ...
+                warning("amsla:levelSet:sizeIgnored", ...
                     "The level-set algorithm does not enforce a maximum sub-graph size. Input will be ignored.");
             end
             

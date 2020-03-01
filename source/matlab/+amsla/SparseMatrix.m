@@ -41,6 +41,9 @@ classdef SparseMatrix
         %Scheduler used to analyse the matrix.
         Scheduler
         
+        %Solver used for linear systems
+        Solver
+        
     end
     
     %% PUBLIC METHODS
@@ -64,6 +67,13 @@ classdef SparseMatrix
             obj = obj.setupAnalysisAccordingToFormat(maxSize, plotProgress);
             partitioningResults = obj.Partitioner.partition();
             obj.Scheduler.scheduleOperations();
+            obj.Solver = amsla.common.TriangularSolver(obj.DataStructure);
+        end
+        
+        function result = solve(obj, rhs)
+            %SOLVE solve a linear system with the sparse matrix.
+            
+            result = obj.Solver.solve(rhs);
         end
         
     end

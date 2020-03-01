@@ -41,9 +41,14 @@ classdef Partitioner < amsla.common.PartitionerInterface
             
             obj@amsla.common.PartitionerInterface(varargin{:});
             
+            maxSubGraphSize = obj.getMaxSubGraphSize();
+            assert(isscalar(maxSubGraphSize) && maxSubGraphSize>0, ...
+                "amsla:tassl:Partitioner", ...
+                "Bad sub-graph size for the TASSL partitioner");
+            
             obj.GraphWrapper = amsla.tassl.internal.PartitionerGraphWrapper( ...
                 obj.getGraphToPartition(), ...
-                obj.getMaxSubGraphSize);
+                maxSubGraphSize);
         end
         
         function partitioningResult = partition(obj)
