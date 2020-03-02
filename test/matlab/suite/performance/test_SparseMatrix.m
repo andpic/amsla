@@ -1,4 +1,4 @@
-classdef test_SparseMatrix < matlab.perftest.TestCase
+classdef test_SparseMatrix < amsla.test.tools.AmslaPerformanceTest
     %TEST_SPARSEMATRIX Performance tests for SparseMatrix.
     
     % Copyright 2018-2019 Andrea Picciau
@@ -49,15 +49,24 @@ classdef test_SparseMatrix < matlab.perftest.TestCase
     
     methods(Test)
         
-        function measureAnalysisOnToeppen(testCase, Algorithm, DataSize)
-            
+        function measureWorkflowOnToeppen(testCase, Algorithm, DataSize)
+            % Execute the whole workflow over "Toeppen" matrices from MATLAB's
+            % gallery.
+
             data = iTriangular(gallery("toeppen", DataSize));
             [I,J,V] = find(data);
             
+            % Analysis
             matrix = amsla.SparseMatrix(I, J, V, Algorithm);
-            testCase.startMeasuring();
-            matrix.analyse(10);
-            testCase.stopMeasuring();
+            testCase.startMeasuring("analyse");
+            matrix = matrix.analyse(10);
+            testCase.stopMeasuring("analyse");
+
+            % Triangular solve
+            rhs = ones([size(data, 1), 1]);
+            testCase.startMeasuring("solve");
+            result = matrix.solve(rhs); %#ok<NASGU>
+            testCase.stopMeasuring("solve");
         end
         
     end

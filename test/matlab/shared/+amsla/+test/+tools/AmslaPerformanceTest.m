@@ -1,5 +1,7 @@
-classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
-    %AMSLATESTS Test for AMSLA.
+classdef (Abstract) AmslaPerformanceTest < ...
+    amsla.test.tools.internal.AmslaTest & ...
+    matlab.perftest.TestCase    
+    %AMSLAPERFORMANCETEST Performance test case for AMSLA.
     
     % Copyright 2019-2020 Andrea Picciau
     %
@@ -13,21 +15,6 @@ classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
     % distributed under the License is distributed on an "AS IS" BASIS,
     % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     % See the License for the specific language governing permissions and
-    % limitations under the License.        
+    % limitations under the License.
     
-    %% HELPER METHODS
-    
-    methods (Access=protected)
-        
-        function verifyThrowsError(testCase, functionCall)
-            % Verify that the function call throws an error
-            import matlab.unittest.constraints.Throws;
-            testCase.verifyThat( ...
-                functionCall, ...
-                Throws(?MException));
-        end        
-   
-        
-    
-    end
 end
