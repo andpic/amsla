@@ -21,8 +21,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %      enteringNodeOfEdge    - Get the node at the start end of an edge.
     %      loopEdgesOfNode       - Get the edges entering and exiting the
     %                              same node.
-    %      sortNodesByOutdegree  - Sort the input nodes by out-degree.
-    %      sortNodesByIndegree   - Sort the input nodes by in-degree.
     %      weightOfEdge          - Get the weight of an edge.
     %
     %   DataStructure component-level methods:

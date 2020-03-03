@@ -168,13 +168,6 @@ classdef PartitionerGraphWrapper < ...
             obj.Graph.setSubGraphOfNode(nodeIds, subGraphIds);
         end
         
-        function outIds = subGraphOfNode(obj, nodeIds)
-            %SUBGRAPHOFNODE(G, NODEIDS) Get the sub-graph IDs to which one or
-            %more nodes were assigned.
-            
-            outIds = obj.Graph.subGraphOfNode(nodeIds);
-        end
-        
         function [childrenIds, subGraphIds] = childrenOfNodeReadyForAssignment(obj, nodeIds)
             %CHILDRENOFNODEREADYFORASSIGNMENT(G, NODEIDS) Get the IDs of the
             %children of one or more nodes NODEIDS, such that all the parents of
