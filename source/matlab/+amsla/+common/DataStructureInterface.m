@@ -8,8 +8,6 @@ classdef(Abstract) DataStructureInterface < handle
     %      childrenOfNode        - Get the children of a node.
     %      exitingEdgesOfNode    - Get the edges coming out of  a node.
     %      parentsOfNode         - Get the parents of a node.
-    %      sortNodesByIndegree   - Sort the input nodes by in-degree.
-    %      sortNodesByOutdegree  - Sort the input nodes by out-degree.
     %      enteringEdgesOfNode   - Get the edges entering a node.
     %      loopEdgesOfNode       - Get the edges entering and exiting the
     %                              same node.
@@ -31,7 +29,7 @@ classdef(Abstract) DataStructureInterface < handle
     %
     %      plot                  - Plot an EnhancedGraph.
     
-    % Copyright 2019 Andrea Picciau
+    % Copyright 2019-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -64,13 +62,11 @@ classdef(Abstract) DataStructureInterface < handle
         
         outIds = parentsOfNode(obj, nodeIds)
         
+        outIds = listOfEdges(obj)
+        
         outIds = enteringEdgesOfNode(obj, nodeIds)
         
-        outIds = loopEdgesOfNode(obj, nodeIds)
-        
-        [outIds, outDegree] = sortNodesByOutdegree(obj, nodeIds)
-        
-        [outIds, inDegree] = sortNodesByIndegree(obj, nodeIds)
+        outIds = loopEdgesOfNode(obj, nodeIds)        
         
         %% Component-level operations
         

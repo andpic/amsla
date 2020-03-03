@@ -86,13 +86,13 @@ classdef PartitionerGraphWrapper < ...
             sortingCriterion = string(sortingCriterion);
             
             if strcmp(sortingCriterion, "descend outdegree")
-                sortingFunction = @(j) obj.Graph.sortNodesByOutdegree(j);
+                sortingFunction = @(j) obj.sortNodesByOutdegree(j);
             elseif strcmp(sortingCriterion, "ascend outdegree")
-                sortingFunction = @(j) iInvertArray(obj.Graph.sortNodesByOutdegree(j));
+                sortingFunction = @(j) iInvertArray(obj.sortNodesByOutdegree(j));
             elseif strcmp(sortingCriterion, "descend indegree")
-                sortingFunction = @(j) obj.Graph.sortNodesByIndegree(j);
+                sortingFunction = @(j) obj.sortNodesByIndegree(j);
             elseif strcmp(sortingCriterion, "ascend indegree")
-                sortingFunction = @(j) iInvertArray(obj.Graph.sortNodesByIndegree(j));
+                sortingFunction = @(j) iInvertArray(obj.sortNodesByIndegree(j));
             elseif strcmp(sortingCriterion, "descend index")
                 sortingFunction = @(j) sort(j, "descend");
             elseif strcmp(sortingCriterion, "ascend index")
@@ -275,6 +275,35 @@ classdef PartitionerGraphWrapper < ...
             if nargout>1
                 varargout{2} = iFindSorting(inNodes, outNodes);
             end
+        end
+        
+        function [outIds, outDegree] = sortNodesByOutdegree(obj, nodeIds)
+            %Sort the input nodes by out-degree.
+            %
+            %   O = SORTNODESBYOUTDEGREE(G, NODEID) Get the sorted node IDs.
+            %
+            %   [O, D] = SORTNODESBYOUTDEGREE(G, NODEID) Get the sorted
+            %   node IDs and the degree.
+            
+            outDegree = arrayfun(@(x) numel(obj.Graph.childrenOfNode(x)), ...
+                nodeIds, 'UniformOutput', true);
+            [outDegree, sorter] = sort(outDegree, 'descend');
+            outIds = nodeIds(sorter);
+        end
+        
+        function [outIds, inDegree] = sortNodesByIndegree(obj, nodeIds)
+            %SORTNODESBYINDEGREE(G, NODEID) Sort the input nodes by
+            %in-degree.
+            %
+            %   O = SORTNODESBYINDEGREE(G, NODEID) Get the sorted node IDs.
+            %
+            %   [O, D] = SORTNODESBYINDEGREE(G, NODEID) Get the sorted
+            %   node IDs and the degree.
+            
+            inDegree = arrayfun(@(x) numel(obj.Graph.parentsOfNode(x)), ...
+                nodeIds, 'UniformOutput', true);
+            [inDegree, sorter] = sort(inDegree, 'descend');
+            outIds = nodeIds(sorter);
         end
         
     end

@@ -186,39 +186,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
             %LOOPEDGESOFNODE(G, NODE) Get the IDs of edges looping over one
             %or more nodes in the graph.
             outIds = getEdgesConnectedToNode(obj, nodeIds, "Loop");
-        end
-        
-        function [outIds, outDegree] = sortNodesByOutdegree(obj, nodeIds)
-            %SORTNODESBYOUTDEGREE(G, NODEID) Sort the input nodes by
-            %out-degree.
-            %
-            %   O = SORTNODESBYOUTDEGREE(G, NODEID) Get the sorted node IDs.
-            %
-            %   [O, D] = SORTNODESBYOUTDEGREE(G, NODEID) Get the sorted
-            %   node IDs and the degree.
-            
-            % MATLAB's digraph interprets edge starts and ends in the
-            % opposite way.
-            outDegree = obj.BaseGraph.indegree(nodeIds);
-            [outDegree, sorter] = sort(outDegree, 'descend');
-            outIds = nodeIds(sorter);
-        end
-        
-        function [outIds, inDegree] = sortNodesByIndegree(obj, nodeIds)
-            %SORTNODESBYINDEGREE(G, NODEID) Sort the input nodes by
-            %in-degree.
-            %
-            %   O = SORTNODESBYINDEGREE(G, NODEID) Get the sorted node IDs.
-            %
-            %   [O, D] = SORTNODESBYINDEGREE(G, NODEID) Get the sorted
-            %   node IDs and the degree.
-            
-            % MATLAB's digraph interprets edge starts and ends in the
-            % opposite way.
-            inDegree = obj.BaseGraph.outdegree(nodeIds);
-            [inDegree, sorter] = sort(inDegree, 'descend');
-            outIds = nodeIds(sorter);
-        end
+        end                
         
         function value = weightOfEdge(obj, edgeIds)
             %WEIGHTOFEDGE(G, EDGEID) Get the weight of one or more edges.
