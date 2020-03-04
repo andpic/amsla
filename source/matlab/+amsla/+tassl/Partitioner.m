@@ -25,8 +25,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
     
     properties(Access=private)
         
-        %PartitionerGraphWrapper object that implements graph operations
-        %for the TASSL approach
+        %Object that implements graph operations for the TASSL approach
         GraphWrapper
         
     end
