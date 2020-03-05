@@ -81,17 +81,26 @@ classdef ComponentPartitioner < handle
             outIds = obj.Component.ComponentId(ismember(obj.Component.NodeId, nodeIds));
             outIds = iRowVector(outIds(invSorter));
         end
-
-        function mergeComponentsWithSizeLessThan(obj, minSize)
         
+        function mergeComponents(obj, minSize)
+            %MERGECOMPONENTS(OBJ, MAXSIZE) Merge graph components with a
+            %size less than MAXSIZE.
+            
+            [componentIds, componentSizes] = obj.listOfComponents();
+            
+            [oldComponentIds, newComponentIds] = ...
+                iMergeSmallComponents(componentIds, componentSizes, minSize);
+            obj.changeComponentId(oldComponentIds, newComponentIds);
+            
+            obj.minimiseComponentRange();
         end
-
+        
     end
-
+    
     %% PRIVATE METHODS
-
+    
     methods(Access=private)
-
+        
         function computeComponents(obj)
             %COMPUTECOMPONENTS(G) Compute the weakly-connected components in
             %the graph.
@@ -269,43 +278,53 @@ if iscell(dataOut)
 end
 end
 
-function componentTable = iMergeSmallComponents(componentIds, componentSizes, maxSize)
-    % Merges components that are smaller than maxSize into new components
-    
-    % Create a table with component IDs, their size, and the merged component ids
-    componentTable = iCreateMergedComponentTable(componentIds, componentSizes);
-    
-    % Select the small components
-    smallComponentTable = componentTable(componentTable.ComponentSize<maxSize, :);
-    smallComponentTable = sortrows(smallComponentTable, [-2, 1]);
-    
-    % Loop through all components
-    for k = 1:height(smallComponentTable)
-        % Skip is component has already been assigned
-        if ~amsla.common.isNullId(smallComponentTable.MergedComponentId(k))
-            continue;
-        end
-        
-        currMergedComponent = smallComponentTable.ComponentId(k);
-        smallComponentTable.MergedComponentId(k) = currMergedComponent;
-        currMergedComponentSize = smallComponentTable.ComponentSize(k);
-        
-        for j = height(smallComponentTable):-1:(k+1)
-            % Check if the component can be merged
-            if  amsla.common.isNullId(smallComponentTable.MergedComponentId(j)) && ...
-                    currMergedComponentSize(k)+smallComponentTable.ComponentSize(j) <= maxSize
-                smallComponentTable.MergedComponentId(j) = currMergedComponent;
-                currMergedComponentSize = currMergedComponentSize(k)+smallComponentTable.ComponentSize(j);
-            end
-        end
+function [oldComponentIds, newComponentIds] = iMergeSmallComponents(componentIds, componentSizes, maxSize)
+% Merges components that are smaller than maxSize into new components
+
+% Sort components by size
+[componentSizes, sorter] = sort(componentSizes, 'descend');
+componentIds = componentIds(sorter);
+maxComponentId = max(componentIds);
+
+% Select the small components
+selSmallComponents = componentSizes<maxSize;
+smallComponents = componentIds(selSmallComponents);
+smallComponentsSizes = componentSizes(selSmallComponents);
+numSmallComponents = numel(smallComponents);
+
+newSmallComponentIds = amsla.common.nullId(size(smallComponents));
+currNewSmallComponentId = maxComponentId;
+
+% Loop through all components starting from the largest ones
+for k = 1:numSmallComponents
+    % Skip is component has already been assigned
+    if ~iIsNullId(newSmallComponentIds(k))
+        continue;
     end
     
-    % Merge with large component table
-    largeComponentTable = componentTable(componentTable.ComponentSize>=maxSize, :);
-    largeComponentTable.MergedComponentId = largeComponentTable.ComponentId;
-    componentTable = sortrows([largeComponentTable; smallComponentTable], [3 1]);
+    currNewSmallComponentId = currNewSmallComponentId+1;
+    newSmallComponentIds(k) = currNewSmallComponentId;
+    currNewComponentSize = smallComponentsSizes(k);
     
-    % Check output
-    assert(~any(amsla.common.isNullId(componentTable.MergedComponentId)), ...
-        "One or more components were not merged");
+    for j = (k+1):numSmallComponents
+        % Check if the component can be merged
+        if  iIsNullId(newSmallComponentIds(j)) && currNewComponentSize+smallComponentSize(j) <= maxSize
+            newSmallComponentIds(j) = currNewSmallComponentId;
+            currNewComponentSize = currNewComponentSize + smallComponentSize(j);
+        end
     end
+end
+
+% Merge with large component table
+oldComponentIds = componentIds;
+newComponentIds = oldComponentIds;
+newComponentIds(selSmallComponents) = newSmallComponentIds;
+
+% Check output
+assert(~any(iIsNullId(newSmallComponentIds)), ...
+    "One or more components were not merged");
+end
+
+function tf = iIsNullId(dataIn)
+tf = amsla.common.isNullId(dataIn);
+end
