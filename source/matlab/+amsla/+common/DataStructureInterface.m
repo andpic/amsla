@@ -11,15 +11,6 @@ classdef(Abstract) DataStructureInterface < handle
     %      enteringEdgesOfNode   - Get the edges entering a node.
     %      loopEdgesOfNode       - Get the edges entering and exiting the
     %                              same node.
-    %
-    %      listOfComponents      - Get the list of weakly connected
-    %                              components.
-    %      rootsOfComponent      - Get the root nodes of a weakly connected
-    %                              component.
-    %      componentOfNode       - Get the component to which a node
-    %                              belongs.
-    %      computeComponents     - Compute the weakly connected components.
-    %
     %      listOfSubGraphs       - Get the list of sub-graphs.
     %      rootsOfSubGraph       - Get the root nodes of a sub-graph.
     %      subGraphOfNode        - Get the sub-graph to which a node
@@ -27,7 +18,7 @@ classdef(Abstract) DataStructureInterface < handle
     %      setSubGraphOfNode     - Assign a node to a sub-graph.
     %      resetSubGraphs        - Reset all sub-graphs to a null value.
     %
-    %      plot                  - Plot an EnhancedGraph.
+    %      plot                  - Plot the object.
     
     % Copyright 2019-2020 Andrea Picciau
     %
@@ -48,11 +39,11 @@ classdef(Abstract) DataStructureInterface < handle
     
     methods (Abstract, Access=public)
         
-        %% General
+        % General
         
         h = plot(obj, varargin)
         
-        %% Graph operations
+        % Graph operations
         
         outIds = listOfNodes(obj)
         
@@ -66,19 +57,9 @@ classdef(Abstract) DataStructureInterface < handle
         
         outIds = enteringEdgesOfNode(obj, nodeIds)
         
-        outIds = loopEdgesOfNode(obj, nodeIds)        
+        outIds = loopEdgesOfNode(obj, nodeIds)
         
-        %% Component-level operations
-        
-        varargout = listOfComponents(obj)
-        
-        outIds = rootsOfComponent(obj, componentIds)
-        
-        outIds = componentOfNode(obj, nodeIds)
-        
-        computeComponents(obj)
-        
-        %% Sub-graph-level operations
+        % Sub-graph-level operations
         
         varargout = listOfSubGraphs(obj)
         
@@ -90,7 +71,7 @@ classdef(Abstract) DataStructureInterface < handle
         
         resetSubGraphs(obj)
         
-        %% Edge-level operations
+        % Edge-level operations
         
         outIds = timeSlotOfEdge(obj, edgeIds)
         

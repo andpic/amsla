@@ -23,10 +23,7 @@ classdef ComponentPartitioner < handle
     
     properties(Access=private)
         %The object being partitioned.
-        DataStructure
-        
-        %A Table mapping nodes to components.
-        Component table
+        DataStructure        
     end
     
     %% PUBLIC METHODS
@@ -38,33 +35,12 @@ classdef ComponentPartitioner < handle
             %object for the DataStructure object G.
             
             validateattributes(dataStructure, ...
-                {'amsla.common.DataStructureInterface'}, ...
+                {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'nonempty', 'scalar'});
             
             obj.DataStructure = dataStructure;
             
-            allNodes = dataStructure.listOfNodes;
-            obj.Component = table( ...
-                allNodes', ...
-                amsla.common.nullId(size(allNodes))', ...
-                'VariableNames', {'NodeId', 'ComponentId'});
-            
             obj.computeComponents();
-        end
-        
-        function [componentId, numOfNodes] = listOfComponents(obj)
-            %LISTOFCOMPONENTS(P) Get the IDs of components in the graph.
-            %
-            %   C = LISTOFCOMPONENTS(C) Get the IDs of the components
-            %   only.
-            %
-            %   [C, NC] = LISTOFCOMPONENTS(C) Get the IDs and the number of
-            %   nodes in each component.
-            
-            componentId = unique(obj.Component.ComponentId);
-            numOfNodes = sum(obj.Component.ComponentId == componentId');
-            componentId = iRowVector(componentId);
-            numOfNodes = iRowVector(numOfNodes);
         end
         
         function outIds = rootsOfComponent(obj, componentIds)
@@ -111,13 +87,13 @@ classdef ComponentPartitioner < handle
             currNodes = allNodes;
             currComponents = allComponents;
             while ~isempty(currNodes)
-                obj.putNodeInComponent(currNodes, currComponents);
+                obj.DataStructure.setComponentOfNode(currNodes, currComponents);
                 currChildren = obj.DataStructure.childrenOfNode(currNodes);
                 [currNodes, currComponents] = ...
                     obj.matchNodesAndComponents(currChildren, currComponents);
             end
             
-            assert(~any(amsla.common.isNullId(obj.Component.ComponentId)), ...
+            assert(~any(amsla.common.isNullId(obj.DataStructure.listOfComponents())), ...
                 "amsla:ComponentPartitioner:IncompleteAssignment", ...
                 "Not all the nodes in the graph were assigned to a component");
             
@@ -128,7 +104,7 @@ classdef ComponentPartitioner < handle
             %MINIMISECOMPONENTRANGE(obj) Make sure the components are numbered from
             %1 to N.
             
-            allComponents = unique(obj.Component.ComponentId);
+            allComponents = unique(obj.DataStructure.listOfComponents());
             numComp = numel(allComponents);
             newIds = 1:numComp;
             for k = 1:numComp
@@ -169,21 +145,12 @@ classdef ComponentPartitioner < handle
             assert(isscalar(newComponentId), ...
                 "New component ID should be a scalar.");
             
-            obj.Component.ComponentId( ...
-                ismember(obj.Component.ComponentId, oldComponentIds)) = newComponentId;
-        end
-        
-        function putNodeInComponent(obj, currNodes, currComponents)
-            %PUTNODEINCOMPONENT(P, NID, CID) Put the nodes with IDs NID in
-            %the components of IDs CID.
+            listOfNodes = obj.DataStructure.listOfNodes();
+            listOfComponents = obj.DataStructure.componentOfNode(listOfNodes);
+            selOldComponent = ismember(listOfComponents, oldComponentIds);
             
-            [uniqueNodes, sorter] = unique(currNodes);
-            assert(numel(uniqueNodes)==numel(currNodes), ...
-                "Ambiguous input.");
-            
-            uniqueComponents = currComponents(sorter);
-            obj.Component.ComponentId(ismember(obj.Component.NodeId, uniqueNodes)) = ...
-                uniqueComponents';
+            obj.DataStructure.setComponentOfNode( ...
+                listOfNodes(selOldComponent), newComponentId);
         end
         
         function nodeIds = rootNodes(obj, componentIds)
@@ -193,15 +160,14 @@ classdef ComponentPartitioner < handle
             %
             %   ROOTNODES(P, []) Root nodes in the whole graph.
             
+            allNodes = obj.DataStructure.listOfNodes();
             if isempty(componentIds)
-                nodeIds = obj.Component.NodeId( ...
-                    obj.numberOfParents(obj.Component.NodeId) == 0);
+                nodeIds = allNodes(obj.numberOfParents(allNodes) == 0);
             else
+                allComponents = obj.DataStructure.componentOfNode(allNodes);
                 [componentIds, ~, invSorter] = unique(componentIds);
                 nodeIds = arrayfun(@(x) ...
-                    obj.Component.NodeId( ...
-                    obj.numberOfParents(obj.Component.NodeId) == 0 & ...
-                    obj.Component.ComponentId == x), ...
+                    allNodes(obj.numberOfParents(allNodes) == 0 & allComponents == x), ...
                     componentIds, ...
                     'UniformOutput', false);
                 nodeIds = nodeIds(invSorter);
@@ -226,11 +192,7 @@ end
 %% HELPER FUNCTIONS
 
 function dataOut = iRowVector(dataIn)
-if isempty(dataIn)
-    dataOut = [];
-else
-    dataOut = reshape(dataIn, 1, []);
-end
+dataOut = amsla.common.rowVector(dataIn);
 end
 
 function [outNodes, outComponents] = iMatchSize(inNodes, inComponents)
@@ -272,10 +234,7 @@ end
 end
 
 function dataOut = iArray(dataIn)
-dataOut = dataIn;
-if iscell(dataOut)
-    dataOut = iRowVector(cell2mat(dataOut));
-end
+dataOut = amsla.common.numericArray(dataIn);
 end
 
 function [oldComponentIds, newComponentIds] = iMergeSmallComponents(componentIds, componentSizes, maxSize)
