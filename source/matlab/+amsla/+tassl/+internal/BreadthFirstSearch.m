@@ -1,4 +1,4 @@
-classdef BreadthFirstSearch < handle
+classdef(Abstract) BreadthFirstSearch < handle
     %AMSLA.TASSL.INTERNAL.BREADTHFIRSTSEARCH Carry out a breadth-first
     %search to tag the nodes of a graph.
     %
@@ -21,9 +21,11 @@ classdef BreadthFirstSearch < handle
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    properties(Access=private)
+    properties(Access=protected)
+        
         %The object being partitioned.
-        DataStructure        
+        DataStructure
+        
     end
     
     %% ABSTRACT METHODS
@@ -40,7 +42,6 @@ classdef BreadthFirstSearch < handle
         
     end
     
-    
     %% PUBLIC METHODS
     
     methods(Access=public)
@@ -54,7 +55,36 @@ classdef BreadthFirstSearch < handle
                 {'nonempty', 'scalar'});
             
             obj.DataStructure = dataStructure;
+            obj.executeAlgorithm();
         end
+        
+    end
+    
+    %% PROTECTED METHODS
+    
+    methods(Access=protected)
+       
+        function compOut = computeBasedOnParents(obj, nodeIds, processPerNodeFcn)
+            %Given a set of node IDs, get their parents and apply
+            %processPerNodeFcn on them to get compOut.
+            
+            validateattributes(processPerNodeFcn, {'function_handle'}, ...
+                {'scalar', 'nonempty'});
+            
+            parentsOfChildren = obj.DataStructure.parentsOfNode(nodeIds);
+            if iscell(parentsOfChildren)
+                compOut = cellfun(processPerNodeFcn, parentsOfChildren, ...
+                    'UniformOutput', true);
+            else
+                compOut = processPerNodeFcn(parentsOfChildren);
+            end
+        end
+        
+    end
+    
+    %% PRIVATE METHODS
+    
+    methods(Access=private)
         
         function executeAlgorithm(obj)
             %EXECUTEALGORITHM(B) Execute the algorithm.
@@ -78,10 +108,6 @@ classdef BreadthFirstSearch < handle
                 % to the given function
                 currTags = obj.computeTags(currNodeIds);
             end
-            
-            assert(~any(amsla.common.isNullId(obj.NodeTagMap.Tag)), ...
-                "amsla:BreadthFirstSearch:IncompleteAssignment", ...
-                "Not all the nodes in the graph were assigned to a component");
         end
         
     end

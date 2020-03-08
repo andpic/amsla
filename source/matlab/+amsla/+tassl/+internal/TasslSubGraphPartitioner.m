@@ -1,12 +1,7 @@
-classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
+classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
         amsla.tassl.internal.SelectChildrenIfReady
-    %AMSLA.TASSL.INTERNAL.COMPONENTPARTITIONER Partitions a DataStructure
-    %into its weakly connected components.
-    %
-    %   P = AMSLA.TASSL.INTERNAL.COMPONENTPARTITIONER(G) Create a component
-    %   partitioner for the DataStructure object G.
-    %
-    %   ComponentPartitioner methods:
+    %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONER Partition a DataStructure
+    %into sub-graphs according to the algorithm in [Picciau2017].
     
     % Copyright 2018-2020 Andrea Picciau
     %
@@ -22,32 +17,28 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
+    %% PUBLIC PROPERTIES
+    
+    properties(SetAccess=immutable,GetAccess=public)
+        
+        MaxSize
+        
+        ComponentId
+    end
+    
     %% PUBLIC METHODS
     
     methods(Access=public)
         
-        function obj = ComponentPartitioner(dataStructure)
-            %COMPONENTPARTITIONER(G) Construct a ComponentPartitioner
-            %object for the DataStructure object G.
+        function obj = TasslSubGraphPartitioner(dataStructure, maxSize, componentId)
+            %TASSLSUBGRAPHPARTITIONER(G) Construct a
+            %TasslSubGraphPartitioner and partition the input DataStructure
+            %object.
             
             validateattributes(dataStructure, {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'scalar', 'nonempty'});
             
             obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
-            obj.minimiseComponentRange();
-        end
-        
-        function mergeComponents(obj, minSize)
-            %MERGECOMPONENTS(OBJ, MAXSIZE) Merge graph components with a
-            %size less than MAXSIZE.
-            
-            [componentIds, componentSizes] = obj.listOfComponents();
-            
-            [oldComponentIds, newComponentIds] = ...
-                iMergeSmallComponents(componentIds, componentSizes, minSize);
-            obj.changeComponentId(oldComponentIds, newComponentIds);
-            
-            obj.minimiseComponentRange();
         end
         
     end
@@ -60,24 +51,24 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
             %INITIALNODESANDTAGS Get the nodes and tags to initialise the
             %algorithm.
             
-            nodeIds = iArray(obj.rootNodes());
+            nodeIds = iArray(obj.rootNodes([]));
             initialComponents = iArray(1:numel(nodeIds));
         end
         
         function nodeIds = selectNextNodes(obj, currentNodeIds)
             %SELECTNEXTNODES Select the nodes whose parents have all been
-            %assigned to a component.
+            %assigned to a sub-graph.
             
             % Find children of current nodes
             nodeIds = obj.selectChildrenIfReady(currentNodeIds, @isNodeReady);
             
             function tf = isNodeReady(parentNodes)
-                tf = ~any(iIsNullId(obj.DataStructure.componentOfNode(parentNodes)));
+                tf = ~any(iIsNullId(obj.DataStructure.subGraphOfNode(parentNodes)));
             end
         end
         
         function componentIds = computeTags(obj, currentNodeIds)
-            %COMPUTETAGS Compute the component ID for each of the current
+            %COMPUTETAGS Compute the sub-graph ID for each of the current
             %nodes to assign.
             
             componentIds = obj.computeBasedOnParents(currentNodeIds, @getSmallestCompId);
@@ -88,15 +79,11 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
                 
                 % Compute the min
                 nextComponentId = min(compId);
-                if numel(compId)>1
-                    otherComponentIds = compId(compId~=nextComponentId);
-                    obj.changeComponentId(otherComponentIds, nextComponentId);
-                end
             end
         end
         
         function assignTagsToNodes(obj, nodeIds, tags)
-            %ASSIGNTAGSTONODES Assign the tags to the given node IDs.
+            %ASSIGNTAGSTONODES Assign the sub-graph to the given node IDs.
             
             obj.DataStructure.setComponentOfNode(nodeIds, tags);
         end
@@ -107,37 +94,17 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
     
     methods(Access=private)
         
-        function minimiseComponentRange(obj)
-            %Make sure the components are numbered from 1 to N.
-            
-            allComponents = unique(obj.DataStructure.listOfComponents());
-            numComp = numel(allComponents);
-            newIds = 1:numComp;
-            for k = 1:numComp
-                obj.changeComponentId(allComponents(k), newIds(k));
-            end
-        end
-        
-        function changeComponentId(obj, oldComponentIds, newComponentId)
-            %CHANGECOMPONENTID(P, OLDID, NEWID) Replace component IDs with
-            %another one.
-            
-            assert(isscalar(newComponentId), ...
-                "New component ID should be a scalar.");
-            
-            listOfNodes = obj.DataStructure.listOfNodes();
-            listOfComponents = obj.DataStructure.componentOfNode(listOfNodes);
-            selOldComponent = ismember(listOfComponents, oldComponentIds);
-            
-            obj.DataStructure.setComponentOfNode( ...
-                listOfNodes(selOldComponent), newComponentId);
-        end
-        
-        function nodeIds = rootNodes(obj)
-            %ROOTNODES(P) Root nodes in the whole graph.
+        function nodeIds = rootNodes(obj, componentIds)
+            %ROOTNODES(P, CID) Root nodes in a given component.
             
             allNodes = obj.DataStructure.listOfNodes();
-            nodeIds = allNodes(obj.numberOfParents(allNodes) == 0);
+            allComponents = obj.DataStructure.componentOfNode(allNodes);
+            [componentIds, ~, invSorter] = unique(componentIds);
+            nodeIds = arrayfun(@(x) ...
+                allNodes(obj.numberOfParents(allNodes) == 0 & allComponents == x), ...
+                componentIds, ...
+                'UniformOutput', false);
+            nodeIds = nodeIds(invSorter);
         end
         
         function num = numberOfParents(obj, nodeIds)

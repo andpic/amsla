@@ -3,22 +3,10 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
     %decorator of a DataStructure object.
     %
     %   AMSLA.TASSL.INTERNAL.DATASTRUCTUREDECORATOR decoration methods:
-    %      listOfTags           - Get the list of the IDs of all the nodes in
-    %                              the graph.
-    %      tagOfNode        - Get the children of a node.
-    %      setTagOfNode    - Get the edges coming out of  a node.
-    %      parentsOfNode         - Get the parents of a node.
-    %      enteringEdgesOfNode   - Get the edges entering a node.
-    %      loopEdgesOfNode       - Get the edges entering and exiting the
-    %                              same node.
-    %      listOfSubGraphs       - Get the list of sub-graphs.
-    %      rootsOfSubGraph       - Get the root nodes of a sub-graph.
-    %      subGraphOfNode        - Get the sub-graph to which a node
-    %                              belongs.
-    %      setSubGraphOfNode     - Assign a node to a sub-graph.
-    %      resetSubGraphs        - Reset all sub-graphs to a null value.
-    %
-    %      plot                  - Plot an EnhancedGraph.
+    %      listOfTags      - Get the list of the tags of a certain type
+    %                        associated with nodes in the graph.
+    %      tagOfNode       - Get the tag of a node.
+    %      setTagOfNode    - Associate a node with a tag.
     
     % Copyright 2018-2020 Andrea Picciau
     %
@@ -56,7 +44,8 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
         end
         
         function tag = tagOfNode(obj, tagName, nodeIds)
-            %TAGOFNODE(T, N) Ge
+            %TAGOFNODE(D, TN, N) Get the tag named TN associated with the
+            %node N.
             
             [nodeIds, ~, invSorter] = unique(nodeIds);
             tag = obj.NodeTagMap.(tagName).Tag(...
@@ -65,6 +54,12 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
         end
         
         function setTagOfNode(obj, tagName, nodeIds, tags)
+            %SETTAGOFNODE(D, T, N) Set the tag named TN associated with the
+            %node of ID N.
+            
+            if isscalar(tags)
+                tags = tags*ones(size(nodeIds));
+            end
             [uniqueNodes, sorter] = unique(nodeIds);
             assert(numel(uniqueNodes)==numel(nodeIds), ...
                 "Ambiguous input.");
@@ -76,7 +71,7 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
         end
     end
     
-    %% PUBLIC
+    %% PUBLIC METHODS
     
     methods(Access=public)
         function obj = DataStructureDecorator(dataStructure, tagName)
