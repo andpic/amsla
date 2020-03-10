@@ -1,7 +1,9 @@
-classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
+classdef TasslSubGraphPartitionerLargeComponent < ...
+        amsla.tassl.internal.TasslSubGraphPartitionerImplInterface & ...
+        amsla.tassl.internal.BreadthFirstSearch & ...
         amsla.tassl.internal.SelectChildrenIfReady
-    %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONER Partition a DataStructure
-    %into sub-graphs according to the algorithm in [Picciau2017].
+    %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONERLARGECOMPONENT Partition 
+    %a large graph component into sub-graphs.
     
     % Copyright 2018-2020 Andrea Picciau
     %
@@ -17,21 +19,12 @@ classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ..
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    %% PUBLIC PROPERTIES
-    
-    properties(SetAccess=immutable,GetAccess=public)
-        
-        MaxSize
-        
-        ComponentId
-    end
-    
-    %% PUBLIC METHODS
+   %% PUBLIC METHODS
     
     methods(Access=public)
         
-        function obj = TasslSubGraphPartitioner(dataStructure, maxSize, componentId)
-            %TASSLSUBGRAPHPARTITIONER(G) Construct a
+        function obj = TasslSubGraphPartitionerLargeComponent(dataStructure, maxSize, componentId)
+            %TASSLSUBGRAPHPARTITIONERLARGECOMPONENT(G) Construct a
             %TasslSubGraphPartitioner and partition the input DataStructure
             %object.
             
@@ -39,8 +32,7 @@ classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ..
                 {'scalar', 'nonempty'});
             
             obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
-            obj.MaxSize = maxSize;
-            obj.ComponentId = componentId;
+            obj@amsla.tassl.internal.TasslSubGraphPartitionerImplInterface(maxSize, componentId);
         end
         
     end

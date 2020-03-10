@@ -34,6 +34,7 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
                 {'scalar', 'nonempty'});
             
             obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
+            obj.executeAlgorithm();
             obj.minimiseComponentRange();
         end
         

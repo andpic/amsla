@@ -4,8 +4,6 @@ classdef(Abstract) BreadthFirstSearch < handle
     %
     %   P = AMSLA.TASSL.INTERNAL.BREADTHFIRSTSEACH(G) Create a component
     %   partitioner for the DataStructure object G.
-    %
-    %   ComponentPartitioner methods:
     
     % Copyright 2018-2020 Andrea Picciau
     %
@@ -55,36 +53,12 @@ classdef(Abstract) BreadthFirstSearch < handle
                 {'nonempty', 'scalar'});
             
             obj.DataStructure = dataStructure;
-            obj.executeAlgorithm();
         end
-        
     end
     
     %% PROTECTED METHODS
     
     methods(Access=protected)
-       
-        function compOut = computeBasedOnParents(obj, nodeIds, processPerNodeFcn)
-            %Given a set of node IDs, get their parents and apply
-            %processPerNodeFcn on them to get compOut.
-            
-            validateattributes(processPerNodeFcn, {'function_handle'}, ...
-                {'scalar', 'nonempty'});
-            
-            parentsOfChildren = obj.DataStructure.parentsOfNode(nodeIds);
-            if iscell(parentsOfChildren)
-                compOut = cellfun(processPerNodeFcn, parentsOfChildren, ...
-                    'UniformOutput', true);
-            else
-                compOut = processPerNodeFcn(parentsOfChildren);
-            end
-        end
-        
-    end
-    
-    %% PRIVATE METHODS
-    
-    methods(Access=private)
         
         function executeAlgorithm(obj)
             %EXECUTEALGORITHM(B) Execute the algorithm.
@@ -107,6 +81,22 @@ classdef(Abstract) BreadthFirstSearch < handle
                 % Compute the tag to assign to the children node according
                 % to the given function
                 currTags = obj.computeTags(currNodeIds);
+            end
+        end
+        
+        function compOut = computeBasedOnParents(obj, nodeIds, processPerNodeFcn)
+            %Given a set of node IDs, get their parents and apply
+            %processPerNodeFcn on them to get compOut.
+            
+            validateattributes(processPerNodeFcn, {'function_handle'}, ...
+                {'scalar', 'nonempty'});
+            
+            parentsOfChildren = obj.DataStructure.parentsOfNode(nodeIds);
+            if iscell(parentsOfChildren)
+                compOut = cellfun(processPerNodeFcn, parentsOfChildren, ...
+                    'UniformOutput', true);
+            else
+                compOut = processPerNodeFcn(parentsOfChildren);
             end
         end
         
