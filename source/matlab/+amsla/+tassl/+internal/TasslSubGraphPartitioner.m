@@ -1,5 +1,4 @@
-classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
-        amsla.tassl.internal.SelectChildrenIfReady
+classdef TasslSubGraphPartitioner < handle
     %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONER Partition a DataStructure
     %into sub-graphs according to the algorithm in [Picciau2017].
     
@@ -17,13 +16,14 @@ classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ..
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    %% PUBLIC PROPERTIES
+    %% PRIVATE PROPERTIES
     
-    properties(SetAccess=immutable,GetAccess=public)
+    properties(Access=private)
         
-        MaxSize
+        % Implementation of the partitioning algorithm depending on the
+        % number of nodes in a component.
+        Impl
         
-        ComponentId
     end
     
     %% PUBLIC METHODS
@@ -38,145 +38,33 @@ classdef TasslSubGraphPartitioner < amsla.tassl.internal.BreadthFirstSearch & ..
             validateattributes(dataStructure, {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'scalar', 'nonempty'});
             
-            obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
-            obj.MaxSize = maxSize;
-            obj.ComponentId = componentId;
-        end
-        
-    end
-    
-    %% PROTECTED METHODS
-    
-    methods(Access=protected)
-        
-        function [nodeIds, initialComponents] = initialNodesAndTags(obj)
-            %INITIALNODESANDTAGS Get the nodes and tags to initialise the
-            %algorithm.
+            [compIds, compSizes] = dataStructure.listOfComponents();
+            currCompSize = compSizes(compIds == componentId);
             
-            nodeIds = iArray(obj.rootNodes()));
-            initialComponents = iArray(1:numel(nodeIds));
-        end
-        
-        function nodeIds = selectNextNodes(obj, currentNodeIds)
-            %SELECTNEXTNODES Select the nodes whose parents have all been
-            %assigned to a sub-graph.
-            
-            % Find children of current nodes
-            nodeIds = obj.selectChildrenIfReady(currentNodeIds, @isNodeReady);
-            
-            function tf = isNodeReady(parentNodes)
-                tf = ~any(iIsNullId(obj.DataStructure.subGraphOfNode(parentNodes)));
-            end
-        end
-        
-        function componentIds = computeTags(obj, currentNodeIds)
-            %COMPUTETAGS Compute the sub-graph ID for each of the current
-            %nodes to assign.
-            
-            componentIds = obj.computeBasedOnParents(currentNodeIds, @getSmallestCompId);
-            
-            function nextComponentId = getSmallestCompId(allParents)
-                % Get the components of parent nodes
-                compId = obj.DataStructure.componentOfNode(allParents);
-                
-                % Compute the min
-                nextComponentId = min(compId);
-            end
-        end
-        
-        function assignTagsToNodes(obj, nodeIds, tags)
-            %ASSIGNTAGSTONODES Assign the sub-graph to the given node IDs.
-            
-            obj.DataStructure.setComponentOfNode(nodeIds, tags);
-        end
-        
-    end
-    
-    %% PRIVATE METHODS
-    
-    methods(Access=private)
-        
-        function nodeIds = rootNodes(obj, componentIds)
-            %ROOTNODES(P, CID) Root nodes in a given component.
-            
-            allNodes = obj.DataStructure.listOfNodes();
-            allComponents = obj.DataStructure.componentOfNode(allNodes);
-            [componentIds, ~, invSorter] = unique(componentIds);
-            nodeIds = arrayfun(@(x) ...
-                allNodes(obj.numberOfParents(allNodes) == 0 & allComponents == x), ...
-                componentIds, ...
-                'UniformOutput', false);
-            nodeIds = nodeIds(invSorter);
-        end
-        
-        function num = numberOfParents(obj, nodeIds)
-            %NUMBEROFPARENTS(P, NID) Number of parents of the given nodes,
-            %given their IDs.
-            
-            parentsOfNodes = obj.DataStructure.parentsOfNode(nodeIds);
-            if iscell(parentsOfNodes)
-                num = cellfun(@numel, parentsOfNodes, 'UniformOutput', true);
+            if currCompSize<=maxSize
+                obj.Impl = amsla.tassl.internal.TasslSubGraphPartitionerSmallComponent( ...
+                    dataStructure, maxSize, componentId);
             else
-                num = numel(parentsOfNodes);
+                obj.Impl = amsla.tassl.internal.TasslSubGraphPartitionerLargeComponent( ...
+                    dataStructure, maxSize, componentId);
+            end
+        end
+        
+        function numSubGraphs = numberOfSubGraphs(obj)
+            %NUMBEROFSUBGRAPHS Retrieve the number of sub-graphs the current
+            %component was split into.
+            
+            numSubGraphs = obj.Impl.NumSubGraphs;
+        end
+        
+        function executeAlgorithm(obj)
+            %EXECUTEALGORITHM execute the partitioning of a large component.
+            
+            if isa(obj.Impl, "amsla.tassl.internal.TasslSubGraphPartitionerLargeComponent")
+                obj.executeAlgorithm();
             end
         end
         
     end
-end
-
-%% HELPER FUNCTIONS
-
-function dataOut = iArray(dataIn)
-dataOut = amsla.common.numericArray(dataIn);
-end
-
-function [oldComponentIds, newComponentIds] = iMergeSmallComponents(componentIds, componentSizes, maxSize)
-% Merges components that are smaller than maxSize into new components
-
-% Sort components by size
-[componentSizes, sorter] = sort(componentSizes, 'descend');
-componentIds = componentIds(sorter);
-maxComponentId = max(componentIds);
-
-% Select the small components
-selSmallComponents = componentSizes<maxSize;
-smallComponents = componentIds(selSmallComponents);
-smallComponentsSizes = componentSizes(selSmallComponents);
-numSmallComponents = numel(smallComponents);
-
-newSmallComponentIds = amsla.common.nullId(size(smallComponents));
-currNewSmallComponentId = maxComponentId;
-
-% Loop through all components starting from the largest ones
-for k = 1:numSmallComponents
-    % Skip is component has already been assigned
-    if ~iIsNullId(newSmallComponentIds(k))
-        continue;
-    end
     
-    currNewSmallComponentId = currNewSmallComponentId+1;
-    newSmallComponentIds(k) = currNewSmallComponentId;
-    currNewComponentSize = smallComponentsSizes(k);
-    
-    for j = (k+1):numSmallComponents
-        % Check if the component can be merged
-        if  iIsNullId(newSmallComponentIds(j)) && currNewComponentSize+smallComponentSize(j) <= maxSize
-            newSmallComponentIds(j) = currNewSmallComponentId;
-            currNewComponentSize = currNewComponentSize + smallComponentSize(j);
-        end
-    end
-end
-
-% Merge with large component table
-oldComponentIds = componentIds;
-newComponentIds = oldComponentIds;
-newComponentIds(selSmallComponents) = newSmallComponentIds;
-
-% Check output
-assert(~any(iIsNullId(newSmallComponentIds)), ...
-    "One or more components were not merged");
-end
-
-function tf = iIsNullId(dataIn)
-tf = amsla.common.isNullId(dataIn);
 end

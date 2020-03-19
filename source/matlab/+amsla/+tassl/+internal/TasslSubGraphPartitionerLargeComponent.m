@@ -1,8 +1,8 @@
-classdef TasslSubGraphPartitionerLargeComponent < ...
+classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
         amsla.tassl.internal.TasslSubGraphPartitionerImplInterface & ...
         amsla.tassl.internal.BreadthFirstSearch & ...
         amsla.tassl.internal.SelectChildrenIfReady
-    %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONERLARGECOMPONENT Partition 
+    %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONERLARGECOMPONENT Partition
     %a large graph component into sub-graphs.
     
     % Copyright 2018-2020 Andrea Picciau
@@ -19,7 +19,7 @@ classdef TasslSubGraphPartitionerLargeComponent < ...
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-   %% PUBLIC METHODS
+    %% PUBLIC METHODS
     
     methods(Access=public)
         
@@ -32,8 +32,8 @@ classdef TasslSubGraphPartitionerLargeComponent < ...
                 {'scalar', 'nonempty'});
             
             obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
-            obj@amsla.tassl.internal.TasslSubGraphPartitionerImplInterface(maxSize, componentId);
-        end
+            obj@amsla.tassl.internal.TasslSubGraphPartitionerImplInterface(maxSize, componentId);            
+        end                
         
     end
     
@@ -45,7 +45,7 @@ classdef TasslSubGraphPartitionerLargeComponent < ...
             %INITIALNODESANDTAGS Get the nodes and tags to initialise the
             %algorithm.
             
-            nodeIds = iArray(obj.rootNodes()));
+            nodeIds = iArray(obj.rootNodes());
             initialComponents = iArray(1:numel(nodeIds));
         end
         
@@ -120,53 +120,6 @@ end
 
 function dataOut = iArray(dataIn)
 dataOut = amsla.common.numericArray(dataIn);
-end
-
-function [oldComponentIds, newComponentIds] = iMergeSmallComponents(componentIds, componentSizes, maxSize)
-% Merges components that are smaller than maxSize into new components
-
-% Sort components by size
-[componentSizes, sorter] = sort(componentSizes, 'descend');
-componentIds = componentIds(sorter);
-maxComponentId = max(componentIds);
-
-% Select the small components
-selSmallComponents = componentSizes<maxSize;
-smallComponents = componentIds(selSmallComponents);
-smallComponentsSizes = componentSizes(selSmallComponents);
-numSmallComponents = numel(smallComponents);
-
-newSmallComponentIds = amsla.common.nullId(size(smallComponents));
-currNewSmallComponentId = maxComponentId;
-
-% Loop through all components starting from the largest ones
-for k = 1:numSmallComponents
-    % Skip is component has already been assigned
-    if ~iIsNullId(newSmallComponentIds(k))
-        continue;
-    end
-    
-    currNewSmallComponentId = currNewSmallComponentId+1;
-    newSmallComponentIds(k) = currNewSmallComponentId;
-    currNewComponentSize = smallComponentsSizes(k);
-    
-    for j = (k+1):numSmallComponents
-        % Check if the component can be merged
-        if  iIsNullId(newSmallComponentIds(j)) && currNewComponentSize+smallComponentSize(j) <= maxSize
-            newSmallComponentIds(j) = currNewSmallComponentId;
-            currNewComponentSize = currNewComponentSize + smallComponentSize(j);
-        end
-    end
-end
-
-% Merge with large component table
-oldComponentIds = componentIds;
-newComponentIds = oldComponentIds;
-newComponentIds(selSmallComponents) = newSmallComponentIds;
-
-% Check output
-assert(~any(iIsNullId(newSmallComponentIds)), ...
-    "One or more components were not merged");
 end
 
 function tf = iIsNullId(dataIn)
