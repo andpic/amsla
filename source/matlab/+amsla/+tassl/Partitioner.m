@@ -23,13 +23,6 @@ classdef Partitioner < amsla.common.PartitionerInterface
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    properties(Access=private)
-        
-        %Object that implements graph operations for the TASSL approach
-        GraphWrapper
-        
-    end
-    
     %% PUBLIC METHDOS
     
     methods(Access=public)
@@ -44,114 +37,44 @@ classdef Partitioner < amsla.common.PartitionerInterface
             assert(isscalar(maxSubGraphSize) && maxSubGraphSize>0, ...
                 "amsla:tassl:Partitioner", ...
                 "Bad sub-graph size for the TASSL partitioner");
-            
-            obj.GraphWrapper = amsla.tassl.internal.PartitionerGraphWrapper( ...
-                obj.getGraphToPartition(), ...
-                maxSubGraphSize);
         end
         
-        function partitioningResult = partition(obj)
+        function partitioningResult = partition(obj) %#ok<STOUT>
             %PARTITION(A) Partition the graph according to the TASSL
             %algorithm.
             
-            tentativeNumber = 0;
-            isSuccesful = false;
+            graph = amsla.tassl.internal.ComponentDecorator( ...
+                obj.getGraphToPartition());
+            maxSubGraphSize = obj.getMaxSubGraphSize();
             
-            while ~isSuccesful && tentativeNumber<=50
-                tentativeNumber = tentativeNumber + 1;
-                [criterion, density] = iSetNewTentative(tentativeNumber);
-                isSuccesful = obj.tentativePartitioning(criterion, density);
+            % Partition into components
+            compPartitioner = amsla.tassl.internal.ComponentPartitioner(graph);
+            compPartitioner.mergeComponents(maxSubGraphSize);
+            
+            % Partition into sub-graphs
+            allComponents = graph.listOfComponents();
+            numComponents = numel(allComponents);
+            
+            subGraphPartitioners = cell(numComponents, 1);
+            for k = 1:numComponents
+                currComponent = allComponents(k);
+                subGraphPartitioners{k} = ...
+                    amsla.tassl.internal.TasslSubGraphPartitioner( ...
+                    graph, maxSubGraphSize, currComponent);
             end
             
-            % Writing out the result
-            partitioningResult = amsla.tassl.PartitioningResult(...
-                isSuccesful, tentativeNumber, criterion, density);
-            if ~isSuccesful
-                error("amsla:couldNotPartition", ...
-                    "Could not partition the given matrix.");
-            end
+            cellfun(@executeAlgorithm, subGraphPartitioners);
+            
+            numSubGraphs = cellfun(@numberOfSubGraphs, subGraphPartitioners, ...
+                'UniformOutput', true);
+            accumSubGraph = accumarray(numSubGraphs);
+            accumSubGraph = [1, accumSubGraph(1:(end-1))];
+            
+            cellfun(@renumberSubGraphsStartingFrom, ...
+                subGraphPartitioners, accumSubGraph, ...
+                'UniformOutput', true);
         end
         
     end
     
-    %% PRIVATE METHODS
-    
-    methods (Access=private)
-        
-        function isSuccessful = tentativePartitioning(obj, criterion, density)
-            % Try partitioning the graph given a node sorting criterion and
-            % an initial sub-graph density.
-            
-            obj.updateProgressPlot();
-            
-            % Clear any previous tentative
-            obj.GraphWrapper.resetAllAssignments();
-            
-            % Set sorting criterion
-            obj.GraphWrapper.setSortingCriterion(criterion);
-            
-            % Initialise tentative with root nodes
-            [nodeIds, subGraphIds] = obj.GraphWrapper.distributeRootsToSubGraphs(density);
-            
-            % Loop until all nodes have been checked
-            isSuccessful = true;
-            while ~isempty(nodeIds)
-                try
-                    % Assign nodes to sub-graphs
-                    obj.GraphWrapper.assignNodeToSubGraph(nodeIds, subGraphIds);
-                    obj.updateProgressPlot();
-                    
-                    % Get new nodes for assignment
-                    [nodeIds, subGraphIds] = obj.GraphWrapper.childrenOfNodeReadyForAssignment(nodeIds);
-                catch matlabException
-                    if iCheckExceptionForNextTentative(matlabException)
-                        % If an error is thrown to execute a new tentative,
-                        % exit now.
-                        isSuccessful = false;
-                        obj.GraphWrapper.resetAllAssignments();
-                        break;
-                    else
-                        rethrow(matlabException);
-                    end
-                end
-            end
-            
-            % If it got to the end of the loop, check that the assignment is
-            % complete or that the assignment makes sense.
-            assert( ...
-                (isSuccessful && obj.GraphWrapper.checkFullAssignment()) || ...
-                (~isSuccessful && ~obj.GraphWrapper.checkFullAssignment()), ...
-                "Inconsistent result of the tentative to partition the graph.");
-        end
-        
-    end
-    
-end
-
-
-%% HELPER FUNCTIONS
-
-function [criterion, density] = iSetNewTentative(tentativeNumber)
-% List of available sorting criterion and density
-sortingCriterionList = [ ...
-    "descend outdegree", ...
-    "ascend outdegree", ...
-    "descend indegree", ...
-    "ascend indegree", ...
-    "descend index" ...
-    ];
-numSortingCriteria = numel(sortingCriterionList);
-densityList = 2.^(-(0:1:8));
-numDensity = numel(densityList);
-
-assert(tentativeNumber<=numSortingCriteria*numDensity, "Cannot partition the graph. No more sorting criteria or densities to try.");
-
-% Pick density and sorting criterion
-density = densityList(mod(tentativeNumber-1, numDensity)+1);
-criterion = sortingCriterionList(floor((tentativeNumber-1)/numDensity)+1);
-
-end
-
-function nextTentative = iCheckExceptionForNextTentative(matlabException)
-nextTentative = strcmp(matlabException.identifier, "amsla:badSubGraph");
 end

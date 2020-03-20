@@ -58,6 +58,20 @@ classdef(Abstract) TasslSubGraphPartitionerImplInterface
             obj.NumSubGraphs = ceil(numNodes/maxSize);
         end
         
+        function renumberSubGraphsStartingFrom(obj, firstSubGraphId)
+            %RENUMBERSUBGRAPHSSTARTINGFROM Renumber all the sub-graphs in
+            %the component so that they start with a given ID.
+            
+            allNodes = obj.nodesInComponent();
+            currentSubGraphs = obj.subGraphsOfNode(allNodes);
+            
+            minSubGraph = min(currentSubGraphs);
+            
+            newSubGraphs = currentSubGraphs-minSubGraph+firstSubGraphId;
+            
+            obj.setSubGraphOfNode(allNodes, newSubGraphs);
+        end
+        
     end
     
     %% PROTECTED METHODS

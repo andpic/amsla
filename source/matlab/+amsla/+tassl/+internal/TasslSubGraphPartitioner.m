@@ -65,6 +65,13 @@ classdef TasslSubGraphPartitioner < handle
             end
         end
         
+        function renumberSubGraphsStartingFrom(obj, startingFrom)
+            %RENUMBERSUBGRAPHSSTARTINGFROM Renumber the sub-graphs to start
+            %from a specific ID.
+            
+            obj.Impl.renumberSubGraphsStartingFrom(startingFrom);
+        end
+        
     end
     
 end
