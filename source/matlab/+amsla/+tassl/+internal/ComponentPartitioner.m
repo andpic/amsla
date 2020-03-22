@@ -42,11 +42,13 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
             %MERGECOMPONENTS(OBJ, MAXSIZE) Merge graph components with a
             %size less than MAXSIZE.
             
-            [componentIds, componentSizes] = obj.listOfComponents();
+            [componentIds, componentSizes] = obj.DataStructure.listOfComponents();
             
             [oldComponentIds, newComponentIds] = ...
                 iMergeSmallComponents(componentIds, componentSizes, minSize);
-            obj.changeComponentId(oldComponentIds, newComponentIds);
+            for k = 1:numel(oldComponentIds)
+                obj.changeComponentId(oldComponentIds(k), newComponentIds(k));
+            end
             
             obj.minimiseComponentRange();
         end
@@ -164,6 +166,9 @@ end
 
 function [oldComponentIds, newComponentIds] = iMergeSmallComponents(componentIds, componentSizes, maxSize)
 % Merges components that are smaller than maxSize into new components
+
+assert(numel(componentIds)==numel(componentSizes), ...
+    "The component IDs and their sizes do not match.");
 
 % Sort components by size
 [componentSizes, sorter] = sort(componentSizes, 'descend');

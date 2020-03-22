@@ -77,7 +77,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
             end
             
             partitioningResult = ...
-                amsla.levelSet.PartitioningResult(obj.GraphWrapper.checkFullAssignment());
+                amsla.common.PartitioningResult(obj.GraphWrapper.checkFullAssignment());
         end
         
     end

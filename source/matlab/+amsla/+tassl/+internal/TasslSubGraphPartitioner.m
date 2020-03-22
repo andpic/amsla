@@ -57,11 +57,11 @@ classdef TasslSubGraphPartitioner < handle
             numSubGraphs = obj.Impl.NumSubGraphs;
         end
         
-        function executeAlgorithm(obj)
-            %EXECUTEALGORITHM execute the partitioning of a large component.
+        function partitionComponent(obj)
+            %PARTITIONCOMPONENT execute the partitioning of a large component.
             
             if isa(obj.Impl, "amsla.tassl.internal.TasslSubGraphPartitionerLargeComponent")
-                obj.executeAlgorithm();
+                obj.Impl.partitionComponent();
             end
         end
         

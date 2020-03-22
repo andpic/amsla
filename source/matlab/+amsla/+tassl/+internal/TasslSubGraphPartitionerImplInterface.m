@@ -1,4 +1,4 @@
-classdef(Abstract) TasslSubGraphPartitionerImplInterface
+classdef(Abstract) TasslSubGraphPartitionerImplInterface < handle
     %AMSLA.TASSL.INTERNAL.TASSSUBGRAPHPARTITIONERIMPLINTERFACE Common
     %interface for all implementations of TASSL component processing.
     
@@ -63,13 +63,12 @@ classdef(Abstract) TasslSubGraphPartitionerImplInterface
             %the component so that they start with a given ID.
             
             allNodes = obj.nodesInComponent();
-            currentSubGraphs = obj.subGraphsOfNode(allNodes);
+            currentSubGraphs = obj.DataStructure.subGraphOfNode(allNodes);
             
             minSubGraph = min(currentSubGraphs);
-            
             newSubGraphs = currentSubGraphs-minSubGraph+firstSubGraphId;
             
-            obj.setSubGraphOfNode(allNodes, newSubGraphs);
+            obj.DataStructure.setSubGraphOfNode(allNodes, newSubGraphs);
         end
         
     end

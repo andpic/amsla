@@ -1,4 +1,4 @@
-classdef test_Partitioner < amsla.test.tools.AmslaTest
+classdef test_Partitioner < amsla.test.shared.PartitionerTests
     %TEST_PARTITIONER Tests for the class amsla.tassl.Partitioner
     
     % Copyright 2019 Andrea Picciau
@@ -22,20 +22,4 @@ classdef test_Partitioner < amsla.test.tools.AmslaTest
         end
         
     end
-    
-    methods(Access=protected)
-        
-        function verifyPartitioningResultOfExampleGraph(testCase, partitioningResult)
-            testCase.verifyTrue(partitioningResult.WasPartitioned, ...
-                "TASSL could not partition the given graph.");
-            testCase.verifyEqual(partitioningResult.NumberOfTentatives, 3, ...
-                "TASSL should have taken 3 tentatives to partition this graph.");
-            testCase.verifyEqual(partitioningResult.FinalCriterion, "descend outdegree", ...
-                "TASSL should have used 'descend outdegree' to partition this graph.");
-            testCase.verifyEqual(partitioningResult.RootNodeDensity, 0.250, ...
-                "Wrong number of root nodes per sub-graph to partition this graph with TASSL.");
-        end
-        
-    end
-    
 end

@@ -1,4 +1,4 @@
-classdef(Abstract) SelectChildrenIfReady
+classdef(Abstract) SelectChildrenIfReady < handle
     %AMSLA.TASSL.INTERNAL.SELECTCHILDRENIFREADY A mixin that helps finding
     %out which children nodes are ready to be processed.
     
@@ -16,21 +16,15 @@ classdef(Abstract) SelectChildrenIfReady
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    %% ABSTRACT PROPERTIES
-    
-    properties(Abstract)
-        
-        %A a data structure representing the graph
-        DataStructure amsla.common.DataStructureInterface
-        
-    end
-    
     %% ABSTRACT METHODS
     
     methods(Abstract, Access=protected)
         
         % A method executing a function on the parents of a node.
-        isReady = obj.computeBasedOnParents(obj, nodeIds, isReadyFcn);
+        isReady = computeBasedOnParents(obj, nodeIds, isReadyFcn);
+        
+        % Get the DataStructure object
+        dataStructure = getDataStructure(obj);
         
     end
     
@@ -43,8 +37,9 @@ classdef(Abstract) SelectChildrenIfReady
             %they satisfy the given function.
             
             % Find children of current nodes
-            nodeIds = obj.DataStructure.childrenOfNode(currentNodeIds);
-            nodeIds = unique(iArray(nodeIds));
+            dataStructure = obj.getDataStructure();
+            nodeIds = dataStructure.childrenOfNode(currentNodeIds);
+            nodeIds = unique(amsla.common.numericArray(nodeIds));
             
             % Find out which ones are ready
             isChildReady = obj.computeBasedOnParents(nodeIds, isReadyFcn);

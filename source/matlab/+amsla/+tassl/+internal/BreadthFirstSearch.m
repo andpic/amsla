@@ -60,8 +60,15 @@ classdef(Abstract) BreadthFirstSearch < handle
     
     methods(Access=protected)
         
-        function executeAlgorithm(obj)
+        function dataStructure = getDataStructure(obj)
+            %GETDATASTRUCTURE Get the internal DataStructure object.
+            dataStructure = obj.DataStructure;
+        end
+        
+        function success = executeAlgorithm(obj)
             %EXECUTEALGORITHM(B) Execute the algorithm.
+            
+            success = true;
             
             [currNodeIds, currTags] = obj.initialNodesAndTags();
             currNodeIds = iArray(currNodeIds);
@@ -80,7 +87,11 @@ classdef(Abstract) BreadthFirstSearch < handle
                 
                 % Compute the tag to assign to the children node according
                 % to the given function
-                currTags = obj.computeTags(currNodeIds);
+                currTags = obj.computeTags(currNodeIds);                
+                if any(amsla.common.isNullId(currTags))
+                    success = false;
+                    break;
+                end
             end
         end
         

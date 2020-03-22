@@ -21,14 +21,5 @@ classdef test_Partitioner < amsla.test.shared.PartitionerTests
             analyserObject = amsla.levelSet.Partitioner(underlyingObject, []);
         end
         
-    end
-    
-    methods(Access=protected)
-        
-        function verifyPartitioningResultOfExampleGraph(testCase, partitioningResult)
-            testCase.verifyTrue(partitioningResult.WasPartitioned, ...
-                "The level-set algorithm could not partition the given graph.");
-        end
-        
-    end
+    end    
 end

@@ -9,7 +9,7 @@ classdef Partitioner < amsla.common.PartitionerInterface
     %       partition        - Partitions the matrix according to the TASSL
     %                          algorithm.
     
-    % Copyright 2018-2019 Andrea Picciau
+    % Copyright 2018-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -39,9 +39,11 @@ classdef Partitioner < amsla.common.PartitionerInterface
                 "Bad sub-graph size for the TASSL partitioner");
         end
         
-        function partitioningResult = partition(obj) %#ok<STOUT>
+        function partitioningResult = partition(obj)
             %PARTITION(A) Partition the graph according to the TASSL
             %algorithm.
+            
+            obj.updateProgressPlot();
             
             graph = amsla.tassl.internal.ComponentDecorator( ...
                 obj.getGraphToPartition());
@@ -49,32 +51,51 @@ classdef Partitioner < amsla.common.PartitionerInterface
             
             % Partition into components
             compPartitioner = amsla.tassl.internal.ComponentPartitioner(graph);
+            obj.updateProgressPlot();
+            
             compPartitioner.mergeComponents(maxSubGraphSize);
+            obj.updateProgressPlot();
             
             % Partition into sub-graphs
-            allComponents = graph.listOfComponents();
-            numComponents = numel(allComponents);
+            subGraphPartitioners = iGraphPartitioners(graph, maxSubGraphSize);
+            cellfun(@partitionComponent, subGraphPartitioners);
+            obj.updateProgressPlot();
             
-            subGraphPartitioners = cell(numComponents, 1);
-            for k = 1:numComponents
-                currComponent = allComponents(k);
-                subGraphPartitioners{k} = ...
-                    amsla.tassl.internal.TasslSubGraphPartitioner( ...
-                    graph, maxSubGraphSize, currComponent);
-            end
-            
-            cellfun(@executeAlgorithm, subGraphPartitioners);
-            
+            % Re-number sub-graphs
             numSubGraphs = cellfun(@numberOfSubGraphs, subGraphPartitioners, ...
                 'UniformOutput', true);
-            accumSubGraph = accumarray(numSubGraphs);
-            accumSubGraph = [1, accumSubGraph(1:(end-1))];
+            startingSubGraphs = iStartingSubGraphs(numSubGraphs);
+            for k = 1:numel(subGraphPartitioners)
+                subGraphPartitioners{k}.renumberSubGraphsStartingFrom(startingSubGraphs(k));
+            end
+            obj.updateProgressPlot();
             
-            cellfun(@renumberSubGraphsStartingFrom, ...
-                subGraphPartitioners, accumSubGraph, ...
-                'UniformOutput', true);
+            partitioningResult = amsla.common.PartitioningResult(true);
         end
         
     end
     
+end
+
+%% HELPER FUNCTIONS
+
+function startingSubGraphs = iStartingSubGraphs(numSubGraphs)
+startingSubGraphs = zeros(size(numSubGraphs));
+startingSubGraphs(1) = 1;
+for k = 2:numel(numSubGraphs)
+    startingSubGraphs(k) = startingSubGraphs(k-1) + numSubGraphs(k-1);
+end
+end
+
+function subGraphPartitioners = iGraphPartitioners(graph, maxSubGraphSize)
+% Initialise sub-graphs
+allComponents = graph.listOfComponents();
+numComponents = numel(allComponents);
+subGraphPartitioners = cell(numComponents, 1);
+for k = 1:numComponents
+    currComponent = allComponents(k);
+    subGraphPartitioners{k} = ...
+        amsla.tassl.internal.TasslSubGraphPartitioner( ...
+        graph, maxSubGraphSize, currComponent);
+end
 end

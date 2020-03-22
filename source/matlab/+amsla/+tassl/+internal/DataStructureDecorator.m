@@ -37,10 +37,12 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
             %LISTOFTAGS(D, T) Obtain the list of tags associated with
             %nodes.
             
-            tags = unique(obj.NodeTagMap.(tagName).Tag);
-            numOfNodes = sum(obj.NodeTagMap.(tagName).Tag == tags');
-            tags = iRowVector(tags);
-            numOfNodes = iRowVector(numOfNodes);
+            tagsPerNode = obj.NodeTagMap.(tagName).Tag;            
+            
+            tags = iRowVector(unique(tagsPerNode));
+            
+            tagsPerNode = reshape(tagsPerNode, [], 1);
+            numOfNodes = iRowVector(accumarray(tagsPerNode, 1));
         end
         
         function tag = tagOfNode(obj, tagName, nodeIds)
@@ -131,7 +133,7 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
         end
         
         function outIds = subGraphOfNode(obj, nodeIds)
-            outIds = obj.DataStructure.subGraphofNode(nodeIds);
+            outIds = obj.DataStructure.subGraphOfNode(nodeIds);
         end
         
         function outIds = setSubGraphOfNode(obj, nodeIds, subGraphIds)
@@ -139,6 +141,7 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
         end
         
         function resetSubGraphs(obj)
+            %TODO: Delete
             obj.DataStructure.resetSubGraphs();
         end
         

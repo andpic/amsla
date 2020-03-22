@@ -1,4 +1,4 @@
-classdef(Abstract) PartitioningResult
+classdef PartitioningResult
     %AMSLA.COMMON.PARTITIONINGRESULT Record the results of the partitioning
     %of a graph with the level-set algorithm.
     %
