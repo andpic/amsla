@@ -1,5 +1,4 @@
-classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
-        amsla.tassl.internal.SelectChildrenIfReady
+classdef ComponentPartitioner < amsla.common.BreadthFirstSearch
     %AMSLA.TASSL.INTERNAL.COMPONENTPARTITIONER Partitions a DataStructure
     %into its weakly connected components.
     %
@@ -33,7 +32,7 @@ classdef ComponentPartitioner < amsla.tassl.internal.BreadthFirstSearch & ...
             validateattributes(dataStructure, {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'scalar', 'nonempty'});
             
-            obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
+            obj = obj@amsla.common.BreadthFirstSearch(dataStructure);
             obj.executeAlgorithm();
             obj.minimiseComponentRange();
         end

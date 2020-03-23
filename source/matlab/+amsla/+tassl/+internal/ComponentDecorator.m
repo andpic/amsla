@@ -1,4 +1,4 @@
-classdef ComponentDecorator < amsla.tassl.internal.DataStructureDecorator
+classdef ComponentDecorator < amsla.common.DataStructureDecorator
     %AMSLA.TASSL.INTERNAL.COMPONENTDECORATOR A DataStructure decorator that
     %associates graph nodes to graph components.
     %
@@ -38,7 +38,7 @@ classdef ComponentDecorator < amsla.tassl.internal.DataStructureDecorator
             %deal with components.
             
             tagName = "Component";
-            obj = obj@amsla.tassl.internal.DataStructureDecorator(aDataStructure, tagName);
+            obj = obj@amsla.common.DataStructureDecorator(aDataStructure, tagName);
             obj.TagName = tagName;
         end
         

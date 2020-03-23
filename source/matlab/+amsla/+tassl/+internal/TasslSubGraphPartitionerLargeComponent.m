@@ -1,7 +1,6 @@
 classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
         amsla.tassl.internal.TasslSubGraphPartitionerImplInterface & ...
-        amsla.tassl.internal.BreadthFirstSearch & ...
-        amsla.tassl.internal.SelectChildrenIfReady
+        amsla.common.BreadthFirstSearch
     %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONERLARGECOMPONENT Partition
     %a large graph component into sub-graphs.
     
@@ -43,7 +42,7 @@ classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
             validateattributes(dataStructure, {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'scalar', 'nonempty'});
             
-            obj = obj@amsla.tassl.internal.BreadthFirstSearch(dataStructure);
+            obj = obj@amsla.common.BreadthFirstSearch(dataStructure);
             obj@amsla.tassl.internal.TasslSubGraphPartitionerImplInterface(dataStructure, maxSize, componentId);
             obj.SubGraphSizes = zeros(1, obj.NumSubGraphs);
         end

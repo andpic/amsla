@@ -58,12 +58,7 @@ classdef(Abstract) BreadthFirstSearch < handle
     
     %% PROTECTED METHODS
     
-    methods(Access=protected)
-        
-        function dataStructure = getDataStructure(obj)
-            %GETDATASTRUCTURE Get the internal DataStructure object.
-            dataStructure = obj.DataStructure;
-        end
+    methods(Access=protected)        
         
         function success = executeAlgorithm(obj)
             %EXECUTEALGORITHM(B) Execute the algorithm.
@@ -109,6 +104,20 @@ classdef(Abstract) BreadthFirstSearch < handle
             else
                 compOut = processPerNodeFcn(parentsOfChildren);
             end
+        end
+        
+        function nodeIds = selectChildrenIfReady(obj, currentNodeIds, isReadyFcn)
+            %SELECTCHILDRENIFREADY Select the children of the input nodes if
+            %they satisfy the given function.
+            
+            % Find children of current nodes
+            dataStructure = obj.DataStructure;
+            nodeIds = dataStructure.childrenOfNode(currentNodeIds);
+            nodeIds = unique(amsla.common.numericArray(nodeIds));
+            
+            % Find out which ones are ready
+            isChildReady = obj.computeBasedOnParents(nodeIds, isReadyFcn);
+            nodeIds = nodeIds(isChildReady);
         end
         
     end
