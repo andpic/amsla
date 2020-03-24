@@ -51,11 +51,17 @@ end
 %% HELPER FUNCTIONS
 
 function success = iGoToPreviousCommit()
-success = system("git checkout HEAD~1");
+[~, message] = system("git checkout HEAD~1");
+success = iGitSuccess(message);
 end
 
 function success = iGoBackToCurrentCommit()
-success = system("git checkout -");
+[~, message] = system("git checkout -");
+success = iGitSuccess(message);
+end
+
+function tf = iGitSuccess(message)
+tf = contains(message, "HEAD is now at");
 end
 
 function testResults = iRunPerformanceTest(testFolder)

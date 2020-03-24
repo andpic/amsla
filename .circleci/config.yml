@@ -23,7 +23,7 @@ jobs:
       - matlab/install
       - matlab/run-command:
           command: "cd test/matlab/shared; diary('/tmp/perfDiary.log'); runAllAmslaPerformanceTests();"
-      - store_test_results:
+      - store_artifacts:
           path: /tmp/testResults
       - store_artifacts:
           path: /tmp/perfDiary.log
