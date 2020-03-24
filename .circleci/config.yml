@@ -2,15 +2,35 @@ version: 2.1
 orbs:
   matlab: mathworks/matlab@dev:alpha
 jobs:
-  build:
+  test:
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
       - matlab/install
-      - matlab/run-command: 
+      - matlab/run-command:
           command: "cd test/matlab/shared; diary('/tmp/matlabDiary.log'); runAllAmslaTests();"
       - store_test_results:
           path: /tmp/testResults
       - store_artifacts:
           path: /tmp/matlabDiary.log
+
+  performance:
+      machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - matlab/install
+      - matlab/run-command:
+          command: "cd test/matlab/shared; diary('/tmp/perfDiary.log'); runAllAmslaPerformanceTests();"
+      - store_test_results:
+          path: /tmp/testResults
+      - store_artifacts:
+          path: /tmp/perfDiary.log
+
+workflows:
+  version: 2.1
+  run_all_tests:
+    jobs:
+      - test
+      - performance
