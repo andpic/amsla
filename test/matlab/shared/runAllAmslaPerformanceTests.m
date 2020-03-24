@@ -44,7 +44,7 @@ if iGoToPreviousCommit()
     % Plot a comparison figure
     fileName = fullfile(iResultsFolder(), "Comparison.png");
     compFigure = iCompareResults(previousResults, currentResults);
-    exportgraphics(compFigure, fileName, "Resolution", 300);
+    print(compFigure, fileName, "-dpng", "-r300");
 end
 end
 
