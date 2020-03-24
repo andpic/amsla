@@ -76,9 +76,11 @@ testResults = run(experiment, testSuite);
 end
 
 function compFigure = iCompareResults(previousResults, currentResults)
-compFigure = comparisonPlot(previousResults, currentResults, ...
+currFigure = figure();
+comparisonPlot(previousResults, currentResults, ...
     'SimilarityTolerance', 0.05, ...
-    'Scale', 'log');
+    'Scale', 'log', ...
+    'Parent', currFigure);
 end
 
 function resultsFolder = iResultsFolder()
