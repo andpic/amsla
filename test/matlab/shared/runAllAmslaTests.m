@@ -30,20 +30,10 @@ import matlab.unittest.plugins.CodeCoveragePlugin;
 import matlab.unittest.plugins.XMLPlugin;
 
 % Setup directories
-matlabTestDir = amsla.test.tools.extractTestDir();
-matlabSourceDir = amsla.test.tools.extractSourceDir();
-
-% Add directories to the path
-oldPath = path();
-addpath(matlabSourceDir);
-sharedTestsDir = fullfile(matlabTestDir, "shared");
-addpath(sharedTestsDir);
-
-% Remove added directories at the end of tests
-restorePath = onCleanup(@() path(oldPath));
+[setupStruct, restorePath] = amsla.test.tools.internal.testRunnerSetup(); %#ok<ASGLU>
 
 % Test suite
-concreteTests = fullfile(matlabTestDir, "suite");
+concreteTests = fullfile(setupStruct.MatlabTestDir, "suite");
 suite = TestSuite.fromFolder(concreteTests, "IncludingSubfolders", true);
 
 % Test runner

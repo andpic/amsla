@@ -22,7 +22,7 @@ classdef (Abstract) AmslaTest < matlab.unittest.TestCase
         function addPath(testCase)
             % Add the path to the EnhancedGraph class.
             
-            sourceDir = amsla.test.tools.extractSourceDir();
+            sourceDir = amsla.test.tools.internal.extractSourceDir();
             if ~iIsOnPath(sourceDir)
                 oldPath = path();
                 addpath(sourceDir);
