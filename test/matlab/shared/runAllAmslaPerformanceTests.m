@@ -77,7 +77,7 @@ end
 
 function resultsFolder = iResultsFolder()
 resultsFolder = fullfile(tempdir, "testResults");
-if ~iFolderExists(folderName)
+if ~iFolderExists(resultsFolder)
     mkdir(resultsFolder);
 end
 end
