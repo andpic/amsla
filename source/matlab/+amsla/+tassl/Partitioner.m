@@ -23,18 +23,27 @@ classdef Partitioner < amsla.common.PartitionerInterface
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
+    %% PROTECTED PROPERTIES
+    
+    properties(GetAccess=protected, SetAccess=immutable)
+        
+        %The graph being partitioned.
+        DataStructure        
+        
+    end
+    
     %% PUBLIC METHDOS
     
     methods(Access=public)
         
-        function obj = Partitioner(varargin)
+        function obj = Partitioner(dataStructure, varargin)
             %PARTITIONER Construct an object that executes the
             %analysis of a matrix according to the TASSL algorithm.
             
             obj@amsla.common.PartitionerInterface(varargin{:});
             
-            maxSubGraphSize = obj.getMaxSubGraphSize();
-            assert(isscalar(maxSubGraphSize) && maxSubGraphSize>0, ...
+            obj.DataStructure = dataStructure;
+            assert(isscalar(obj.MaxSubGraphSize) && obj.MaxSubGraphSize>0, ...
                 "amsla:tassl:Partitioner", ...
                 "Bad sub-graph size for the TASSL partitioner");
         end
@@ -45,9 +54,8 @@ classdef Partitioner < amsla.common.PartitionerInterface
             
             obj.updateProgressPlot();
             
-            graph = amsla.tassl.internal.ComponentDecorator( ...
-                obj.getGraphToPartition());
-            maxSubGraphSize = obj.getMaxSubGraphSize();
+            graph = amsla.tassl.internal.ComponentDecorator(obj.DataStructure);
+            maxSubGraphSize = obj.MaxSubGraphSize;
             
             % Partition into components
             compPartitioner = amsla.tassl.internal.ComponentPartitioner(graph);

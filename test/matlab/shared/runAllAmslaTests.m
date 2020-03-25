@@ -47,7 +47,7 @@ end
 
 % Write output to XML
 xmlFolder = fullfile(tempdir, "testResults");
-mkdir(xmlFolder);
+iCreateFolder(xmlFolder);
 xmlFile = fullfile(xmlFolder, "junit.xml");
 runner.addPlugin(XMLPlugin.producingJUnitFormat(xmlFile));
 
@@ -57,4 +57,12 @@ testResults = runner.run(suite);
 % Check test output
 failedTests = [testResults.Failed];
 assert(~any(failedTests), "Some test failures occurred.");
+end
+
+%% HELPER FUNCTIONS
+
+function iCreateFolder(xmlFolder)
+if exist(xmlFolder, 'dir')~=7
+    mkdir(xmlFolder);
+end
 end

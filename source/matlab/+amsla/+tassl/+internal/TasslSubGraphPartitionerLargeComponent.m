@@ -75,13 +75,13 @@ classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
     
     methods(Access=protected)
         
-        function [nodeIds, initialComponents] = initialNodesAndTags(obj)
+        function [nodeIds, initialSubGraphIds] = initialNodesAndTags(obj)
             %INITIALNODESANDTAGS Get the nodes and tags to initialise the
             %algorithm.
             
             nodeIds = iArray(obj.rootNodes());
             nodeIds = obj.sortByCriterion(nodeIds);
-            initialComponents = iArray(iStartingSubGraphs( ...
+            initialSubGraphIds = iArray(iStartingSubGraphs( ...
                 obj.NumSubGraphs, numel(nodeIds)));
         end
         
@@ -90,28 +90,17 @@ classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
             %assigned to a sub-graph.
             
             % Find children of current nodes
-            nodeIds = obj.selectChildrenIfReady(currentNodeIds, @isNodeReady);
+            nodeIds = obj.selectChildrenIfAllParentsAssigned(currentNodeIds, ...
+                @subGraphOfNode);
             nodeIds = obj.sortByCriterion(nodeIds);
-            
-            function tf = isNodeReady(parentNodes)
-                tf = ~any(iIsNullId(obj.DataStructure.subGraphOfNode(parentNodes)));
-            end
         end
         
         function subGraphIds = computeTags(obj, currentNodeIds)
             %COMPUTETAGS Compute the sub-graph ID for each of the current
             %nodes to assign.
             
-            subGraphIds = obj.computeBasedOnParents(currentNodeIds, @getSmallestSubGraphId);
+            subGraphIds = obj.maxTagOfParents(currentNodeIds, @subGraphOfNode);
             subGraphIds = obj.nextNonfullSubGraphs(subGraphIds);
-            
-            function nextComponentId = getSmallestSubGraphId(allParents)
-                % Get the components of parent nodes
-                compId = obj.DataStructure.subGraphOfNode(allParents);
-                
-                % Compute the max
-                nextComponentId = max(compId);
-            end
         end
         
         function assignTagsToNodes(obj, nodeIds, tags)
@@ -185,19 +174,8 @@ classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
             allComponents = obj.DataStructure.componentOfNode(allNodes);
             allNodes = allNodes(allComponents == obj.ComponentId);
             
-            nodeIds = allNodes(obj.numberOfParents(allNodes) == 0);
-        end
-        
-        function num = numberOfParents(obj, nodeIds)
-            %NUMBEROFPARENTS(P, NID) Number of parents of the given nodes,
-            %given their IDs.
-            
-            parentsOfNodes = obj.DataStructure.parentsOfNode(nodeIds);
-            if iscell(parentsOfNodes)
-                num = cellfun(@numel, parentsOfNodes, 'UniformOutput', true);
-            else
-                num = numel(parentsOfNodes);
-            end
+            nodeIds = allNodes(...
+                amsla.common.numberOfParents(obj.DataStructure, allNodes) == 0);
         end
         
         function num = numberOfChildren(obj, nodeIds)
@@ -224,7 +202,7 @@ classdef(Sealed) TasslSubGraphPartitionerLargeComponent < ...
             %ALLNODESAREASSIGNED Return true if all nodes were assigned to
             %sub-graphs.
             
-            allNodes = obj.DataStructure.listOfNodes();
+            allNodes = obj.nodesInComponent();
             subGraphs = obj.DataStructure.subGraphOfNode(allNodes);
             tf = ~any(amsla.common.isNullId(subGraphs));
         end
@@ -236,10 +214,6 @@ end
 
 function dataOut = iArray(dataIn)
 dataOut = amsla.common.numericArray(dataIn);
-end
-
-function tf = iIsNullId(dataIn)
-tf = amsla.common.isNullId(dataIn);
 end
 
 function tf = iRow(dataIn)

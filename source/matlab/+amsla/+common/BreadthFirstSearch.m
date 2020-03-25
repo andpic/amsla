@@ -19,9 +19,11 @@ classdef(Abstract) BreadthFirstSearch < handle
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    properties(Access=protected)
+    %% PROTECTED PROPERTIES
+    
+    properties(GetAccess=protected,SetAccess=immutable)
         
-        %The object being partitioned.
+        %The object being processed.
         DataStructure
         
     end
@@ -58,7 +60,7 @@ classdef(Abstract) BreadthFirstSearch < handle
     
     %% PROTECTED METHODS
     
-    methods(Access=protected)        
+    methods(Access=protected)
         
         function success = executeAlgorithm(obj)
             %EXECUTEALGORITHM(B) Execute the algorithm.
@@ -82,7 +84,7 @@ classdef(Abstract) BreadthFirstSearch < handle
                 
                 % Compute the tag to assign to the children node according
                 % to the given function
-                currTags = obj.computeTags(currNodeIds);                
+                currTags = obj.computeTags(currNodeIds);
                 if any(amsla.common.isNullId(currTags))
                     success = false;
                     break;
@@ -120,6 +122,33 @@ classdef(Abstract) BreadthFirstSearch < handle
             nodeIds = nodeIds(isChildReady);
         end
         
+        function nodeIds = selectChildrenIfAllParentsAssigned(obj, currentNodeIds, tagAccessor)
+            %SELECTCHILDRENIFALLPARENTSASSIGNED Select the children of the
+            %input nodes if all of their parents have been assigned a tag.
+            
+            % Find children of current nodes
+            nodeIds = obj.selectChildrenIfReady(currentNodeIds, @isNodeReady);
+            
+            function tf = isNodeReady(parentNodes)
+                tf = ~any(iIsNullId(tagAccessor(obj.DataStructure, parentNodes)));
+            end
+        end
+        
+        function tagId = maxTagOfParents(obj, currentNodeIds, tagAccessor)
+            %MAXSUBGRAPHOFPARENTS Get the highest tag assigned to the
+            %parent nodes of each input node.
+            
+            tagId = obj.computeBasedOnParents(currentNodeIds, @getLargestTagId);
+            
+            function nextTagId = getLargestTagId(allParents)
+                % Get the components of parent nodes
+                nextTagId = tagAccessor(obj.DataStructure, allParents);
+                
+                % Compute the max
+                nextTagId = max(nextTagId);
+            end
+        end
+        
     end
 end
 
@@ -127,4 +156,8 @@ end
 
 function dataOut = iArray(dataIn)
 dataOut = amsla.common.numericArray(dataIn);
+end
+
+function tf = iIsNullId(dataIn)
+tf = amsla.common.isNullId(dataIn);
 end

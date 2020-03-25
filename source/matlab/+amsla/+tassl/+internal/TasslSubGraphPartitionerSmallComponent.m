@@ -5,7 +5,7 @@ classdef(Sealed) TasslSubGraphPartitionerSmallComponent < ...
     
     %% PROTECTED PROPERTIES
     
-    properties(Access=protected)
+    properties(SetAccess=immutable, GetAccess=protected)
         
         % The graph being processed
         DataStructure

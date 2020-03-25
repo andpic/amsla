@@ -33,7 +33,7 @@ classdef(Abstract) TasslSubGraphPartitionerImplInterface < handle
     
     %% ABSTRACT PROPERTIES
     
-    properties(Access=protected, Abstract)
+    properties(Abstract, GetAccess=protected, SetAccess=immutable)
         
         %The data structure representing the graph being partitioned.
         DataStructure
