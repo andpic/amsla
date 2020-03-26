@@ -41,7 +41,7 @@ runner = TestRunner.withTextOutput("LoggingLevel", 3, "OutputDetail", 3);
 
 % Check for Code coverage plugin
 if nargin==2 && strcmp(varargin{1}, "CodeCoverage") && varargin{2}
-    runner.addPlugin(CodeCoveragePlugin.forFolder(matlabSourceDir, ...
+    runner.addPlugin(CodeCoveragePlugin.forFolder(setupStruct.MatlabSourceDir, ...
         "IncludeSubFolders", true));
 end
 
