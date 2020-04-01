@@ -23,24 +23,15 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %                              same node.
     %      weightOfEdge          - Get the weight of an edge.
     %
-    %   DataStructure component-level methods:
-    %      listOfComponents      - Get the list of weakly connected
-    %                              components.
-    %      rootsOfComponent      - Get the root nodes of a weakly connected
-    %                              component.
-    %      componentOfNode       - Get the component to which a node
-    %                              belongs.
-    %      computeComponents     - Compute the weakly connected components.
-    %
     %   DataStructure sub-graph-level methods:
     %      listOfSubGraphs       - Get the list of sub-graphs.
-    %      rootsOfSubGraph       - Get the root nodes of a sub-graph.
     %      subGraphOfNode        - Get the sub-graph to which a node
     %                              belongs.
     %      setSubGraphOfNode     - Assign a node to a sub-graph.
-    %      resetSubGraphs        - Reset all sub-graphs to a null value.
     %
     %   DataStructure time-slot-level methods:
+    %      listOfTimeSlots              - Get all the time-slot IDs in the
+    %                                     graph.
     %      edgesInSubGraphAndTimeSlot   - Get the edges in the given
     %                                     time-slot for the given
     %                                     sub-graph.
@@ -50,8 +41,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
     %                                     more edges.
     %      setTimeSlotOfEdge            - Get the time-slot ID of one or
     %                                     more edges.
-    %      resetTimeSlots               - Void all assignments of edges to
-    %                                     time-slots.
     %
     %   Other DataStructure methods:
     %      plot                  - Plot a DataStructure.
@@ -184,7 +173,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
             %LOOPEDGESOFNODE(G, NODE) Get the IDs of edges looping over one
             %or more nodes in the graph.
             outIds = getEdgesConnectedToNode(obj, nodeIds, "Loop");
-        end                
+        end
         
         function value = weightOfEdge(obj, edgeIds)
             %WEIGHTOFEDGE(G, EDGEID) Get the weight of one or more edges.
@@ -192,38 +181,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
             [edgeIds, inverseSorter] = iSorter(edgeIds);
             value = obj.BaseGraph.Edges.Weight( ...
                 ismember(obj.BaseGraph.Edges.Id, edgeIds));
-            value = value(inverseSorter);            
-        end
-        
-        %% Component-level operations
-        
-        function varargout = listOfComponents(obj)
-            %LISTOFCOMPONENTS(G) Get the IDs of components in the graph.
-            %
-            %   C = LISTOFCOMPONENTS(G) Get the IDs of the components
-            %   only.
-            %
-            %   [C, NC] = LISTOFCOMPONENTS(G) Get the IDs and the number of
-            %   nodes in each component.
-            [varargout{1:nargout}] = obj.getListOfGraphSet("Component");
-        end
-        
-        function outIds = rootsOfComponent(obj, componentIds)
-            %ROOTSOFCOMPONENT(G, ID) Get the IDs of the nodes without a
-            %parent in one or more components.
-            outIds = obj.getRootsOfGraphSet(componentIds, 'Component');
-        end
-        
-        function outIds = componentOfNode(obj, nodeIds)
-            %COMPONENTOFNODE(G, ID) Get the component IDs of one or more nodes.
-            outIds = accessGraphSetOfNode(obj, nodeIds, "Component", "Get", []);
-        end
-        
-        function computeComponents(obj)
-            %COMPUTECOMPONENTS(G) Compute the weakly-connected components in
-            %the graph.
-            whichComponent = conncomp(obj.BaseGraph, 'Type', 'weak');
-            obj.BaseGraph.Nodes.ComponentId = whichComponent';
+            value = value(inverseSorter);
         end
         
         %% Sub-graph level operations
@@ -239,12 +197,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
             [varargout{1:nargout}] = obj.getListOfGraphSet("Sub-graph");
         end
         
-        function outIds = rootsOfSubGraph(obj, subGraphId)
-            %ROOTSOFSUBGRAPH(G, ID) Get the IDs of the nodes without a
-            %parent in one or more sub-graphs.
-            outIds = obj.getRootsOfGraphSet(subGraphId, 'Sub-graph');
-        end
-        
         function outIds = subGraphOfNode(obj, nodeIds)
             %SUBGRAPHOFNODE(G, ID) Get the sub-graph IDs of one or more nodes.
             outIds = accessGraphSetOfNode(obj, nodeIds, "Sub-graph", "Get", []);
@@ -255,14 +207,13 @@ classdef DataStructure < amsla.common.DataStructureInterface
             outIds = accessGraphSetOfNode(obj, nodeIds, "Sub-graph", "Set", subGraphIds);
         end
         
-        function resetSubGraphs(obj)
-            %RESETSUBGRAPHS(G) Reset all sub-graph IDs. Revert the graph to
-            %the original state.
-            obj.BaseGraph.Nodes.SubGraphId = ...
-                amsla.common.nullId(size(obj.BaseGraph.Nodes.SubGraphId));
-        end
-        
         %% Time-slot operations
+        
+        function timeSlotIds = listOfTimeSlots(obj)
+            %LISTOFTIMESLOTS Get all the time-slots in the graph
+            
+            timeSlotIds = unique(iRow(obj.BaseGraph.Edges.TimeSlot));
+        end
         
         function edgeIds = edgesInSubGraphAndTimeSlot(obj, subGraphId, timeSlotId)
             %EDGESINSUBGRAPHANDTIMESLOT(G, GID) Get the time-slot IDs in the current
@@ -295,13 +246,6 @@ classdef DataStructure < amsla.common.DataStructureInterface
             %SETTIMESLOTOFEDGE(G, ID) Assign one or more edges to the given
             %time-slot IDs.
             obj.BaseGraph.Edges.TimeSlot(edgeIds) = timeSlotIds;
-        end
-        
-        function resetTimeSlots(obj)
-            %RESETTIMESLOTS(G) Reset all time-slot IDs. Reset to the
-            %initial status.
-            obj.BaseGraph.Edges.TimeSlot = ...
-                amsla.common.nullId(size(obj.BaseGraph.Edges.TimeSlot));
         end
         
     end
@@ -535,9 +479,7 @@ classdef DataStructure < amsla.common.DataStructureInterface
         function outColours = getNodeColours(obj)
             % Get the colours to be used in the graph plot
             if any(~amsla.common.isNullId(obj.BaseGraph.Nodes.SubGraphId))
-                outColours = obj.BaseGraph.Nodes.SubGraphId;
-            elseif any(~amsla.common.isNullId(obj.BaseGraph.Nodes.ComponentId))
-                outColours = obj.BaseGraph.Nodes.ComponentId;
+                outColours = obj.BaseGraph.Nodes.SubGraphId;            
             else
                 outColours = zeros(height(obj.BaseGraph.Nodes), 1);
             end
@@ -558,7 +500,6 @@ numNodes = numnodes(outGraph);
 outGraph.Nodes.Id = (1:numNodes)';
 outGraph.Nodes.ParentsId = num2cell(amsla.common.nullId(numNodes, 1));
 outGraph.Nodes.ChildrenId = num2cell(amsla.common.nullId(numNodes, 1));
-outGraph.Nodes.ComponentId = amsla.common.nullId(numNodes, 1);
 outGraph.Nodes.SubGraphId = amsla.common.nullId(numNodes, 1);
 
 % Set edges
@@ -568,12 +509,8 @@ outGraph.Edges.TimeSlot = amsla.common.nullId(numEdges, 1);
 end
 
 function tableColumn = iGetTableColumnByGraphSetType(graphSetType)
-graphSetType = validatestring(graphSetType, ["Component", "Sub-graph"]);
-if strcmp(graphSetType, "Component")
-    tableColumn = "ComponentId";
-elseif strcmp(graphSetType, "Sub-graph")
-    tableColumn = "SubGraphId";
-end
+validatestring(graphSetType, "Sub-graph");
+tableColumn = "SubGraphId";
 end
 
 function iCheckAssignmentAmbiguity(ids, assignTo)
@@ -602,4 +539,8 @@ end
 
 function [data, inverseSorter] = iSorter(data)
 [data, ~, inverseSorter] = unique(data);
+end
+
+function dataOut = iRow(dataIn)
+dataOut = amsla.common.rowVector(dataIn);
 end

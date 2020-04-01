@@ -37,7 +37,7 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
             %LISTOFTAGS(D, T) Obtain the list of tags associated with
             %nodes.
             
-            tagsPerNode = obj.NodeTagMap.(tagName).Tag;            
+            tagsPerNode = obj.NodeTagMap.(tagName).Tag;
             
             tags = iRowVector(unique(tagsPerNode));
             
@@ -106,6 +106,14 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
             outIds = obj.DataStructure.exitingEdgesOfNode(nodeIds);
         end
         
+        function outIds = enteringNodeOfEdge(obj, edgeIds)
+            outIds = obj.DataStructure.enteringNodeOfEdge(edgeIds);
+        end
+                
+        function outIds = exitingNodeOfEdge(obj, edgeIds)
+            outIds = obj.DataStructure.exitingNodeOfEdge(edgeIds);
+        end
+        
         function outIds = parentsOfNode(obj, nodeIds)
             outIds = obj.DataStructure.parentsOfNode(nodeIds);
         end
@@ -118,18 +126,18 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
             outIds = obj.DataStructure.enteringEdgesOfNode(nodeIds);
         end
         
-        function outIds = loopEdgesOfNode(nodeIds)
+        function outIds = loopEdgesOfNode(obj, nodeIds)
             outIds = obj.DataStructure.loopEdgesOfNode(nodeIds);
+        end
+        
+        function weight = weightOfEdge(obj, edgeIds)
+            weight = obj.DataStructure.weightOfEdge(edgeIds);
         end
         
         % Sub-graph-level operations
         
         function varargout = listOfSubGraphs(obj)
             [varargout{:}] = obj.DataStructure.listofSubGraphs();
-        end
-        
-        function outIds = rootsOfSubGraph(obj, subGraphId)
-            outIds = obj.DataStructure.rootsOfSubGraph(subGraphId);
         end
         
         function outIds = subGraphOfNode(obj, nodeIds)
@@ -140,12 +148,11 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
             outIds = obj.DataStructure.setSubGraphOfNode(nodeIds, subGraphIds);
         end
         
-        function resetSubGraphs(obj)
-            %TODO: Delete
-            obj.DataStructure.resetSubGraphs();
-        end
-        
         % Edge-level operations
+        
+        function outIds = listOfTimeSlots(obj)
+            outIds = obj.DataStructure.listOfTimeSlots();
+        end
         
         function outIds = timeSlotOfEdge(obj, edgeIds)
             outIds = obj.DataStructure.timeSlotOfEdge(edgeIds);
@@ -153,10 +160,6 @@ classdef(Abstract) DataStructureDecorator < amsla.common.DataStructureInterface
         
         function setTimeSlotOfEdge(obj, edgeIds, timeSlotIds)
             obj.DataStructure.setTimeSlotOfEdge(edgeIds, timeSlotIds);
-        end
-        
-        function resetTimeSlots(obj)
-            obj.DataStructure.resetTimeSlots();
         end
     end
 end

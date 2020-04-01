@@ -60,7 +60,6 @@ classdef ComponentDecorator < amsla.common.DataStructureDecorator
             %component CID.
             
             obj.setTagOfNode(obj.TagName, nodeId, componentId);
-        end
-        
+        end 
     end
 end

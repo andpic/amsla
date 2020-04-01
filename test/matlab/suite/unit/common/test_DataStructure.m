@@ -161,99 +161,10 @@ classdef test_DataStructure < amsla.test.tools.AmslaTest
             testCase.verifyEqual(actualExitNode, expectedExitNode, ...
                 "Output exit nodes are not what was expected.");
         end
-        
     end
-    %% Component-oriented API
     
+    %% Sub-graph API
     methods(Test)
-        
-        function checkListOfComponentsEmpty(testCase)
-            % Check method "listOfComponents" when components where not
-            % computed.
-            
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            
-            expectedOutput = [];
-            
-            testCase.verifyEqual( ...
-                listOfComponents(aGraph), ...
-                expectedOutput);
-        end
-        
-        function checkListOfComponentsAfterComputation(testCase)
-            % Check method "listOfComponents" after components have been
-            % computed.
-            
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            
-            aGraph.computeComponents();
-            
-            expectedOutput = [1, 2];
-            
-            testCase.verifyEqual( ...
-                listOfComponents(aGraph), ...
-                expectedOutput);
-        end
-        
-        function checkListOfComponentsWithSizes(testCase)
-            % Check method "listOfComponents" after components have been
-            % computed.
-            
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            
-            aGraph.computeComponents();
-            
-            expectedComponentIds = [1, 2];
-            expectedComponentSizes = [8, 2];
-            
-            [actualIds, actualSizes] = listOfComponents(aGraph);
-            
-            testCase.verifyEqual( ...
-                actualIds, ...
-                expectedComponentIds);
-            
-            testCase.verifyEqual( ...
-                actualSizes, ...
-                expectedComponentSizes);
-        end
-        
-        function checkRootsOfComponentsAfterComputation(testCase)
-            % Check method "rootsOfComponent" after components have been
-            % computed.
-            
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            
-            aGraph.computeComponents();
-            
-            expectedOutput = {[1, 4], 9};
-            
-            testCase.verifyEqual( ...
-                rootsOfComponent(aGraph, [1, 2]), ...
-                expectedOutput);
-        end
-        
-        function checkComponentOfNodeVector(testCase)
-            % Check method "componentOfNode" after components have been
-            % computed, when inputs are a vector.
-            
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            
-            aGraph.computeComponents();
-            
-            inputs = 1:10;
-            expectedOutput = [ones(1,8), 2*ones(1,2)];
-            
-            testCase.verifyEqual( ...
-                componentOfNode(aGraph, inputs), ...
-                expectedOutput);
-        end
-        
-        %% Sub-graph API
         
         function listOfSubGraphsShouldBeEmptyWhenNotPartitioned(testCase)
             % The method "listOfSubGraph" should be empty if the graph
@@ -296,29 +207,11 @@ classdef test_DataStructure < amsla.test.tools.AmslaTest
             % the method "resetSubGraphs".
             
             aGraph = iFullAssignedSimpleGraph();
-            aGraph.resetSubGraphs();
+            iResetSubGraphs(aGraph);
             
             subGraphIds = aGraph.listOfSubGraphs();
             testCase.verifyEmpty(subGraphIds, ...
                 "The list of sub-graphs should be empty after a reset.");
-        end
-        
-        function checkRootsOfSubGraphWithOnlyOneElement(testCase)
-            % Check method "rootsOfSubGraph" when a sub-graph has only one
-            % element.
-            
-            % Create a graph
-            [aGraph, ~, ~, ~] = amsla.test.tools.getSimpleLowerTriangularMatrix();
-            
-            aGraph.setSubGraphOfNode( ...
-                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ...
-                [1, 1, 1, 2, 2, 3, 4, 4, 5, 5]);
-            
-            expectedOutput = 6;
-            
-            testCase.verifyEqual( ...
-                rootsOfSubGraph(aGraph, 3), ...
-                expectedOutput);
         end
         
         function checkSetGetSubGraphOfNodeVector(testCase)
@@ -390,7 +283,7 @@ classdef test_DataStructure < amsla.test.tools.AmslaTest
             testCase.verifyEqual(actualTimeSlotId, expectedTimeSlotId, ...
                 "The edge was not correctly assigned to the time-slot.");
             
-            aGraph.resetTimeSlots();
+            iResetTimeSlots(aGraph);
             actualTimeSlotId = aGraph.timeSlotOfEdge(edgeId);
             testCase.verifyEqual(actualTimeSlotId, iNullId(), ...
                 "After a reset, all edges should be assigned to time-slot ID null.");
@@ -507,4 +400,14 @@ edgeIdSlot = [...
 edgeIds = edgeIdSlot(:, 1);
 timeSlotIds = edgeIdSlot(:, 2);
 ds.setTimeSlotOfEdge(edgeIds, timeSlotIds);
+end
+
+function iResetTimeSlots(dataStructure)
+allEdges = dataStructure.listOfEdges();
+dataStructure.setTimeSlotOfEdge(allEdges, amsla.common.nullId(size(allEdges)));
+end
+
+function iResetSubGraphs(dataStructure)
+allNodes = dataStructure.listOfNodes();
+dataStructure.setSubGraphOfNode(allNodes, amsla.common.nullId(size(allNodes)));
 end

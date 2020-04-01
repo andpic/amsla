@@ -13,7 +13,7 @@ classdef Partitioner < amsla.common.PartitionerInterface & ...
     %       partition        - Partitions the matrix according to the
     %                          level-set algorithm.
     
-    % Copyright 2019 Andrea Picciau
+    % Copyright 2019-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ classdef Partitioner < amsla.common.PartitionerInterface & ...
             %INITIALNODESANDTAGS Get the nodes and tags to initialise the
             %algorithm.
             
-            nodeIds = iArray(obj.rootNodes());
+            nodeIds = iArray(amsla.common.rootNodes(obj.DataStructure));
             initialSubGraphIds = iArray(ones(size(nodeIds)));
         end
         
@@ -96,22 +96,7 @@ classdef Partitioner < amsla.common.PartitionerInterface & ...
             obj.updateProgressPlot();
         end
         
-    end
-    
-    %% PRIVATE METHODS
-    
-    methods(Access=private)
-        
-        function nodeIds = rootNodes(obj)
-            %ROOTNODES(P, CID) Root nodes in a given component.
-            
-            allNodes = obj.DataStructure.listOfNodes();
-            nodeIds = allNodes( ...
-                amsla.common.numberOfParents(obj.DataStructure, allNodes) == 0);
-        end
-        
-    end
-    
+    end    
 end
 
 %% HELPER METHODS

@@ -81,6 +81,9 @@ classdef(Abstract) BreadthFirstSearch < handle
                 % Get the children of the current nodes and select a
                 % sub-set of them according to the node selector function.
                 currNodeIds = iArray(obj.selectNextNodes(currNodeIds));
+                if isempty(currNodeIds)
+                    break;
+                end
                 
                 % Compute the tag to assign to the children node according
                 % to the given function

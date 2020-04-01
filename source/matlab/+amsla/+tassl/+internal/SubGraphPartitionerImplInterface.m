@@ -1,5 +1,5 @@
-classdef(Abstract) TasslSubGraphPartitionerImplInterface < handle
-    %AMSLA.TASSL.INTERNAL.TASSSUBGRAPHPARTITIONERIMPLINTERFACE Common
+classdef(Abstract) SubGraphPartitionerImplInterface < handle
+    %AMSLA.TASSL.INTERNAL.SUBGRAPHPARTITIONERIMPLINTERFACE Common
     %interface for all implementations of TASSL component processing.
     
     % Copyright 2018-2020 Andrea Picciau
@@ -44,9 +44,9 @@ classdef(Abstract) TasslSubGraphPartitionerImplInterface < handle
     
     methods(Access=public)
         
-        function obj = TasslSubGraphPartitionerImplInterface(dataStructure, maxSize, componentId)
-            %TASSLSUBGRAPHPARTITIONERIMPLINTERFACE(G) Interface for TASSL's
-            %partitioning for any component.
+        function obj = SubGraphPartitionerImplInterface(dataStructure, maxSize, componentId)
+            %SUBGRAPHPARTITIONERIMPLINTERFACE(G) Interface for TASSL's partitioning
+            %for any component.
             
             validateattributes(dataStructure, {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'scalar', 'nonempty'});

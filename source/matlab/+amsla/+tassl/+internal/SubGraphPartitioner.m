@@ -1,6 +1,6 @@
-classdef TasslSubGraphPartitioner < handle
-    %AMSLA.TASSL.INTERNAL.TASSLSUBGRAPHPARTITIONER Partition a DataStructure
-    %into sub-graphs according to the algorithm in [Picciau2017].
+classdef SubGraphPartitioner < handle
+    %AMSLA.TASSL.INTERNAL.SUBGRAPHPARTITIONER Partition a DataStructure into
+    %sub-graphs according to the algorithm in [Picciau2017].
     
     % Copyright 2018-2020 Andrea Picciau
     %
@@ -30,10 +30,9 @@ classdef TasslSubGraphPartitioner < handle
     
     methods(Access=public)
         
-        function obj = TasslSubGraphPartitioner(dataStructure, maxSize, componentId)
-            %TASSLSUBGRAPHPARTITIONER(G) Construct a
-            %TasslSubGraphPartitioner and partition the input DataStructure
-            %object.
+        function obj = SubGraphPartitioner(dataStructure, maxSize, componentId)
+            %SUBGRAPHPARTITIONER(G) Construct a SubGraphPartitioner and partition
+            %the input DataStructure object.
             
             validateattributes(dataStructure, {'amsla.tassl.internal.ComponentDecorator'}, ...
                 {'scalar', 'nonempty'});
@@ -42,10 +41,10 @@ classdef TasslSubGraphPartitioner < handle
             currCompSize = compSizes(compIds == componentId);
             
             if currCompSize<=maxSize
-                obj.Impl = amsla.tassl.internal.TasslSubGraphPartitionerSmallComponent( ...
+                obj.Impl = amsla.tassl.internal.SubGraphPartitionerSmallComponent( ...
                     dataStructure, maxSize, componentId);
             else
-                obj.Impl = amsla.tassl.internal.TasslSubGraphPartitionerLargeComponent( ...
+                obj.Impl = amsla.tassl.internal.SubGraphPartitionerLargeComponent( ...
                     dataStructure, maxSize, componentId);
             end
         end
@@ -60,7 +59,7 @@ classdef TasslSubGraphPartitioner < handle
         function partitionComponent(obj)
             %PARTITIONCOMPONENT execute the partitioning of a large component.
             
-            if isa(obj.Impl, "amsla.tassl.internal.TasslSubGraphPartitionerLargeComponent")
+            if isa(obj.Impl, "amsla.tassl.internal.SubGraphPartitionerLargeComponent")
                 obj.Impl.partitionComponent();
             end
         end
