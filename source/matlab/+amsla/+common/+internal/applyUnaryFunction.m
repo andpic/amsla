@@ -1,7 +1,8 @@
-function sourceDir = extractSourceDir()
-%EXTRACTSOURCEDIR   Retrieve the directory of the project's sources.
+function result = applyUnaryFunction(functionToApply, dataIn)
+%AMSLA.COMMON.INTERNAL.APPLYUNARYFUNCTION Apply a unary function to all
+%elements of a numerical array or cell array.
 
-% Copyright 2019 Andrea Picciau
+% Copyright 2018-2020 Andrea Picciau
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -15,7 +16,15 @@ function sourceDir = extractSourceDir()
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-testDir = amsla.test.tools.extractTestDir();
-repoDir = extractBefore(testDir, "test");
-sourceDir = fullfile(repoDir, "source", "matlab");
+assert(nargin(functionToApply)==1 && nargout(functionToApply)==1);
+
+if ~iscell(dataIn)
+    result = functionToApply(dataIn);
+else
+    result = cell(size(dataIn));
+    for k = 1:numel(dataIn)
+        result{k} = ...
+            functionToApply(dataIn{k});
+    end
+end
 end

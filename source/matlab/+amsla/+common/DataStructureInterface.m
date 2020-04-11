@@ -3,35 +3,28 @@ classdef(Abstract) DataStructureInterface < handle
     %objects.
     %
     %   amsla.common.DataStructureInterface methods:
-    %      listOfNodes           - Get the list of the IDs of all the nodes in
-    %                              the graph.
-    %      childrenOfNode        - Get the children of a node.
-    %      exitingEdgesOfNode    - Get the edges coming out of  a node.
-    %      parentsOfNode         - Get the parents of a node.
-    %      sortNodesByIndegree   - Sort the input nodes by in-degree.
-    %      sortNodesByOutdegree  - Sort the input nodes by out-degree.
+    %      listOfNodes           - All the node IDs in the graph.
+    %      parentsOfNode         - The parents of a given node.
+    %      childrenOfNode        - The children of a given node.
+    %   
+    %      listOfEdges           - All the edges ID in the graph.
+    %      exitingEdgesOfNode    - Get the edges coming out of  a node.          
     %      enteringEdgesOfNode   - Get the edges entering a node.
-    %      loopEdgesOfNode       - Get the edges entering and exiting the
-    %                              same node.
-    %
-    %      listOfComponents      - Get the list of weakly connected
-    %                              components.
-    %      rootsOfComponent      - Get the root nodes of a weakly connected
-    %                              component.
-    %      componentOfNode       - Get the component to which a node
-    %                              belongs.
-    %      computeComponents     - Compute the weakly connected components.
+    %      enteringNodeOfEdge    - Get the node that enters a 
+    %      loopEdgesOfNode       - The looping edges for the given node.
+    %      weightOfEdge          - The weight of a given edge.
     %
     %      listOfSubGraphs       - Get the list of sub-graphs.
-    %      rootsOfSubGraph       - Get the root nodes of a sub-graph.
-    %      subGraphOfNode        - Get the sub-graph to which a node
-    %                              belongs.
+    %      subGraphOfNode        - Get the sub-graph to which a node belongs.
     %      setSubGraphOfNode     - Assign a node to a sub-graph.
-    %      resetSubGraphs        - Reset all sub-graphs to a null value.
     %
-    %      plot                  - Plot an EnhancedGraph.
+    %      listOfTimeSlots       - Get the list of time-slots
+    %      timeSlotOfEdge        - Get the time-slot to which an edge belongs.
+    %      setTimeSlotOfEdge     - Assign an edge to a time-slot.
+    %
+    %      plot                  - Plot the object.
     
-    % Copyright 2019 Andrea Picciau
+    % Copyright 2019-2020 Andrea Picciau
     %
     % Licensed under the Apache License, Version 2.0 (the "License");
     % you may not use this file except in compliance with the License.
@@ -50,57 +43,49 @@ classdef(Abstract) DataStructureInterface < handle
     
     methods (Abstract, Access=public)
         
-        %% General
+        % General
         
         h = plot(obj, varargin)
         
-        %% Graph operations
+        % Node-level operations
         
         outIds = listOfNodes(obj)
         
         outIds = childrenOfNode(obj, nodeIds)
-        
-        outIds = exitingEdgesOfNode(obj, nodeIds)
-        
+                
         outIds = parentsOfNode(obj, nodeIds)
         
+        % Edge-level operations
+        
+        outIds = listOfEdges(obj)
+        
+        outIds = exitingEdgesOfNode(obj, nodeIds)
+                                
         outIds = enteringEdgesOfNode(obj, nodeIds)
+        
+        outIds = enteringNodeOfEdge(obj, edgeIds)
+        
+        outIds = exitingNodeOfEdge(obj, edgeIds)
         
         outIds = loopEdgesOfNode(obj, nodeIds)
         
-        [outIds, outDegree] = sortNodesByOutdegree(obj, nodeIds)
+        weight = weightOfEdge(obj, edgeId)
         
-        [outIds, inDegree] = sortNodesByIndegree(obj, nodeIds)
+        % Sub-graph-level operations
         
-        %% Component-level operations
-        
-        varargout = listOfComponents(obj)
-        
-        outIds = rootsOfComponent(obj, componentIds)
-        
-        outIds = componentOfNode(obj, nodeIds)
-        
-        computeComponents(obj)
-        
-        %% Sub-graph-level operations
-        
-        varargout = listOfSubGraphs(obj)
-        
-        outIds = rootsOfSubGraph(obj, subGraphId)
+        outIds = listOfSubGraphs(obj)
         
         outIds = subGraphOfNode(obj, nodeIds)
         
         outIds = setSubGraphOfNode(obj, nodeIds, subGraphIds)
         
-        resetSubGraphs(obj)
+        % Edge-level operations
         
-        %% Edge-level operations
+        outIds = listOfTimeSlots(obj)
         
         outIds = timeSlotOfEdge(obj, edgeIds)
         
-        setTimeSlotOfEdge(obj, edgeIds, timeSlotIds)
-        
-        resetTimeSlots(obj)
+        setTimeSlotOfEdge(obj, edgeIds, timeSlotIds)        
         
     end
     

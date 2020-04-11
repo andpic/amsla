@@ -19,22 +19,22 @@ classdef test_Scheduler < amsla.test.tools.AmslaTest
     properties(TestParameter)
         
         GraphAssignmentPair = struct( ...
-            'SimpleLowerTriangular', struct( ...
-            'InputGraph',           { iSimpleLowerTriangularGraph() }, ...
-            'ExpectedAssignment',   { iSimpleLowerTriangularAssignment() }), ...
+            'SimpleLowerTriangularOneSubGraph', struct( ...
+            'InputGraph',           { iSimpleLowerTriangularOneSubGraph() }, ...
+            'ExpectedAssignment',   { iSimpleLowerTriangularOneSubGraphAssignment() }), ...
             ...
-            'SimpleLowerTriangularWithSubGraphs', struct( ...
-            'InputGraph',           { iSimpleLowerTriangularGraphWithSubGraphs() }, ...
-            'ExpectedAssignment',   { iSimpleLowerTriangularAssignmentWithSubGraphs() }), ...
+            'SimpleLowerTriangularMultipleSubGraphs', struct( ...
+            'InputGraph',           { iSimpleLowerTriangularMultipleSubGraphs() }, ...
+            'ExpectedAssignment',   { iSimpleLowerTriangularMultipleSubGraphsAssignment() }), ...
             ...
-            'SmallWarthen', struct( ...
-            'InputGraph',           { iSmallWarthenGraph() }, ...
-            'ExpectedAssignment',   { iSmallWarthenAssignment() }), ...
+            'SmallWarthenMultipleSubGraphs', struct( ...
+            'InputGraph',           { iSmallWarthenMultipleSubGraphs() }, ...
+            'ExpectedAssignment',   { iSmallWarthenMultipleSubGraphsAssignment() }), ...
             ...
             ...
-            'SmallWarthenNoSubGraphs', struct( ...
-            'InputGraph',           { iSmallWarthenNoSubGraphsGraph() }, ...
-            'ExpectedAssignment',   { iSmallWarthenNoSubGraphsAssignment() }));
+            'SmallWarthenOneSubGraph', struct( ...
+            'InputGraph',           { iSmallWarthenOneSubGraph() }, ...
+            'ExpectedAssignment',   { iSmallWarthenOneSubGraphAssignment() }));
         
     end
     
@@ -95,110 +95,114 @@ end
 
 %% HELPER FUNCTIONS
 
-function aGraph = iSimpleLowerTriangularGraph()
-[I, J, V] = iSimpleLowerTriangular();
+function aGraph = iSimpleLowerTriangularOneSubGraph()
+[I, J, V] = iSimpleLowerTriangularGraph();
 aGraph = amsla.common.DataStructure(I, J, V);
+iAssignAllNodesToOneSubGraph(aGraph);
 end
 
-function expectedAssignment = iSimpleLowerTriangularAssignment()
-[I, J, ~, timeSlots] = iSimpleLowerTriangular();
+function expectedAssignment = iSimpleLowerTriangularOneSubGraphAssignment()
+[I, J, ~, timeSlots, ~] = iSimpleLowerTriangularGraph();
 expectedAssignment = table(J', I', timeSlots', ...
     'VariableNames', {'J', 'I', 'TimeSlot'});
 end
 
-function [I, J, V, timeSlots] = iSimpleLowerTriangular()
-J         = [  1, 1, 1,   2,   3,   4, 4,   5, 5, 3,   6, 6,   7,   8, 6,  9,   9,  10];
-I         = [  1, 2, 3,   2,   3,   4, 5,   5, 6, 6,   6, 7,   7,   8, 8, 10,   9,  10];
-timeSlots = [  1, 2, 2,  iN,  iN,  iN, 2,  iN, 3, 3,   4, 5,  iN,  iN, 5,  2,  iN,  iN];
-V         = [  3, 1, 1,   1,   1,   1, 1,   1, 1, 1,   3, 1,   1,   1, 1,  2,   1,   1];
-end
-
-function aGraph = iSimpleLowerTriangularGraphWithSubGraphs()
-[I, J, V] = iSimpleLowerTriangularWithSubGraphs();
+function aGraph = iSimpleLowerTriangularMultipleSubGraphs()
+[I, J, V] = iSimpleLowerTriangularGraph();
 aGraph = amsla.common.DataStructure(I, J, V);
 aGraph.setSubGraphOfNode( ...
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], ...
     [1, 1, 1, 2, 2, 3, 3, 3, 4,  4,  4]);
 end
 
-function expectedAssignment = iSimpleLowerTriangularAssignmentWithSubGraphs()
-[I, J, ~, timeSlots] = iSimpleLowerTriangularWithSubGraphs();
+function expectedAssignment = iSimpleLowerTriangularMultipleSubGraphsAssignment()
+[I, J, ~, ~, timeSlots] = iSimpleLowerTriangularGraph();
 expectedAssignment = table(J', I', timeSlots', ...
     'VariableNames', {'J', 'I', 'TimeSlot'});
 end
 
-function [I, J, V, timeSlots] = iSimpleLowerTriangularWithSubGraphs()
-J         = [  1, 1, 1,   2,   3,   4, 4,   5,  5,  3,  6, 6,  7,  8, 6,  9,   9,  10, 10, 11];
-I         = [  1, 2, 3,   2,   3,   4, 5,   5,  6,  6,  6, 7,  7,  8, 8, 10,   9,  10, 11, 11];
-timeSlots = [  1, 2, 2,  iN,  iN,  iN, 2,  iN, -1, -1,  1, 2, iN, iN, 2,  2,  iN,  iN,  3,  4];
-V         = [  3, 1, 1,   1,   1,   1, 1,   1,  1,  1,  3, 1,  1,  1, 1,  2,   1,   1,  1,  3];
+function [I, J, V, timeSlotOneSubGraph, timeSlotMultipleSubGraphs] = iSimpleLowerTriangularGraph()
+allData = [ ...
+    1,  1,   3,   1,   1;
+    2,  1,   1,   2,   2;
+    3,  1,   1,   2,   2;
+    2,  2,   1,  iN,  iN;
+    3,  3,   1,  iN,  iN;
+    4,  4,   1,  iN,  iN;
+    5,  4,   1,   1,   1;
+    5,  5,   1,  iN,  iN;
+    6,  5,   1,   3,  -1;
+    6,  3,   1,   3,  -1;
+    6,  6,   3,   4,   1;
+    7,  6,   1,   5,   2;
+    7,  7,   1,  iN,  iN;
+    8,  8,   1,  iN,  iN;
+    8,  6,   1,   5,   2;
+    10, 9,   2,   1,   1;
+    9,  9,   1,  iN,  iN;
+    10, 10,  1,  iN,  iN;
+    11, 10,  1,   2,   2;
+    11, 11,  3,   3,   3];
+
+I = allData(:, 1);
+J = allData(:, 2);
+V = allData(:, 3);
+timeSlotOneSubGraph = allData(:, 4);
+timeSlotMultipleSubGraphs = allData(:, 5);
 end
 
-function aGraph = iSmallWarthenGraph()
-[I, J, V] = iSmallWarthen();
+function aGraph = iSmallWarthenMultipleSubGraphs()
+[I, J, V] = iSmallWarthenGraph();
 aGraph = amsla.common.DataStructure(I, J, V);
 aGraph.setSubGraphOfNode( ...
     [1, 2, 3, 4, 5], ...
     [1, 1, 1, 2, 2]);
 end
 
-function expectedAssignment = iSmallWarthenAssignment()
-[I, J, ~, timeSlots] = iSmallWarthen();
+function expectedAssignment = iSmallWarthenMultipleSubGraphsAssignment()
+[I, J, ~, ~, timeSlots] = iSmallWarthenGraph();
 expectedAssignment = table(J, I, timeSlots, ...
     'VariableNames', {'J', 'I', 'TimeSlot'});
 end
 
-function [I, J, V, timeSlot] = iSmallWarthen()
+function [I, J, V, timeSlotOneSubGraph, timeSlotMultipleSubGraphs] = iSmallWarthenGraph()
 allData = [ ...
-    1, 1,  11.863, 1;
-    2, 1, -10.863, 2;
-    2, 2,  58.936, 3;
-    3, 1,   3.621, 4;
-    3, 2, -10.863, 4;
-    3, 3,   23.94, 5;
-    4, 3, -12.077, -1;
-    4, 4,  65.412, 1;
-    5, 3,  4.0257, -1;
-    5, 4, -12.077, 2;
-    5, 5,  13.077, 3];
+    1, 1,  11.863, 1,  1;
+    2, 1, -10.863, 2,  2;
+    2, 2,  58.936, 3,  3;
+    3, 1,   3.621, 4,  4;
+    3, 2, -10.863, 4,  4;
+    3, 3,   23.94, 5,  5;
+    4, 3, -12.077, 6, -1;
+    4, 4,  65.412, 7,  1;
+    5, 3,  4.0257, 8, -1;
+    5, 4, -12.077, 8,  2;
+    5, 5,  13.077, 9,  3];
 
 I = allData(:, 1);
 J = allData(:, 2);
 V = allData(:, 3);
-timeSlot = allData(:, 4);
+timeSlotOneSubGraph = allData(:, 4);
+timeSlotMultipleSubGraphs = allData(:, 5);
 end
 
-function aGraph = iSmallWarthenNoSubGraphsGraph()
-[I, J, V] = iSmallWarthenNoSubGraphs();
+function aGraph = iSmallWarthenOneSubGraph()
+[I, J, V] = iSmallWarthenGraph();
 aGraph = amsla.common.DataStructure(I, J, V);
+iAssignAllNodesToOneSubGraph(aGraph);
 end
 
-function expectedAssignment = iSmallWarthenNoSubGraphsAssignment()
-[I, J, ~, timeSlots] = iSmallWarthenNoSubGraphs();
+function expectedAssignment = iSmallWarthenOneSubGraphAssignment()
+[I, J, ~, timeSlots, ~] = iSmallWarthenGraph();
 expectedAssignment = table(J, I, timeSlots, ...
     'VariableNames', {'J', 'I', 'TimeSlot'});
 end
 
-function [I, J, V, timeSlot] = iSmallWarthenNoSubGraphs()
-allData = [ ...
-    1, 1,  11.863, 1;
-    2, 1, -10.863, 2;
-    2, 2,  58.936, 3;
-    3, 1,   3.621, 4;
-    3, 2, -10.863, 4;
-    3, 3,   23.94, 5;
-    4, 3, -12.077, 6;
-    4, 4,  65.412, 7;
-    5, 3,  4.0257, 8;
-    5, 4, -12.077, 8;
-    5, 5,  13.077, 9];
-
-I = allData(:, 1);
-J = allData(:, 2);
-V = allData(:, 3);
-timeSlot = allData(:, 4);
+function iAssignAllNodesToOneSubGraph(dataStructure)
+allNodes = dataStructure.listOfNodes();
+dataStructure.setSubGraphOfNode(allNodes, ones(size(allNodes)));
 end
 
-function val = iN()
-val = amsla.common.nullId();
+function outData = iN()
+outData = amsla.common.nullId(1);
 end

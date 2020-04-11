@@ -20,15 +20,25 @@ classdef(Abstract) PartitionerInterface < handle
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    %% PROPERTIES
+    %% PROTECTED PROPERTIES
     
-    properties(Access=private)
+    properties(GetAccess=protected, SetAccess=immutable)
         
-        %Handle to the graph being partitioned
-        Graph
-        
-        %Maximum allowed number of nodes in a sub-graph
+        %Max number of nodes in a sub-graph
         MaxSubGraphSize
+        
+    end
+    
+    properties(Abstract, GetAccess=protected, SetAccess=immutable)
+        
+        %The graph being partitioned
+        DataStructure
+        
+    end
+    
+    %% PRIVATE PROPERTIES
+    
+    properties(GetAccess=private, SetAccess=immutable)
         
         %Progress plot manager.
         ProgressPlotter
@@ -54,24 +64,11 @@ classdef(Abstract) PartitionerInterface < handle
         function obj = PartitionerInterface(varargin)
             %PARTITIONERINTERFACE Class constructor.
             
-            [obj.Graph, obj.MaxSubGraphSize, obj.IsPlottingProgress] = ...
+            [obj.MaxSubGraphSize, obj.IsPlottingProgress] = ...
                 iParseConstructorArguments(varargin{:});
             if obj.IsPlottingProgress
                 obj.ProgressPlotter = amsla.common.internal.GraphPlotter();
             end
-        end
-        
-        function aGraph = getGraphToPartition(obj)
-            %GETGRAPHTOPARTITION Get a handle to the graph that is to be
-            %partitioned.
-            
-            aGraph = obj.Graph;
-        end
-        
-        function maxSize = getMaxSubGraphSize(obj)
-            %GETMAXSUBGRAPHSIZE Get the requested maximum sub-graph.
-            
-            maxSize = obj.MaxSubGraphSize;
         end
         
         function updateProgressPlot(obj)
@@ -79,7 +76,7 @@ classdef(Abstract) PartitionerInterface < handle
             %graph.
             
             if obj.IsPlottingProgress
-                obj.ProgressPlotter.plot(obj.Graph);
+                obj.ProgressPlotter.plot(obj.DataStructure);
             end
         end
         
@@ -88,15 +85,13 @@ end
 
 %% HELPER FUNCTIONS
 
-function [aGraph, maxSubGraph, isPlottingProgress] = iParseConstructorArguments(varargin)
+function [maxSubGraph, isPlottingProgress] = iParseConstructorArguments(varargin)
 parser = inputParser;
-addRequired(parser,'Graph', @(x) isa(x, "amsla.common.DataStructureInterface") && isscalar(x));
 addOptional(parser,'MaxSubGraph', 10, @isnumeric);
 addParameter(parser,'PlotProgress', false, @islogical);
 
 parse(parser, varargin{:});
 
-aGraph = parser.Results.Graph;
 maxSubGraph = parser.Results.MaxSubGraph;
 isPlottingProgress = parser.Results.PlotProgress;
 end

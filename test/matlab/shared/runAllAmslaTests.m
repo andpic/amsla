@@ -30,20 +30,10 @@ import matlab.unittest.plugins.CodeCoveragePlugin;
 import matlab.unittest.plugins.XMLPlugin;
 
 % Setup directories
-matlabTestDir = amsla.test.tools.extractTestDir();
-matlabSourceDir = amsla.test.tools.extractSourceDir();
-
-% Add directories to the path
-oldPath = path();
-addpath(matlabSourceDir);
-sharedTestsDir = fullfile(matlabTestDir, "shared");
-addpath(sharedTestsDir);
-
-% Remove added directories at the end of tests
-restorePath = onCleanup(@() path(oldPath));
+[setupStruct, restorePath] = amsla.test.tools.internal.testRunnerSetup(); %#ok<ASGLU>
 
 % Test suite
-concreteTests = fullfile(matlabTestDir, "suite");
+concreteTests = fullfile(setupStruct.MatlabTestDir, "suite");
 suite = TestSuite.fromFolder(concreteTests, "IncludingSubfolders", true);
 
 % Test runner
@@ -51,13 +41,13 @@ runner = TestRunner.withTextOutput("LoggingLevel", 3, "OutputDetail", 3);
 
 % Check for Code coverage plugin
 if nargin==2 && strcmp(varargin{1}, "CodeCoverage") && varargin{2}
-    runner.addPlugin(CodeCoveragePlugin.forFolder(matlabSourceDir, ...
+    runner.addPlugin(CodeCoveragePlugin.forFolder(setupStruct.MatlabSourceDir, ...
         "IncludeSubFolders", true));
 end
 
 % Write output to XML
 xmlFolder = fullfile(tempdir, "testResults");
-mkdir(xmlFolder);
+iCreateFolder(xmlFolder);
 xmlFile = fullfile(xmlFolder, "junit.xml");
 runner.addPlugin(XMLPlugin.producingJUnitFormat(xmlFile));
 
@@ -67,4 +57,12 @@ testResults = runner.run(suite);
 % Check test output
 failedTests = [testResults.Failed];
 assert(~any(failedTests), "Some test failures occurred.");
+end
+
+%% HELPER FUNCTIONS
+
+function iCreateFolder(xmlFolder)
+if exist(xmlFolder, 'dir')~=7
+    mkdir(xmlFolder);
+end
 end

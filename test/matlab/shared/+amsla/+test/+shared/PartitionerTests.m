@@ -49,7 +49,8 @@ classdef(Abstract) PartitionerTests < amsla.test.tools.AmslaTest
             partitioningResult = partition(amslaMatrix);
             
             % Verify partitioning results
-            testCase.verifyPartitioningResultOfExampleGraph(partitioningResult);
+            testCase.verifyTrue(partitioningResult.WasPartitioned, ...
+                "Could not partition the given graph.");
         end
     end
     
