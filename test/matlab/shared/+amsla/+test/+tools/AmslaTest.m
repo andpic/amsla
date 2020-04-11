@@ -15,23 +15,6 @@ classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
     % See the License for the specific language governing permissions and
     % limitations under the License.
     
-    %% TEST SETUP
-    
-    methods (TestClassSetup)
-        
-        function addPath(testCase)
-            % Add the path to the EnhancedGraph class.
-            
-            sourceDir = amsla.test.tools.internal.extractSourceDir();
-            if ~iIsOnPath(sourceDir)
-                oldPath = path();
-                addpath(sourceDir);
-                testCase.addTeardown(@path, oldPath);
-            end
-        end
-        
-    end
-    
     %% HELPER METHODS
     
     methods (Access=protected)
@@ -42,9 +25,7 @@ classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
             testCase.verifyThat( ...
                 functionCall, ...
                 Throws(?MException));
-        end        
-   
-        
+        end    
     
     end
 end
