@@ -1,5 +1,5 @@
-classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
-    %AMSLATESTS Test for AMSLA.
+classdef (Abstract) AmslaTest < matlab.unittest.TestCase
+    %AMSLATESTCASE Shared test case logic.
     
     % Copyright 2019-2020 Andrea Picciau
     %
@@ -22,7 +22,7 @@ classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
         function addPath(testCase)
             % Add the path to the EnhancedGraph class.
             
-            sourceDir = amsla.test.tools.internal.extractSourceDir();
+            sourceDir = amsla.test.tools.extractSourceDir();
             if ~iIsOnPath(sourceDir)
                 oldPath = path();
                 addpath(sourceDir);
@@ -31,20 +31,12 @@ classdef (Abstract) AmslaTest < amsla.test.tools.internal.AmslaTest
         end
         
     end
-    
-    %% HELPER METHODS
-    
-    methods (Access=protected)
-        
-        function verifyThrowsError(testCase, functionCall)
-            % Verify that the function call throws an error
-            import matlab.unittest.constraints.Throws;
-            testCase.verifyThat( ...
-                functionCall, ...
-                Throws(?MException));
-        end        
-   
-        
-    
-    end
+end
+
+%% HELPER FUNCTIONS
+
+function tf = iIsOnPath(aDir)
+pathString = string(path());
+pathList = split(pathString, ";");
+tf = any(pathList == aDir);
 end

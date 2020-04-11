@@ -73,6 +73,9 @@ classdef SparseMatrix
         function result = solve(obj, rhs)
             %SOLVE solve a linear system with the sparse matrix.
             
+            assert(~isempty(obj.Solver), ...
+                "amsla:AnalysisRequired", ...
+                "Cannot solve a linear system without analysis");
             result = obj.Solver.solve(rhs);
         end
         
