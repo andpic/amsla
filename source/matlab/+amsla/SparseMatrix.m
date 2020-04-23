@@ -5,7 +5,7 @@ classdef SparseMatrix
     %   the format FORMAT from the triplet I, J, V.
     %
     %   M = AMSLA.SPARSEMATRIX(A, FORMAT) Create a sparse matrix in the
-    %   format FORMAT from MATLAB's sparse matrix A.
+    %   format FORMAT from MATLAB sparse matrix A.
     
     % Copyright 2019-2020 Andrea Picciau
     %
@@ -79,6 +79,21 @@ classdef SparseMatrix
             result = obj.Solver.solve(rhs);
         end
         
+        function obj = subsasgn(obj, S, B) %#ok<INUSD>
+           %SUBSASGN Indexed assignment operator.
+           
+           assert(strcmp(S.type, '()'), ...
+               "amsla:BadAssignment", ...
+               "Only assignments with () are supported.");
+           assert(isa(S.subs, 'cell') && numel(S.subs)<=2, ...
+               "amsla:BadAssignment", ...
+               "Only one and two-element indexing are supported.");
+           
+           [rowIndices, columnIndices, values] = iRowsAndColumns(S.subs, ...
+               obj.DataStructure.numberOfRows());
+           obj.DataStructure.assignElements(rowIndices, columnIndices, values);
+           obj = obj.updateAnalysis(rowIndices, columnIndices);
+        end    
     end
     
     %% PRIVATE METHDOS
@@ -99,6 +114,14 @@ classdef SparseMatrix
             obj.Scheduler = schedulerConstructor(obj.DataStructure);
         end
         
+        function obj = updateAnalysis(obj, rowIndices, columnIndices)
+            % Choose partitioner and scheduler according to the storage
+            % format.
+            
+            obj.Partitioner.update(rowIndices, columnIndices);
+            obj.Scheduler.update(rowIndices, columnIndices);
+        end
+        
     end
 end
 
@@ -112,7 +135,7 @@ if nargin==2
     % indices, and values
     sparseMatrix = varargin{1};
     validateattributes(sparseMatrix, ...
-        {'numeric'}, {'sparse', 'square', 'nonempty'});
+        {'numeric'}, {'square', 'nonempty'});
     [I, J, V] = find(sparseMatrix);
     
     format = varargin{2};

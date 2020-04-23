@@ -3,6 +3,8 @@ classdef(Abstract) DataStructureInterface < handle
     %objects.
     %
     %   amsla.common.DataStructureInterface methods:
+    %      assignElements        - Assign elements of the matrix.
+    %
     %      listOfNodes           - All the node IDs in the graph.
     %      parentsOfNode         - The parents of a given node.
     %      childrenOfNode        - The children of a given node.
@@ -46,6 +48,8 @@ classdef(Abstract) DataStructureInterface < handle
         % General
         
         h = plot(obj, varargin)
+        
+        assignElements
         
         % Node-level operations
         
