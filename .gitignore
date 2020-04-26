@@ -6,3 +6,9 @@
 # MATLAB project files
 *.prj
 resources/*
+
+# Builds
+**/build/*
+
+# Vscode files
+**/.vscode
