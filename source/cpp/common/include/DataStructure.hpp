@@ -1,5 +1,8 @@
-/** @file Assertions.hpp
- *  @brief Shared definitions of assertions.
+/** @file DataStructure.hpp
+ *  @brief Interface for DataStructure objects.
+ *
+ *  This contains the definition for DataStructure object. Any data structure
+ * has abide by this interface.
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -8,9 +11,9 @@
  *  @license Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- *  
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,30 +21,25 @@
  *  limitations under the License.
  */
 
-#ifndef _AMSLA_COMMON_ASSERTIONS_HPP
-#define _AMSLA_COMMON_ASSERTIONS_HPP
+#ifndef _AMSLA_COMMON_DATASTRUCTURE_HPP
+#define _AMSLA_COMMON_DATASTRUCTURE_HPP
 
-#include <stdexcept>
-#include <iostream>
+// System includes
+#include <algorithm>
 #include <string>
+#include <vector>
 
-namespace amsla::common
-{
+namespace amsla::common {
 
-/** @brief Assert that a condition is true
- *  @param must_be_true The condition that must be satisfied.
- *  @param diagnostic A string to print in case the condition is not satisfied.
+/** @class DataStructure
+ *  @brief Interface for all data structures.
  */
-void check_that(bool const must_be_true, std::string const diagnostic)
-{
-#if DEBUG
-    if (!must_be_true)
-    {
-        throw std::runtime_error(diagnostic);
-    }
-#endif
-}
+class DataStructure {
+ public:
+  /** @brief All the node IDs in the graph.
+   */
+  virtual std::vector<uint> allNodes() = 0;
+};  // class DataStructure
 
-} // namespace amsla::common
-
+}  // namespace amsla::common
 #endif
