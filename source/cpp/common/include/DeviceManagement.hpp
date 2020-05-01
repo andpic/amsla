@@ -31,11 +31,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <tuple>
 #include <vector>
-
-// Project includes
-#include "Assertions.hpp"
 
 /** @function operator<<
  *  @brief Write an OpenCL error to a standard stream

@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   matlab: mathworks/matlab@dev:alpha
 jobs:
-  build_and_test:
+  build_and_test_matlab:
     machine:
       image: ubuntu-1604:201903-01
     steps:
@@ -28,9 +28,30 @@ jobs:
       - store_artifacts:
           path: /tmp/perfDiary.log
 
+  build_and_test_cpp:
+    docker:
+      - image: apicciau/opencl_ubuntu:latest
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: |
+            mkdir build && cd build
+            cmake ..
+            make VERBOSE=1
+      - run:
+          name: Run all the tests
+          command: |
+            mkdir /tmp/amsla_test
+            cd test/cpp
+            GTEST_OUTPUT="xml:/tmp/amsla_test/test_amsla_common" ./common/test_amsla_common
+      - store_test_results:
+          path: /tmp/amsla_test
+
 workflows:
   version: 2.1
   run_all_tests:
     jobs:
-      - build_and_test
+      - build_and_test_matlab
+      - build_and_test_cpp
       - performance
