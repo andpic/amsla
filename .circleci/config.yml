@@ -43,7 +43,7 @@ jobs:
           name: Run all the tests
           command: |
             mkdir /tmp/amsla_test
-            cd test/cpp
+            cd build/test/cpp
             GTEST_OUTPUT="xml:/tmp/amsla_test/test_amsla_common" ./common/test_amsla_common
       - store_test_results:
           path: /tmp/amsla_test
