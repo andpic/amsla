@@ -10,7 +10,34 @@ function(make_includable input_file output_file)
     file(WRITE "${output_file}" "${content}")
 endfunction(make_includable)
 
+# Make the OpenCL files includable
+function(include_all_OpenCL_files)
+
+    # Clean the derived directory if it exists
+    file(GLOB_RECURSE all_opencl_files "*.cl")
+    foreach(curr_opencl_file ${all_opencl_files})
+        get_filename_component(curr_folder "${curr_opencl_file}" DIRECTORY)
+        if(${curr_folder} MATCHES ".*derived.*")
+            if(EXISTS ${curr_folder})
+                message(STATUS "Deleting folder ${curr_folder}")
+                file(REMOVE_RECURSE "${curr_folder}")
+            endif()
+        endif()
+    endforeach()
+
+    # Loop through all the OpenCL files
+    file(GLOB_RECURSE all_opencl_sources "*.cl")
+    foreach(curr_opencl_source ${all_opencl_sources})
+        get_filename_component(curr_opencl_folder "${curr_opencl_source}" DIRECTORY)
+        get_filename_component(curr_opencl_filename "${curr_opencl_source}" NAME)
+
+        message(STATUS "Making OpenCL file includable: ${curr_opencl_source}")
+        set(file_derived "${curr_opencl_folder}/derived/${curr_opencl_filename}")
+        make_includable("${curr_opencl_source}" "${file_derived}")
+    endforeach()
+endfunction(include_all_OpenCL_files)
+
 ### ADD SUBDIRECTORIES
 
 add_subdirectory("common")
-# add_subdirectory("data_structures")
+add_subdirectory("datastructures")

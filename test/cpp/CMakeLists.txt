@@ -31,3 +31,4 @@ endfunction(configure_build)
 ### ADD SUBDIRECTORIES
 
 add_subdirectory("common")
+add_subdirectory("datastructures")

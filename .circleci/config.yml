@@ -45,6 +45,7 @@ jobs:
             mkdir /tmp/amsla_test
             cd build/test/cpp
             GTEST_OUTPUT="xml:/tmp/amsla_test/test_amsla_common.xml" ./common/test_amsla_common
+            GTEST_OUTPUT="xml:/tmp/amsla_test/test_amsla_datastructures.xml" ./common/test_amsla_datastructures
       - store_test_results:
           path: /tmp/amsla_test
 
