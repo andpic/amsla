@@ -9,6 +9,7 @@ resources/*
 
 # Builds
 **/build/*
+**/derived/*
 
 # Vscode files
 **/.vscode
