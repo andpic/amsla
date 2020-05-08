@@ -38,7 +38,8 @@ TEST(DeviceManagement, data_moved_to_device_and_back_without_errors) {
       amsla::common::moveToDevice(row_indices, CL_MEM_READ_WRITE);
   amsla::common::waitAllDeviceOperations();
 
-  auto data_back = amsla::common::moveToHost<uint>(device_buffer, 4);
+  auto data_back = amsla::common::moveToHost<decltype(row_indices)::value_type>(
+      device_buffer, std::size(row_indices));
   amsla::common::waitAllDeviceOperations();
 
   for (std::size_t i = 0; i < row_indices.size(); i++) {
