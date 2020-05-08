@@ -77,13 +77,13 @@ std::string iReplaceSubstring(std::string in_string,
  */
 template <class BaseType, std::size_t max_elements>
 struct __attribute__((__packed__)) __DataLayout {
-  cl_uint _row_indices[max_elements];
-  cl_uint _column_indices[max_elements];
-  BaseType _values[max_elements];
+  cl_uint row_indices_[max_elements];
+  cl_uint column_indices_[max_elements];
+  BaseType values_[max_elements];
 
-  cl_uint _num_edges = 0;
-  cl_uint _num_nodes = 0;
-  cl_uint const _max_elements = max_elements;
+  cl_uint num_edges_ = 0;
+  cl_uint num_nodes_ = 0;
+  cl_uint const max_elements_ = max_elements;
 };
 
 template <class BaseType, std::size_t max_elements>
@@ -127,17 +127,17 @@ void iInitialiseDataLayout(
 
   std::size_t const num_elements = row_indices.size();
 
-  iInitialiseArray(data_to_initialise->_row_indices, row_indices, num_elements,
+  iInitialiseArray(data_to_initialise->row_indices_, row_indices, num_elements,
                    max_elements);
-  iInitialiseArray(data_to_initialise->_column_indices, column_indices,
+  iInitialiseArray(data_to_initialise->column_indices_, column_indices,
                    num_elements, max_elements);
-  iInitialiseArray(data_to_initialise->_values, values, num_elements,
+  iInitialiseArray(data_to_initialise->values_, values, num_elements,
                    max_elements);
 
   std::set<uint> all_nodes(row_indices.begin(), row_indices.end());
   all_nodes.insert(column_indices.begin(), column_indices.end());
-  data_to_initialise->_num_nodes = all_nodes.size();
-  data_to_initialise->_num_edges = num_elements;
+  data_to_initialise->num_nodes_ = all_nodes.size();
+  data_to_initialise->num_edges_ = num_elements;
 }
 
 #pragma GCC diagnostic ignored "-Wignored-attributes"
@@ -180,39 +180,42 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
           amsla::common::compileKernel(kernel_source, kernel_name);
     }
 
-    std::vector<cl_uint> output(max_elements);
+    // Preallocate the output
+    std::vector<cl_uint> output;
 
     try {
+      auto vector_size = max_elements;
+
       cl::Kernel device_kernel = _compiled_kernels[kernel_name];
       cl::Buffer output_buffer =
-          amsla::common::createBuffer(output, CL_MEM_READ_ONLY);
+          amsla::common::createBuffer<decltype(output)::value_type>(
+              vector_size, CL_MEM_READ_ONLY);
 
-      std::size_t vector_size = max_elements;
       // Bind kernel arguments to kernel
       device_kernel.setArg(0, _device_buffer);
       device_kernel.setArg(1, output_buffer);
 
       // Number of work items in each local work group
-      uint num_threads = static_cast<uint>(
+      auto num_threads = static_cast<uint>(
           std::ceil(vector_size / static_cast<double>(64)) * 64);
       cl::NDRange global_size(num_threads);
       cl::NDRange local_size = global_size;
 
       // Enqueue kernel
-      cl::Event event;
-      cl::CommandQueue queue = amsla::common::defaultQueue();
+      auto queue = amsla::common::defaultQueue();
       queue.enqueueNDRangeKernel(device_kernel, cl::NullRange, global_size,
-                                 local_size, NULL, &event);
+                                 local_size);
 
       // Block until kernel completion
-      amsla::common::moveToHost(output_buffer, &output[0], vector_size);
+      output = amsla::common::moveToHost<decltype(output)::value_type>(
+          output_buffer, vector_size);
       amsla::common::waitAllDeviceOperations();
     } catch (cl::Error err) {
       std::cerr << err << std::endl;
       throw err;
     }
 
-    return std::vector<uint>(output);
+    return output;
   }
 
   /** @brief Export the device source to be used with this data structure
@@ -292,22 +295,22 @@ CooDataStructure<BaseType>::CooDataStructure(
 
   switch (nearest_power) {
     case 2:
-      _impl = std::unique_ptr<DataStructure>(
+      impl_ = std::unique_ptr<DataStructure>(
           new CooDataStructureImpl<BaseType, static_cast<std::size_t>(2 * 1e2)>(
               row_indices, column_indices, values));
       break;
     case 3:
-      _impl = std::unique_ptr<DataStructure>(
+      impl_ = std::unique_ptr<DataStructure>(
           new CooDataStructureImpl<BaseType, static_cast<std::size_t>(2 * 1e3)>(
               row_indices, column_indices, values));
       break;
     case 4:
-      _impl = std::unique_ptr<DataStructure>(
+      impl_ = std::unique_ptr<DataStructure>(
           new CooDataStructureImpl<BaseType, static_cast<std::size_t>(2 * 1e4)>(
               row_indices, column_indices, values));
       break;
     case 5:
-      _impl = std::unique_ptr<DataStructure>(
+      impl_ = std::unique_ptr<DataStructure>(
           new CooDataStructureImpl<BaseType, static_cast<std::size_t>(2 * 1e5)>(
               row_indices, column_indices, values));
       break;
@@ -318,7 +321,7 @@ CooDataStructure<BaseType>::CooDataStructure(
 
 template <class BaseType>
 std::vector<uint> CooDataStructure<BaseType>::allNodes(void) {
-  return _impl->allNodes();
+  return impl_->allNodes();
 }
 
 }  // namespace amsla::datastructures

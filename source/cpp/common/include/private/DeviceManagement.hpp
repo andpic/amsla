@@ -32,29 +32,16 @@
 
 namespace {
 
-/** @brief Create an OpenCL buffer
- */
-template <class DataType>
-std::pair<cl::Buffer, std::size_t> iCreateBuffer(DataType const *array,
-                                                 std::size_t num_elements,
-                                                 cl_mem_flags const mem_flag) {
-  cl::Context context = amsla::common::defaultContext();
-  std::size_t bytes_to_copy = sizeof(DataType) * num_elements;
-  cl::Buffer out_array = cl::Buffer(context, mem_flag, bytes_to_copy);
-
-  return std::make_pair(out_array, bytes_to_copy);
-}
-
 /** @brief Move data to the device
  */
 template <class DataType>
 cl::Buffer iMoveRawDataToDevice(DataType const *array, std::size_t num_elements,
                                 cl_mem_flags const mem_flag) {
   cl::Buffer out_array;
+
   try {
-    std::size_t bytes_to_copy = 0;
-    std::tie(out_array, bytes_to_copy) =
-        iCreateBuffer(array, num_elements, mem_flag);
+    std::size_t bytes_to_copy = sizeof(DataType) * num_elements;
+    out_array = amsla::common::createBuffer<DataType>(num_elements, mem_flag);
 
     cl::CommandQueue queue = amsla::common::defaultQueue();
     queue.enqueueWriteBuffer(out_array, CL_FALSE, 0, bytes_to_copy, array);
@@ -72,22 +59,11 @@ cl::Buffer iMoveRawDataToDevice(DataType const *array, std::size_t num_elements,
  *  @brief Create an OpenCL buffer
  */
 template <class DataType>
-cl::Buffer amsla::common::createBuffer(std::vector<DataType> const &array,
+cl::Buffer amsla::common::createBuffer(std::size_t const num_elements,
                                        cl_mem_flags const mem_flag) {
-  std::pair<cl::Buffer, std::size_t> buffer_and_size =
-      iCreateBuffer(&array[0], array.size(), mem_flag);
-  return cl::Buffer(buffer_and_size.first());
-}
-
-/** @function createBuffer
- *  @brief Create an OpenCL buffer
- */
-template <class DataType>
-cl::Buffer amsla::common::createBuffer(DataType const &data,
-                                       cl_mem_flags const mem_flag) {
-  std::pair<cl::Buffer, std::size_t> buffer_and_size =
-      iCreateBuffer(&data, 1, mem_flag);
-  return cl::Buffer(buffer_and_size.first());
+  std::size_t bytes_to_copy = sizeof(DataType) * num_elements;
+  cl::Buffer out_array(defaultContext(), mem_flag, bytes_to_copy);
+  return out_array;
 }
 
 /** @function moveToDevice
@@ -120,13 +96,25 @@ cl::Buffer amsla::common::moveToDevice(DataType const &host_data,
  *  queue.
  */
 template <class DataType>
-void amsla::common::moveToHost(cl::Buffer const &device_data,
-                               DataType *host_data,
-                               std::size_t const num_elements) {
+std::vector<DataType> amsla::common::moveToHost(
+    cl::Buffer const &device_data, std::size_t const num_elements) {
   cl::CommandQueue queue = defaultQueue();
 
   auto bytes_to_copy = sizeof(DataType) * num_elements;
-  queue.enqueueReadBuffer(device_data, CL_FALSE, 0, bytes_to_copy, host_data);
+  std::vector<DataType> ret_data(num_elements);
+  queue.enqueueReadBuffer(device_data, CL_FALSE, 0, bytes_to_copy,
+                          &ret_data[0]);
+  return ret_data;
+}
+
+template <class DataType>
+DataType amsla::common::moveToHost(cl::Buffer const &device_data) {
+  cl::CommandQueue queue = defaultQueue();
+
+  auto bytes_to_copy = sizeof(DataType);
+  DataType ret_data;
+  queue.enqueueReadBuffer(device_data, CL_FALSE, 0, bytes_to_copy, &ret_data);
+  return ret_data;
 }
 
 #endif

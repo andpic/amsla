@@ -61,14 +61,8 @@ cl::CommandQueue defaultQueue(cl::Context const &context = defaultContext());
  *  @brief Create an OpenCL buffer
  */
 template <class DataType>
-cl::Buffer createBuffer(std::vector<DataType> const &array,
-                        cl_mem_flags const mem_flag);
-
-/** @function createBuffer
- *  @brief Create an OpenCL buffer
- */
-template <class DataType>
-cl::Buffer createBuffer(DataType const &data, cl_mem_flags const mem_flag);
+cl::Buffer createBuffer(std::size_t const num_elements = 1,
+                        cl_mem_flags const mem_flag = CL_MEM_READ_WRITE);
 
 /** @function moveToDevice
  *  @brief Move given data to the device and return a buffer
@@ -79,7 +73,7 @@ cl::Buffer createBuffer(DataType const &data, cl_mem_flags const mem_flag);
  *  Creates a buffer, moves the data to the device without blocking the queue.
  */
 template <class DataType>
-cl::Buffer moveToDevice(std::vector<DataType> const &array,
+cl::Buffer moveToDevice(std::vector<DataType> const &host_data,
                         cl_mem_flags const mem_flag);
 
 template <class DataType>
@@ -95,8 +89,11 @@ cl::Buffer moveToDevice(DataType const &host_data, cl_mem_flags const mem_flag);
  *  queue.
  */
 template <class DataType>
-void moveToHost(cl::Buffer const &device_data, DataType *host_data,
-                std::size_t const num_elements);
+std::vector<DataType> moveToHost(cl::Buffer const &device_data,
+                                 std::size_t const num_elements);
+
+template <class DataType>
+DataType moveToHost(cl::Buffer const &device_data);
 
 /** @function waitAllDeviceOperations
  *  @brief Wait until all the operations on the device are completed

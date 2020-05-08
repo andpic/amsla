@@ -55,7 +55,7 @@ class CooDataStructure : public amsla::common::DataStructure {
   std::vector<uint> allNodes(void);
 
  private:
-  std::unique_ptr<DataStructure> _impl;
+  std::unique_ptr<DataStructure> impl_;
 };  // class CooDataStructure
 
 }  // namespace amsla::datastructures

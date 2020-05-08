@@ -1,5 +1,5 @@
 __kernel void allNodes(__global const __DATASTRUCTURE__ *data_structure,
-                       __global uint *output) {
+                       __global unsigned int *output) {
   // Get our global thread ID
   uint const index = get_global_id(0);
   uint const n = data_structure->_max_elements;
