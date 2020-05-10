@@ -51,6 +51,10 @@ std::unique_ptr<cl::Context> g_default_context;
  */
 std::unique_ptr<cl::Device> g_default_device;
 
+/** @brief A global variable storing the default device
+ */
+std::unique_ptr<cl::CommandQueue> g_default_queue;
+
 }  // namespace
 
 /** @function defaultContext
@@ -91,10 +95,15 @@ cl::Device &amsla::common::defaultDevice(cl::Context const &context) {
  *  @brief Get the default OpenCL command queue.
  */
 cl::CommandQueue amsla::common::defaultQueue(cl::Context const &context) {
-  cl::Device device = defaultDevice(context);
+  if (!g_default_queue) {
+    cl::Device device = defaultDevice(context);
 
-  // Create command queue for first device
-  return cl::CommandQueue(context, device, 0);
+    // Create command queue for first device
+    g_default_queue = std::unique_ptr<cl::CommandQueue>(
+        new cl::CommandQueue(context, device, 0));
+  }
+
+  return *g_default_queue;
 }
 
 /** @function waitAllDeviceOperations

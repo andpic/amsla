@@ -102,8 +102,7 @@ std::vector<DataType> amsla::common::moveToHost(
 
   auto bytes_to_copy = sizeof(DataType) * num_elements;
   std::vector<DataType> ret_data(num_elements);
-  queue.enqueueReadBuffer(device_data, CL_FALSE, 0, bytes_to_copy,
-                          &ret_data[0]);
+  queue.enqueueReadBuffer(device_data, CL_TRUE, 0, bytes_to_copy, &ret_data[0]);
   return ret_data;
 }
 
@@ -113,7 +112,8 @@ DataType amsla::common::moveToHost(cl::Buffer const &device_data) {
 
   auto bytes_to_copy = sizeof(DataType);
   DataType ret_data;
-  queue.enqueueReadBuffer(device_data, CL_FALSE, 0, bytes_to_copy, &ret_data);
+
+  queue.enqueueReadBuffer(device_data, CL_TRUE, 0, bytes_to_copy, &ret_data);
   return ret_data;
 }
 

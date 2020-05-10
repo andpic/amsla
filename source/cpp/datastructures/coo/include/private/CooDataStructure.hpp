@@ -156,10 +156,10 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
   CooDataStructureImpl(std::vector<uint> const &row_indices,
                        std::vector<uint> const &column_indices,
                        std::vector<BaseType> const &values) {
-    iInitialiseDataLayout(&_host_data_structure, row_indices, column_indices,
+    iInitialiseDataLayout(&host_data_structure_, row_indices, column_indices,
                           values);
-    _device_buffer =
-        amsla::common::moveToDevice(_host_data_structure, CL_MEM_READ_WRITE);
+    device_buffer_ =
+        amsla::common::moveToDevice(host_data_structure_, CL_MEM_READ_WRITE);
     initialiseExportableSource();
   }
 
@@ -168,7 +168,7 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
   std::vector<uint> allNodes(void) {
     std::string kernel_name("allNodes");
 
-    if (_compiled_kernels.find(kernel_name) == _compiled_kernels.end()) {
+    if (compiled_kernels_.find(kernel_name) == compiled_kernels_.end()) {
       std::string kernel_source =
 #include "derived/coo_allNodes.cl"
           ;
@@ -176,7 +176,7 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
 
       // Preappend the definitions for the current data structure.
       kernel_source = exportSource() + kernel_source;
-      _compiled_kernels[kernel_name] =
+      compiled_kernels_[kernel_name] =
           amsla::common::compileKernel(kernel_source, kernel_name);
     }
 
@@ -186,14 +186,18 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
     try {
       auto vector_size = max_elements;
 
-      cl::Kernel device_kernel = _compiled_kernels[kernel_name];
+      cl::Kernel device_kernel = compiled_kernels_[kernel_name];
       cl::Buffer output_buffer =
           amsla::common::createBuffer<decltype(output)::value_type>(
               vector_size, CL_MEM_READ_ONLY);
+      cl::Buffer workspace_buffer =
+          amsla::common::createBuffer<decltype(output)::value_type>(
+              vector_size, CL_MEM_READ_WRITE);
 
       // Bind kernel arguments to kernel
-      device_kernel.setArg(0, _device_buffer);
+      device_kernel.setArg(0, device_buffer_);
       device_kernel.setArg(1, output_buffer);
+      device_kernel.setArg(2, workspace_buffer);
 
       // Number of work items in each local work group
       auto num_threads = static_cast<uint>(
@@ -220,42 +224,43 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
 
   /** @brief Export the device source to be used with this data structure
    */
-  std::string exportSource(void) const { return _exportable_source; }
+  std::string exportSource(void) const { return exportable_source_; }
 
  private:
   // Basetype used on the device
   using DeviceType = typename amsla::common::toDeviceType<BaseType>::type;
 
   // Host-side data
-  DataLayout<DeviceType, max_elements> _host_data_structure;
+  DataLayout<DeviceType, max_elements> host_data_structure_;
 
   // Device-side data
-  cl::Buffer _device_buffer;
+  cl::Buffer device_buffer_;
 
   // Source code for basic operations on the device
-  std::string _exportable_source;
+  std::string exportable_source_;
 
   // ID for the data structure
-  std::string _data_structure_id;
+  std::string data_structure_id_;
 
   // Compiled OpenCL kernels
-  std::map<std::string, cl::Kernel> _compiled_kernels;
+  std::map<std::string, cl::Kernel> compiled_kernels_;
 
   /** @brief Initialise the OpenCL exportable source code.
    */
   void initialiseExportableSource() {
-    _exportable_source =
+    exportable_source_ =
 #include "derived/coo_definition.cl"
         ;
     std::string deviceType = amsla::common::openClTypeName<DeviceType>::get();
+    deviceType[0] = std::toupper(deviceType[0]);
 
     // Preconditions
-    amsla::common::check_that(_exportable_source.length() != 0,
+    amsla::common::check_that(exportable_source_.length() != 0,
                               "The OpenCL source is empty.");
 
-    _data_structure_id = "Coo_MaxElements" + std::to_string(max_elements) +
+    data_structure_id_ = "CooMaxElements" + std::to_string(max_elements) +
                          "BaseType" + deviceType;
-    _exportable_source = specialiseSource(_exportable_source) + "\n";
+    exportable_source_ = specialiseSource(exportable_source_) + "\n";
   }
 
   /** @brief Specialise some generic OpenCL source for the current data
@@ -270,7 +275,7 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
     std::string specialised_source = generic_source;
     std::string deviceType = amsla::common::openClTypeName<DeviceType>::get();
     specialised_source = iReplaceSubstring(
-        specialised_source, "__DATASTRUCTURE__", _data_structure_id);
+        specialised_source, "__DATASTRUCTURE__", data_structure_id_);
     specialised_source = iReplaceSubstring(
         specialised_source, "__MAX_ELEMENTS__", std::to_string(max_elements));
     specialised_source =
