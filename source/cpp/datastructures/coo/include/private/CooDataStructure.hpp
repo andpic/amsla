@@ -189,15 +189,18 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
       cl::Kernel device_kernel = compiled_kernels_[kernel_name];
       cl::Buffer output_buffer =
           amsla::common::createBuffer<decltype(output)::value_type>(
-              vector_size, CL_MEM_READ_ONLY);
+              vector_size, CL_MEM_WRITE_ONLY);
+      cl::Buffer num_elements_output_buffer =
+          amsla::common::createBuffer<cl_uint>(1, CL_MEM_WRITE_ONLY);
       cl::Buffer workspace_buffer =
           amsla::common::createBuffer<decltype(output)::value_type>(
-              vector_size, CL_MEM_READ_WRITE);
+              2 * vector_size, CL_MEM_READ_WRITE);
 
       // Bind kernel arguments to kernel
       device_kernel.setArg(0, device_buffer_);
       device_kernel.setArg(1, output_buffer);
-      device_kernel.setArg(2, workspace_buffer);
+      device_kernel.setArg(2, num_elements_output_buffer);
+      device_kernel.setArg(3, workspace_buffer);
 
       // Number of work items in each local work group
       auto num_threads = static_cast<uint>(
@@ -213,7 +216,12 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
       // Block until kernel completion
       output = amsla::common::moveToHost<decltype(output)::value_type>(
           output_buffer, vector_size);
+      auto num_elements_output =
+          amsla::common::moveToHost<cl_uint>(num_elements_output_buffer);
       amsla::common::waitAllDeviceOperations();
+
+      output.resize(num_elements_output);
+
     } catch (cl::Error err) {
       std::cerr << err << std::endl;
       throw err;

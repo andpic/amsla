@@ -25,6 +25,7 @@
 #define _AMSLA_COMMON_DEVICEMANAGEMENT_HPP
 
 #define __CL_ENABLE_EXCEPTIONS
+#define CL_TARGET_OPENCL_VERSION 120
 
 // System includes
 #include <CL/cl.hpp>

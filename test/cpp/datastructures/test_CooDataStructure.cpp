@@ -57,8 +57,7 @@ TEST(CooDataStructure, allNodes_does_not_error) {
       amsla::datastructures::CooDataStructure(row_indices, col_indices, values);
   auto actual_output = dataStructure.allNodes();
 
-  auto expected_output(row_indices);
-  std::sort(expected_output.begin(), expected_output.end());
+  std::vector<uint> expected_output = {1, 2, 3, 4, 5};
 
   for (std::size_t i = 0; i < row_indices.size(); i++) {
     EXPECT_EQ(actual_output[i], expected_output[i])
