@@ -60,7 +60,8 @@ std::string iReplaceSubstring(std::string in_string,
   while (true) {
     /* Locate the substring to replace. */
     index = in_string.find(to_replace, index);
-    if (index == std::string::npos) break;
+    if (index == std::string::npos)
+      break;
 
     /* Make the replacement. */
     in_string.replace(index, to_replace.length(), replace_with);
@@ -96,8 +97,8 @@ using DataLayout = struct __DataLayout<BaseType, max_elements>;
  *  @param values A vector of values.
  */
 template <class HostType, class DeviceType>
-void iInitialiseArray(DeviceType *copy_to,
-                      std::vector<HostType> const &copy_from,
+void iInitialiseArray(DeviceType* copy_to,
+                      std::vector<HostType> const& copy_from,
                       std::size_t const num_elements,
                       std::size_t const max_elements) {
   // Preconditions
@@ -117,10 +118,10 @@ void iInitialiseArray(DeviceType *copy_to,
  */
 template <class BaseType, std::size_t max_elements>
 void iInitialiseDataLayout(
-    DataLayout<BaseType, max_elements> *data_to_initialise,
-    std::vector<uint> const &row_indices,
-    std::vector<uint> const &column_indices,
-    std::vector<BaseType> const &values) {
+    DataLayout<BaseType, max_elements>* data_to_initialise,
+    std::vector<uint> const& row_indices,
+    std::vector<uint> const& column_indices,
+    std::vector<BaseType> const& values) {
   amsla::common::check_that(
       row_indices.size() == column_indices.size() == values.size(),
       "All the input vectors must have the same size.");
@@ -153,9 +154,9 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
  public:
   /** @brief Class constructor
    */
-  CooDataStructureImpl(std::vector<uint> const &row_indices,
-                       std::vector<uint> const &column_indices,
-                       std::vector<BaseType> const &values) {
+  CooDataStructureImpl(std::vector<uint> const& row_indices,
+                       std::vector<uint> const& column_indices,
+                       std::vector<BaseType> const& values) {
     iInitialiseDataLayout(&host_data_structure_, row_indices, column_indices,
                           values);
     device_buffer_ =
@@ -276,7 +277,7 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
    *  @param generic_source An unspecialised generic source with parts to be
    *         substituted.
    */
-  std::string specialiseSource(std::string const &generic_source) {
+  std::string specialiseSource(std::string const& generic_source) {
     amsla::common::check_that(generic_source.length() != 0,
                               "The generic source is empty.");
 
@@ -301,9 +302,9 @@ namespace amsla::datastructures {
 
 template <class BaseType>
 CooDataStructure<BaseType>::CooDataStructure(
-    std::vector<uint> const &row_indices,
-    std::vector<uint> const &column_indices,
-    std::vector<BaseType> const &values) {
+    std::vector<uint> const& row_indices,
+    std::vector<uint> const& column_indices,
+    std::vector<BaseType> const& values) {
   uint const nearest_power = iComputeClosestPower(row_indices.size());
 
   switch (nearest_power) {

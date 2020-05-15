@@ -59,6 +59,9 @@ TEST(CooDataStructure, allNodes_does_not_error) {
 
   std::vector<uint> expected_output = {1, 2, 3, 4, 5};
 
+  EXPECT_EQ(actual_output.size(), expected_output.size())
+      << "Actual and expected output size mismatch";
+
   for (std::size_t i = 0; i < row_indices.size(); i++) {
     EXPECT_EQ(actual_output[i], expected_output[i])
         << "Error at index " << std::to_string(i);

@@ -46,9 +46,9 @@ class CooDataStructure : public amsla::common::DataStructure {
    *  @param column_indices Column indices of the elements in the matrix.
    *  @param values Values of the elements in the matrix
    */
-  CooDataStructure(std::vector<uint> const &row_indices,
-                   std::vector<uint> const &column_indices,
-                   std::vector<BaseType> const &values);
+  CooDataStructure(std::vector<uint> const& row_indices,
+                   std::vector<uint> const& column_indices,
+                   std::vector<BaseType> const& values);
 
   /** @brief Retrieve the IDs of all the nodes in the graph
    */

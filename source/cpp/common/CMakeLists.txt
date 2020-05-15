@@ -3,6 +3,8 @@ project(amsla_common)
 
 ### BUILD AS A LIBRARY
 
+include_all_OpenCL_files()
+
 file(GLOB_RECURSE all_cpp_sources "*.cpp")
 add_library(amsla_common STATIC 
     "${all_cpp_sources}")

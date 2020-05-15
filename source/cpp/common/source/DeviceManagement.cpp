@@ -31,36 +31,41 @@
 #include "Assertions.hpp"
 #include "DeviceManagement.hpp"
 
-/** @function operator<<
- *  @brief Write an OpenCL error to a standard stream
- *  @param a_stream Output stream.
- *  @param err An OpenCL error.
- */
-std::ostream &operator<<(std::ostream &a_stream, cl::Error const err) {
+// Error management ***********************************************************/
+
+// Write an OpenCL error to a std::ostream
+std::ostream& operator<<(std::ostream& a_stream, cl::Error const err) {
   a_stream << "ERROR: " << err.what() << "(" << err.err() << ")";
   return a_stream;
 }
 
 namespace {
 
-/** @brief A global variable storing the default context
- */
+// OpenCL environment *********************************************************/
+
+// A global variable storing the default context
 std::unique_ptr<cl::Context> g_default_context;
 
-/** @brief A global variable storing the default device
- */
+// A global variable storing the default device
 std::unique_ptr<cl::Device> g_default_device;
 
-/** @brief A global variable storing the default device
- */
+// A global variable storing the default device
 std::unique_ptr<cl::CommandQueue> g_default_queue;
+
+// Custom shared OpenCL functions *********************************************/
+
+std::string exportDeviceFunctions(void) {
+  std::string ret =
+#include "derived/device_functions.cl"
+      ;
+  return ret;
+}
 
 }  // namespace
 
-/** @function defaultContext
- * @brief Get the default OpenCL context
- */
-cl::Context &amsla::common::defaultContext(void) {
+// Default OpenCL environment data ********************************************/
+
+cl::Context& amsla::common::defaultContext(void) {
   if (!g_default_context) {
     // Query platforms
     std::vector<cl::Platform> platforms;
@@ -77,10 +82,7 @@ cl::Context &amsla::common::defaultContext(void) {
   return *g_default_context;
 }
 
-/** @function defaultDevice
- *  @brief Get the default OpenCL device.
- */
-cl::Device &amsla::common::defaultDevice(cl::Context const &context) {
+cl::Device& amsla::common::defaultDevice(cl::Context const& context) {
   if (!g_default_device) {
     std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
     amsla::common::assert_that(
@@ -91,10 +93,7 @@ cl::Device &amsla::common::defaultDevice(cl::Context const &context) {
   return *g_default_device;
 }
 
-/** @function defaultQueue
- *  @brief Get the default OpenCL command queue.
- */
-cl::CommandQueue amsla::common::defaultQueue(cl::Context const &context) {
+cl::CommandQueue amsla::common::defaultQueue(cl::Context const& context) {
   if (!g_default_queue) {
     cl::Device device = defaultDevice(context);
 
@@ -106,32 +105,28 @@ cl::CommandQueue amsla::common::defaultQueue(cl::Context const &context) {
   return *g_default_queue;
 }
 
-/** @function waitAllDeviceOperations
- *  @brief Wait until all the operations on the device are completed
- */
 void amsla::common::waitAllDeviceOperations(void) {
   cl::CommandQueue queue = defaultQueue();
   queue.finish();
 }
 
-/** @brief Compile a kernel
- *
- *  Given the source of the kernel as a string and the kernel's name, compile
- * it
- *
- *  @params kernel_source The source for the kernel.
- *  @params kernel_name The name of the kernel in the source.
- */
-cl::Kernel amsla::common::compileKernel(std::string const &kernel_source,
-                                        std::string const &kernel_name) {
+// Kernel compilation *********************************************************/
+
+cl::Kernel amsla::common::compileKernel(std::string const& kernel_source,
+                                        std::string const& kernel_name) {
   check_that(kernel_source.length() != 0 && kernel_name.length() != 0,
              "Empty kernel provided.");
+
+  // Prepend kernel sources with the custom functions usable in kernels.
+  auto complete_kernel_source = exportDeviceFunctions() + kernel_source;
+
   cl::Context context = defaultContext();
   std::vector<cl::Device> devices = {defaultDevice()};
 
   // Build kernel from source string
-  cl::Program::Sources source(
-      1, std::make_pair(kernel_source.c_str(), kernel_source.length()));
+  cl::Program::Sources source(1,
+                              std::make_pair(complete_kernel_source.c_str(),
+                                             complete_kernel_source.length()));
   cl::Program program = cl::Program(context, source);
   cl::Kernel kernel;
 
@@ -143,7 +138,7 @@ cl::Kernel amsla::common::compileKernel(std::string const &kernel_source,
   } catch (cl::Error err) {
     std::cerr << err << std::endl;
     std::cerr << "=== BUILD SOURCE ===" << std::endl
-              << kernel_source << std::endl;
+              << complete_kernel_source << std::endl;
 
     if (err.what() == "clBuildProgram") {
       auto build_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);

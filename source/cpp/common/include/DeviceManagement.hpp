@@ -39,24 +39,24 @@
  *  @param a_stream Output stream.
  *  @param err An OpenCL error.
  */
-std::ostream &operator<<(std::ostream &a_stream, cl::Error const err);
+std::ostream& operator<<(std::ostream& a_stream, cl::Error const err);
 
 namespace amsla::common {
 
 /** @function defaultContext
  * @brief Get the default OpenCL context
  */
-cl::Context &defaultContext(void);
+cl::Context& defaultContext(void);
 
 /** @function defaultDevice
  *  @brief Get the default OpenCL device.
  */
-cl::Device &defaultDevice(cl::Context const &context = defaultContext());
+cl::Device& defaultDevice(cl::Context const& context = defaultContext());
 
 /** @function defaultQueue
  *  @brief Get the default OpenCL command queue.
  */
-cl::CommandQueue defaultQueue(cl::Context const &context = defaultContext());
+cl::CommandQueue defaultQueue(cl::Context const& context = defaultContext());
 
 /** @function createBuffer
  *  @brief Create an OpenCL buffer
@@ -74,11 +74,11 @@ cl::Buffer createBuffer(std::size_t const num_elements = 1,
  *  Creates a buffer, moves the data to the device without blocking the queue.
  */
 template <class DataType>
-cl::Buffer moveToDevice(std::vector<DataType> const &host_data,
+cl::Buffer moveToDevice(std::vector<DataType> const& host_data,
                         cl_mem_flags const mem_flag);
 
 template <class DataType>
-cl::Buffer moveToDevice(DataType const &host_data, cl_mem_flags const mem_flag);
+cl::Buffer moveToDevice(DataType const& host_data, cl_mem_flags const mem_flag);
 
 /** @function moveToHost
  *  @brief Move given data from the device to the host
@@ -90,18 +90,19 @@ cl::Buffer moveToDevice(DataType const &host_data, cl_mem_flags const mem_flag);
  *  queue.
  */
 template <class DataType>
-std::vector<DataType> moveToHost(cl::Buffer const &device_data,
+std::vector<DataType> moveToHost(cl::Buffer const& device_data,
                                  std::size_t const num_elements);
 
 template <class DataType>
-DataType moveToHost(cl::Buffer const &device_data);
+DataType moveToHost(cl::Buffer const& device_data);
 
 /** @function waitAllDeviceOperations
  *  @brief Wait until all the operations on the device are completed
  */
 void waitAllDeviceOperations(void);
 
-/** @brief Compile a kernel
+/** @function compileKernel
+ *  @brief Compile an OpenCL kernel
  *
  *  Given the source of the kernel as a string and the kernel's name, compile
  * it
@@ -109,8 +110,8 @@ void waitAllDeviceOperations(void);
  *  @params kernel_source The source for the kernel.
  *  @params kernel_name The name of the kernel in the source.
  */
-cl::Kernel compileKernel(std::string const &kernel_source,
-                         std::string const &kernel_name);
+cl::Kernel compileKernel(std::string const& kernel_source,
+                         std::string const& kernel_name);
 
 }  // namespace amsla::common
 

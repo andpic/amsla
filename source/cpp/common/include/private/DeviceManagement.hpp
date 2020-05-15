@@ -35,7 +35,8 @@ namespace {
 /** @brief Move data to the device
  */
 template <class DataType>
-cl::Buffer iMoveRawDataToDevice(DataType const *array, std::size_t num_elements,
+cl::Buffer iMoveRawDataToDevice(DataType const* array,
+                                std::size_t num_elements,
                                 cl_mem_flags const mem_flag) {
   cl::Buffer out_array;
 
@@ -75,13 +76,13 @@ cl::Buffer amsla::common::createBuffer(std::size_t const num_elements,
  *  Creates a buffer, moves the data to the device without blocking the queue.
  */
 template <class DataType>
-cl::Buffer amsla::common::moveToDevice(std::vector<DataType> const &array,
+cl::Buffer amsla::common::moveToDevice(std::vector<DataType> const& array,
                                        cl_mem_flags const mem_flag) {
   return iMoveRawDataToDevice(&array[0], array.size(), mem_flag);
 }
 
 template <class DataType>
-cl::Buffer amsla::common::moveToDevice(DataType const &host_data,
+cl::Buffer amsla::common::moveToDevice(DataType const& host_data,
                                        cl_mem_flags const mem_flag) {
   return iMoveRawDataToDevice(&host_data, 1, mem_flag);
 }
@@ -97,7 +98,8 @@ cl::Buffer amsla::common::moveToDevice(DataType const &host_data,
  */
 template <class DataType>
 std::vector<DataType> amsla::common::moveToHost(
-    cl::Buffer const &device_data, std::size_t const num_elements) {
+    cl::Buffer const& device_data,
+    std::size_t const num_elements) {
   cl::CommandQueue queue = defaultQueue();
 
   auto bytes_to_copy = sizeof(DataType) * num_elements;
@@ -107,7 +109,7 @@ std::vector<DataType> amsla::common::moveToHost(
 }
 
 template <class DataType>
-DataType amsla::common::moveToHost(cl::Buffer const &device_data) {
+DataType amsla::common::moveToHost(cl::Buffer const& device_data) {
   cl::CommandQueue queue = defaultQueue();
 
   auto bytes_to_copy = sizeof(DataType);
