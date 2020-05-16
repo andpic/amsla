@@ -167,18 +167,18 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
   /** @brief Retrieve the IDs of all the nodes in the graph
    */
   std::vector<uint> allNodes(void) {
-    std::string kernel_name("allNodes");
+    std::string kernel_name("allNodesKernel");
 
     if (compiled_kernels_.find(kernel_name) == compiled_kernels_.end()) {
-      std::string kernel_source =
-#include "derived/coo_allNodes.cl"
+      std::string kernel_sources =
+#include "derived/coo_kernels.cl"
           ;
-      kernel_source = specialiseSource(kernel_source);
+      kernel_sources = specialiseSource(kernel_sources);
 
       // Preappend the definitions for the current data structure.
-      kernel_source = exportSource() + kernel_source;
+      kernel_sources = exportSource() + kernel_sources;
       compiled_kernels_[kernel_name] =
-          amsla::common::compileKernel(kernel_source, kernel_name);
+          amsla::common::compileKernel(kernel_sources, kernel_name);
     }
 
     // Preallocate the output
@@ -258,7 +258,7 @@ class CooDataStructureImpl : public amsla::common::DataStructure {
    */
   void initialiseExportableSource() {
     exportable_source_ =
-#include "derived/coo_definition.cl"
+#include "derived/coo_definitions.cl"
         ;
     std::string deviceType = amsla::common::openClTypeName<DeviceType>::get();
     deviceType[0] = std::toupper(deviceType[0]);

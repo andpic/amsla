@@ -28,6 +28,8 @@
 // Project includes
 #include "CooDataStructure.hpp"
 
+// Helpers ********************************************************************/
+
 namespace {
 
 template <class BaseType>
@@ -38,6 +40,8 @@ auto iGetSimpleCoo() {
   return amsla::datastructures::CooDataStructure(row_indices, col_indices,
                                                  values);
 }
+
+// Test specs *****************************************************************/
 
 /** @brief Check that a CooDataStructure object can be created and destroyed
  * without errors.

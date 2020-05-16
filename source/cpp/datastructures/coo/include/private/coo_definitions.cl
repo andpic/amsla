@@ -1,5 +1,5 @@
-/** @file coo_allNodes.cl
- *  @brief Implementation of the kernel for "allNodes"
+/** @file coo_definitions.cl
+ *  @brief OpenCL sources for the data structure COO
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -18,19 +18,43 @@
  *  limitations under the License.
  */
 
-__kernel void allNodes(__global const __DATASTRUCTURE__* data_structure,
-                       __global uint* output,
-                       __global uint* num_elements_output,
-                       __global uint* workspace) {
-  // Get our global thread ID
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
+/** @brief Definition of the data structure
+ */
+typedef struct __DATASTRUCTURE___ {
+  uint row_indices_[__MAX_ELEMENTS__];
+  uint column_indices_[__MAX_ELEMENTS__];
+  __BASE_TYPE__ values_[__MAX_ELEMENTS__];
+
+  uint num_edges_;
+  uint num_nodes_;
+  uint max_elements_;
+} __DATASTRUCTURE__;
+
+/** @function allNodes
+ *  @brief Get all the indices of nodes in the graph.
+ *
+ *  @param data_structure The COO data structure being processed.
+ *  @param output Output indices.
+ *  @param num_elements_output Number of elements in the output array.
+ *  @param workspace Temporary workspace.
+ */
+void allNodes(__global __DATASTRUCTURE__ const* const data_structure,
+              __global uint* const output,
+              __global uint* const num_elements_output,
+              __global uint* const workspace) {
+  // Get global thread ID
   __private uint const curr_wi_id = get_global_id(0);
   __private uint const num_edges = data_structure->num_edges_;
   __private uint const initial_num_unique_elements = 2 * num_edges;
 
   __global uint* num_unique_elements = &workspace[0];
   __global uint* array_copy = &workspace[1];
-  __global uint* throwaway_data = &workspace[1 + initial_num_unique_elements];
+  __global uint* workspace_for_unique =
+      &workspace[1 + initial_num_unique_elements];
 
+  // Copying row and column indices to a temporary space
   copyArray(data_structure->row_indices_, array_copy, 0, num_edges);
   copyArray(data_structure->column_indices_, &array_copy[num_edges], 0,
             num_edges);
@@ -38,9 +62,11 @@ __kernel void allNodes(__global const __DATASTRUCTURE__* data_structure,
     *num_unique_elements = initial_num_unique_elements;
   barrier(CLK_GLOBAL_MEM_FENCE);
 
-  unique(array_copy, num_unique_elements, throwaway_data);
+  // Compute the unique elements
+  unique(array_copy, num_unique_elements, workspace_for_unique);
   barrier(CLK_GLOBAL_MEM_FENCE);
 
+  // Copy out the output
   copyArray(array_copy, output, 0, *num_unique_elements);
   if (curr_wi_id == 0)
     *num_elements_output = *num_unique_elements;
