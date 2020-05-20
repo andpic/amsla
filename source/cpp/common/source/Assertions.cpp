@@ -1,5 +1,5 @@
 /** @file Assertions.cpp
- *  @brief Shared definitions of assertions.
+ * Shared definitions of assertions.
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -29,28 +29,21 @@
 // Project includes
 #include "Assertions.hpp"
 
-/** @function assert_that
- *  @brief Throw an exception if the condition is false
- *  @param must_be_true The condition that must be satisfied.
- *  @param diagnostic A string to print in case the condition is not satisfied.
- */
-void amsla::common::assert_that(bool const must_be_true,
-                                std::string const diagnostic) {
+namespace amsla::common {
+
+void assertThat(bool const must_be_true, std::string const diagnostic) {
   if (!must_be_true) {
     throw std::runtime_error(diagnostic);
   }
 }
 
-/** @function check_that
- *  @brief Assert that a condition is true
- *  @param must_be_true The condition that must be satisfied.
- *  @param diagnostic A string to print in case the condition is not satisfied.
- */
-void amsla::common::check_that(bool const must_be_true,
-                               std::string const diagnostic) {
+// Disable check when not in debug mode
+void checkThat(bool const must_be_true, std::string const diagnostic) {
 #if DEBUG
-  assert_that(must_be_true, diagnostic);
+  assertThat(must_be_true, diagnostic);
 #endif
 }
+
+}  // namespace amsla::common
 
 #endif

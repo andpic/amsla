@@ -1,5 +1,5 @@
 /** @file DeviceManagement.hpp
- *  @brief Wrapper for the OpenCl library
+ * Wrapper for the OpenCl library
  *
  *  This contains the definition for DataStructure object. Any data structure
  * has abide by this interface.
@@ -34,8 +34,7 @@
 #include <string>
 #include <vector>
 
-/** @function operator<<
- *  @brief Write an OpenCL error to a standard stream
+/** Write an OpenCL error to a standard stream
  *  @param a_stream Output stream.
  *  @param err An OpenCL error.
  */
@@ -43,30 +42,96 @@ std::ostream& operator<<(std::ostream& a_stream, cl::Error const err);
 
 namespace amsla::common {
 
-/** @function defaultContext
- * @brief Get the default OpenCL context
- */
-cl::Context& defaultContext(void);
+// Start ignoring attributes in template argument
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-attributes"
 
-/** @function defaultDevice
- *  @brief Get the default OpenCL device.
+/** Convert a host type to a class (OpenCL) type
+ *  @param HostType The host type being converted.
+ *
+ *  Example usage:
+ *      ToDeviceType<double>::type
  */
-cl::Device& defaultDevice(cl::Context const& context = defaultContext());
+template <class HostType>
+struct ToDeviceType {
+  typedef void type;
 
-/** @function defaultQueue
- *  @brief Get the default OpenCL command queue.
+ private:
+  // Make this struct non-instantiable
+  ToDeviceType(void){};
+};
+
+template <>
+struct ToDeviceType<float> {
+  typedef cl_float type;
+};
+
+template <>
+struct ToDeviceType<double> {
+  typedef cl_double type;
+};
+
+template <>
+struct ToDeviceType<uint> {
+  typedef cl_uint type;
+};
+
+// Stop ignoring attributes on template argument
+#pragma GCC diagnostic pop
+
+/** Return the name of the type as a string
+ *  @param BaseType The type we want the name of.
+ *
+ *  Example usage:
+ *      auto deviceName = deviceTypeName<double>();
  */
-cl::CommandQueue defaultQueue(cl::Context const& context = defaultContext());
+template <class HostType>
+static const char* deviceTypeName(void);
 
-/** @function createBuffer
- *  @brief Create an OpenCL buffer
+/** Wrapper for an OpenCL context
+ */
+using Context = cl::Context;
+
+/** Wrapper for an OpenCL device
+ */
+using Device = cl::Device;
+
+/** Wrapper for an OpenCL queue
+ */
+using CommandQueue = cl::CommandQueue;
+
+/** Types of access to device data.
+ */
+enum class AccessType { READ_ONLY, WRITE_ONLY, READ_AND_WRITE };
+
+/** Wrapper for an OpenCL buffer
+ */
+using Buffer = cl::Buffer;
+
+/** Wrapper for an OpenCL kernel
+ */
+using Kernel = cl::Kernel;
+
+/** Get the default context
+ *  @param platform_number The number of platform given in clinfo
+ */
+Context& defaultContext(uint const platform_number = 0);
+
+/** Get the default OpenCL device.
+ */
+Device& defaultDevice(Context const& context = defaultContext());
+
+/** Get the default OpenCL command queue.
+ */
+CommandQueue defaultQueue(Context const& context = defaultContext());
+
+/** Create an OpenCL buffer
  */
 template <class DataType>
-cl::Buffer createBuffer(std::size_t const num_elements = 1,
-                        cl_mem_flags const mem_flag = CL_MEM_READ_WRITE);
+Buffer createBuffer(std::size_t const num_elements = 1,
+                    AccessType const mem_flag = CL_MEM_READ_WRITE);
 
-/** @function moveToDevice
- *  @brief Move given data to the device and return a buffer
+/** Move given data to the device and return a buffer
  *  @param host_data Pointer to data on the host.
  *  @param num_elements Number of elements in the host array.
  *  @param access_type Type of access.
@@ -74,14 +139,14 @@ cl::Buffer createBuffer(std::size_t const num_elements = 1,
  *  Creates a buffer, moves the data to the device without blocking the queue.
  */
 template <class DataType>
-cl::Buffer moveToDevice(std::vector<DataType> const& host_data,
-                        cl_mem_flags const mem_flag);
+Buffer moveToDevice(std::vector<DataType> const& host_data,
+                    AccessType const mem_flag = CL_MEM_READ_WRITE);
 
 template <class DataType>
-cl::Buffer moveToDevice(DataType const& host_data, cl_mem_flags const mem_flag);
+Buffer moveToDevice(DataType const& host_data,
+                    AccessType const mem_flag = CL_MEM_READ_WRITE);
 
-/** @function moveToHost
- *  @brief Move given data from the device to the host
+/** Move given data from the device to the host
  *  @param device_data A buffer for the data on the device
  *  @param host_data Pointer to data on the host.
  *  @param num_elements Number of elements in the host array.
@@ -90,31 +155,39 @@ cl::Buffer moveToDevice(DataType const& host_data, cl_mem_flags const mem_flag);
  *  queue.
  */
 template <class DataType>
-std::vector<DataType> moveToHost(cl::Buffer const& device_data,
+std::vector<DataType> moveToHost(Buffer const& device_data,
                                  std::size_t const num_elements);
 
 template <class DataType>
-DataType moveToHost(cl::Buffer const& device_data);
+DataType moveToHost(Buffer const& device_data);
 
-/** @function waitAllDeviceOperations
- *  @brief Wait until all the operations on the device are completed
+/** Wait until all the operations on the device are completed
  */
 void waitAllDeviceOperations(void);
 
-/** @function compileKernel
- *  @brief Compile an OpenCL kernel
+/** Compile an OpenCL kernel
  *
  *  Given the source of the kernel as a string and the kernel's name, compile
- * it
+ *  it
  *
  *  @params kernel_source The source for the kernel.
  *  @params kernel_name The name of the kernel in the source.
  */
-cl::Kernel compileKernel(std::string const& kernel_source,
-                         std::string const& kernel_name);
+Kernel compileKernel(std::string const& kernel_source,
+                     std::string const& kernel_name);
+
+/** Initialise an array of a device type with some given data
+ *  @param copy_to A pointer to the device-like data.
+ *  @param copy_from A vector of data on the host.
+ *  @param max_elements The maximum number of elements in copy_to.
+ */
+template <class HostType>
+void initialiseDeviceLikeArray(void* const copy_to,
+                               std::vector<HostType> const& copy_from,
+                               std::size_t const max_elements);
 
 }  // namespace amsla::common
 
-#include "private/DeviceManagement.hpp"
+#include "details/DeviceManagement.hpp"
 
 #endif

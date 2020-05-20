@@ -1,5 +1,5 @@
 /** @file DataStructure.hpp
- *  @brief Interface for DataStructure objects.
+ * Interface for DataStructure objects.
  *
  *  This contains the definition for DataStructure object. Any data structure
  * has abide by this interface.
@@ -31,12 +31,11 @@
 
 namespace amsla::common {
 
-/** @class DataStructure
- *  @brief Interface for all data structures.
+/** Interface for all data structures.
  */
 class DataStructure {
  public:
-  /** @brief All the node IDs in the graph.
+  /** All the node IDs in the graph.
    */
   virtual std::vector<uint> allNodes() = 0;
 };  // class DataStructure

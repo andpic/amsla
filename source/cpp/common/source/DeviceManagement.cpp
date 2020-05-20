@@ -1,5 +1,5 @@
 /** @file DeviceManagement.cpp
- *  @brief Wrapper for the OpenCl library
+ * Wrapper for the OpenCl library
  *
  *  This contains the definition for DataStructure object. Any data structure
  * has abide by this interface.
@@ -31,8 +31,6 @@
 #include "Assertions.hpp"
 #include "DeviceManagement.hpp"
 
-// Error management ***********************************************************/
-
 // Write an OpenCL error to a std::ostream
 std::ostream& operator<<(std::ostream& a_stream, cl::Error const err) {
   a_stream << "ERROR: " << err.what() << "(" << err.err() << ")";
@@ -41,20 +39,17 @@ std::ostream& operator<<(std::ostream& a_stream, cl::Error const err) {
 
 namespace {
 
-// OpenCL environment *********************************************************/
-
 // A global variable storing the default context
-std::unique_ptr<cl::Context> g_default_context;
+std::unique_ptr<amsla::common::Context> g_default_context;
 
 // A global variable storing the default device
-std::unique_ptr<cl::Device> g_default_device;
+std::unique_ptr<amsla::common::Device> g_default_device;
 
 // A global variable storing the default device
-std::unique_ptr<cl::CommandQueue> g_default_queue;
+std::unique_ptr<amsla::common::CommandQueue> g_default_queue;
 
-// Custom shared OpenCL functions *********************************************/
-
-std::string exportDeviceFunctions(void) {
+// Get shared device functions
+std::string iExportDeviceFunctions(void) {
   std::string ret =
 #include "derived/device_functions.cl"
       ;
@@ -63,78 +58,79 @@ std::string exportDeviceFunctions(void) {
 
 }  // namespace
 
-// Default OpenCL environment data ********************************************/
+namespace amsla::common {
 
-cl::Context& amsla::common::defaultContext(void) {
+// Get the default Context
+Context& defaultContext(uint const platform_number) {
   if (!g_default_context) {
     // Query platforms
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
-    amsla::common::assert_that(platforms.size() != 0,
-                               "No OpenCL platforms found.");
+    assertThat(platforms.size() != 0, "No OpenCL platforms found.");
 
     // Get list of devices on default platform and create context
     cl_context_properties properties[] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(), 0};
-    g_default_context = std::unique_ptr<cl::Context>(
-        new cl::Context(CL_DEVICE_TYPE_ALL, properties));
+        CL_CONTEXT_PLATFORM,
+        (cl_context_properties)(platforms[platform_number])(), 0};
+    g_default_context =
+        std::unique_ptr<Context>(new Context(CL_DEVICE_TYPE_ALL, properties));
   }
   return *g_default_context;
 }
 
-cl::Device& amsla::common::defaultDevice(cl::Context const& context) {
+Device& defaultDevice(Context const& context) {
   if (!g_default_device) {
     std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
-    amsla::common::assert_that(
-        devices.size() > 0, "The OpenCL context does not contain any devices.");
-    g_default_device = std::unique_ptr<cl::Device>(new cl::Device(devices[0]));
+    assertThat(devices.size() > 0,
+               "The OpenCL context does not contain any devices.");
+    g_default_device = std::unique_ptr<Device>(new Device(devices[0]));
   }
   // Create command queue for first device
   return *g_default_device;
 }
 
-cl::CommandQueue amsla::common::defaultQueue(cl::Context const& context) {
+CommandQueue defaultQueue(Context const& context) {
   if (!g_default_queue) {
-    cl::Device device = defaultDevice(context);
+    auto device = defaultDevice(context);
 
     // Create command queue for first device
-    g_default_queue = std::unique_ptr<cl::CommandQueue>(
-        new cl::CommandQueue(context, device, 0));
+    g_default_queue =
+        std::unique_ptr<CommandQueue>(new CommandQueue(context, device, 0));
   }
 
   return *g_default_queue;
 }
 
-void amsla::common::waitAllDeviceOperations(void) {
-  cl::CommandQueue queue = defaultQueue();
+// Wait until all the operations in the queue are done
+void waitAllDeviceOperations(void) {
+  auto queue = defaultQueue();
   queue.finish();
 }
 
-// Kernel compilation *********************************************************/
-
-cl::Kernel amsla::common::compileKernel(std::string const& kernel_source,
-                                        std::string const& kernel_name) {
-  check_that(kernel_source.length() != 0 && kernel_name.length() != 0,
-             "Empty kernel provided.");
+// Kernel compilation
+Kernel compileKernel(std::string const& kernel_source,
+                     std::string const& kernel_name) {
+  checkThat(kernel_source.length() != 0 && kernel_name.length() != 0,
+            "Empty kernel provided.");
 
   // Prepend kernel sources with the custom functions usable in kernels.
-  auto complete_kernel_source = exportDeviceFunctions() + kernel_source;
+  auto complete_kernel_source = iExportDeviceFunctions() + kernel_source;
 
-  cl::Context context = defaultContext();
+  auto context = defaultContext();
   std::vector<cl::Device> devices = {defaultDevice()};
 
   // Build kernel from source string
   cl::Program::Sources source(1,
                               std::make_pair(complete_kernel_source.c_str(),
                                              complete_kernel_source.length()));
-  cl::Program program = cl::Program(context, source);
-  cl::Kernel kernel;
+  auto program = cl::Program(context, source);
+  Kernel kernel;
 
   // Build the kernel and write the error to output
   try {
     program.build(devices);
     // Create kernel object
-    kernel = cl::Kernel(program, kernel_name.c_str());
+    kernel = Kernel(program, kernel_name.c_str());
   } catch (cl::Error err) {
     std::cerr << err << std::endl;
     std::cerr << "=== BUILD SOURCE ===" << std::endl
@@ -149,5 +145,7 @@ cl::Kernel amsla::common::compileKernel(std::string const& kernel_source,
 
   return kernel;
 }
+
+}  // namespace amsla::common
 
 #endif

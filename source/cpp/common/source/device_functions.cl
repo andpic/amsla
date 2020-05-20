@@ -1,5 +1,5 @@
 /** @file device_functions.cl
- *  @brief Library of functions usable inside OpenCL kernels.
+ * Library of functions usable inside OpenCL kernels.
  *
  *  This file contains functions that can be used inside OpenCL kernels to
  *  implement more sophisticated algorithms.
@@ -21,73 +21,67 @@
  *  limitations under the License.
  */
 
-/** @function copyArray
- *  @brief Copy data from one array to another.
+/** Copy data from one array to another.
  *  @param from_array Source of the copy.
  *  @param to_array Destination of the copy.
  *  @param first_index Index to start from for the copy.
  *  @param end_index After-end index for the copy.
  */
-void copyArray(__global uint const* const from_array,
-               __global uint* const to_array,
+void copyArray(__global uint const* from_array,
+               __global uint* to_array,
                uint const first_index,
                uint const end_index);
 
-/** @function fillArray
- *  @brief Fill an array with given values.
+/** Fill an array with given values.
  *  @param to_array Destination of the filling.
  *  @param first_index Index to start from for the filling.
  *  @param end_index After-end index for the filling.
  *  @param value Value for filling the array.
  */
-void fillArray(__global uint* const to_array,
+void fillArray(__global uint* to_array,
                uint const first_index,
                uint const end_index,
                uint const value);
 
-/** @function debugPrint
- *  @brief Print the values of an arryay to screen.
+/** Print the values of an arryay to screen.
  *  @param array Destination of the filling.
  *  @param num_elements Index to start from for the filling.
  */
-void debugPrint(__global uint const* const array, const uint num_elements);
+void debugPrint(__global uint const* array, const uint num_elements);
 
-/** @function sort
- *  @brief Sort the input array in descending order.
+/** Sort the input array in descending order.
  *  @param array Input/output array.
  *  @param num_elements Number of elements in the input array.
  *  @param workspace Space for temporary data.
  */
-void sort(__global uint* const array,
+void sort(__global uint* array,
           uint const num_elements,
-          __global uint* const workspace);
+          __global uint* workspace);
 
-/** @function unique
- *  @brief Find the unique elements inside an array.
+/** Find the unique elements inside an array.
  *  @param array Input/output array.
  *  @param num_elements Number of elements in the array. Both input and output.
  *  @param workspace Space for temporary data.
  */
-void unique(__global uint* const array,
-            __global uint* const num_elements,
-            __global uint* const workspace);
+void unique(__global uint* array,
+            __global uint* num_elements,
+            __global uint* workspace);
 
-/** @function getIndexesOfArray
- *  @brief Copy some elements of the input array to another array.
+/** Copy some elements of the input array to another array.
  *  @param input_array Array being indexed.
  *  @param indexes_array Array containing the indexes.
  *  @param num_indexes_elements Number of elements in indexes_array.
  *  @param output_array Result of the indexing operation.
  */
-void getIndexesOfArray(__global uint const* const input_array,
-                       __global uint const* const indexes_array,
+void getIndexesOfArray(__global uint const* input_array,
+                       __global uint const* indexes_array,
                        uint const num_indexes_elements,
-                       __global uint* const output_array);
+                       __global uint* output_array);
 
 // copyArray ******************************************************************/
 
-void copyArray(__global uint const* const from_array,
-               __global uint* const to_array,
+void copyArray(__global uint const* from_array,
+               __global uint* to_array,
                uint const first_index,
                uint const end_index) {
   __private uint const curr_wi_id = get_global_id(0);
@@ -98,7 +92,7 @@ void copyArray(__global uint const* const from_array,
 
 // fillArray ******************************************************************/
 
-void fillArray(__global uint* const to_array,
+void fillArray(__global uint* to_array,
                uint const first_index,
                uint const end_index,
                uint const value) {
@@ -110,7 +104,7 @@ void fillArray(__global uint* const to_array,
 
 // debugPrint *****************************************************************/
 
-void debugPrint(__global uint const* const array, const uint num_elements) {
+void debugPrint(__global uint const* array, const uint num_elements) {
   // This function is only executed by the first work-item
   if (get_global_id(0) != 0)
     return;
@@ -124,11 +118,11 @@ void debugPrint(__global uint const* const array, const uint num_elements) {
 // sort ***********************************************************************/
 
 // Merge two sorted array chunks into one sorted chunk.
-void iMergeTwoChunks_(__global uint* const input_array,
+void iMergeTwoChunks_(__global uint* input_array,
                       uint const first_index,
                       uint const middle_index,
                       uint const last_index,
-                      __global uint* const workspace) {
+                      __global uint* workspace) {
   __private uint const num_elements = last_index - first_index;
 
   // Create a temporary copy for the merge
@@ -158,9 +152,9 @@ void iMergeTwoChunks_(__global uint* const input_array,
   }
 }
 
-void sort(__global uint* const input_array,
+void sort(__global uint* input_array,
           uint const num_elements,
-          __global uint* const workspace) {
+          __global uint* workspace) {
   // Implement sort as a reduction in log2(num_elements) steps
   uint const num_repetitions = (uint)ceil(log2((double)num_elements));
   for (uint curr_rep = 0; curr_rep < num_repetitions; ++curr_rep) {
@@ -188,10 +182,10 @@ void sort(__global uint* const input_array,
 
 // getIndexesOfArray **********************************************************/
 
-void getIndexesOfArray(__global uint const* const input_array,
-                       __global uint const* const indexes_array,
+void getIndexesOfArray(__global uint const* input_array,
+                       __global uint const* indexes_array,
                        uint const num_indexes_elements,
-                       __global uint* const output_array) {
+                       __global uint* output_array) {
   __private uint const curr_wi_id = get_global_id(0);
 
   if (curr_wi_id >= 0 && curr_wi_id < num_indexes_elements) {
@@ -205,10 +199,10 @@ void getIndexesOfArray(__global uint const* const input_array,
 
 // Get the indexes of all unique elements in the input array. The input array
 // must be sorted, the output is not.
-void iIndexesOfUniqueElements_(__global uint* const input_array,
+void iIndexesOfUniqueElements_(__global uint* input_array,
                                uint const num_elements,
-                               __global uint* const indexes_of_unique,
-                               __global uint* const num_unique_elements) {
+                               __global uint* indexes_of_unique,
+                               __global uint* num_unique_elements) {
   __private uint const curr_wi_id = get_global_id(0);
 
   if (curr_wi_id == 0)
@@ -224,9 +218,9 @@ void iIndexesOfUniqueElements_(__global uint* const input_array,
   }
 }
 
-void unique(__global uint* const input_array,
-            __global uint* const num_elements,
-            __global uint* const workspace) {
+void unique(__global uint* input_array,
+            __global uint* num_elements,
+            __global uint* workspace) {
   // Sort input array
   sort(input_array, *num_elements, workspace);
   barrier(CLK_GLOBAL_MEM_FENCE);

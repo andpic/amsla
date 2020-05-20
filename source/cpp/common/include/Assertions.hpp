@@ -1,5 +1,5 @@
-/** @file Assertions.hpp
- *  @brief Shared declarations of assertions.
+/** @file assertions.hpp
+ * Shared declarations of assertions and related tools.
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -27,19 +27,17 @@
 
 namespace amsla::common {
 
-/** @function assert_that
- *  @brief Throw an exception if the condition is false
+/** Throw an exception if the condition is false
  *  @param must_be_true The condition that must be satisfied.
  *  @param diagnostic A string to print in case the condition is not satisfied.
  */
-void assert_that(bool const must_be_true, std::string const diagnostic);
+void assertThat(bool const must_be_true, std::string const diagnostic);
 
-/** @function check_that
- *  @brief Assert that a condition is true
+/** Assert that a condition is true
  *  @param must_be_true The condition that must be satisfied.
  *  @param diagnostic A string to print in case the condition is not satisfied.
  */
-void check_that(bool const must_be_true, std::string const diagnostic);
+void checkThat(bool const must_be_true, std::string const diagnostic);
 
 }  // namespace amsla::common
 
