@@ -49,11 +49,35 @@ std::unique_ptr<amsla::common::Device> g_default_device;
 std::unique_ptr<amsla::common::CommandQueue> g_default_queue;
 
 // Get shared device functions
-std::string iExportDeviceFunctions(void) {
+amsla::common::DeviceSource iExportDeviceFunctions(void) {
   std::string ret =
 #include "derived/device_functions.cl"
       ;
-  return ret;
+  return amsla::common::DeviceSource(ret);
+}
+
+// Replace a substring with another.
+std::string iReplaceSubstring(std::string in_string,
+                              std::string const to_replace,
+                              std::string const replace_with) {
+  amsla::common::checkThat(
+      !to_replace.empty() && !in_string.empty(),
+      "Neither the input string or that to replace can be empty.");
+
+  size_t index = 0;
+  while (true) {
+    // Locate the substring to replace.
+    index = in_string.find(to_replace, index);
+    if (index == std::string::npos)
+      break;
+
+    // Make the replacement.
+    in_string.replace(index, to_replace.length(), replace_with);
+
+    // Advance index forward so the next iteration doesn't pick it up as well.
+    index += replace_with.length();
+  }
+  return in_string;
 }
 
 }  // namespace
@@ -108,21 +132,18 @@ void waitAllDeviceOperations(void) {
 }
 
 // Kernel compilation
-Kernel compileKernel(std::string const& kernel_source,
+Kernel compileKernel(DeviceSource const& kernel_source,
                      std::string const& kernel_name) {
-  checkThat(kernel_source.length() != 0 && kernel_name.length() != 0,
+  checkThat(~kernel_source.isEmpty() && kernel_name.length() != 0,
             "Empty kernel provided.");
-
-  // Prepend kernel sources with the custom functions usable in kernels.
-  auto complete_kernel_source = iExportDeviceFunctions() + kernel_source;
 
   auto context = defaultContext();
   std::vector<cl::Device> devices = {defaultDevice()};
 
   // Build kernel from source string
-  cl::Program::Sources source(1,
-                              std::make_pair(complete_kernel_source.c_str(),
-                                             complete_kernel_source.length()));
+  std::string source_string = kernel_source.toString();
+  cl::Program::Sources source(
+      1, std::make_pair(source_string.c_str(), source_string.length()));
   auto program = cl::Program(context, source);
   Kernel kernel;
 
@@ -134,7 +155,7 @@ Kernel compileKernel(std::string const& kernel_source,
   } catch (cl::Error err) {
     std::cerr << err << std::endl;
     std::cerr << "=== BUILD SOURCE ===" << std::endl
-              << complete_kernel_source << std::endl;
+              << source_string << std::endl;
 
     if (err.what() == "clBuildProgram") {
       auto build_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
@@ -144,6 +165,35 @@ Kernel compileKernel(std::string const& kernel_source,
   }
 
   return kernel;
+}
+
+// Implementation of DeviceSource
+DeviceSource::DeviceSource(std::string const source_text) {
+  auto source_base = iExportDeviceFunctions();
+  DeviceSource added_source(source_text);
+  source_base.include(added_source);
+  text_ = source_base.toString();
+}
+
+// Include some other source in the current one.
+void DeviceSource::include(DeviceSource const& source_to_include) {
+  text_ = text_ + std::string("\n") + source_to_include.text_;
+}
+
+// Substitute a macro in the current source with some text.
+void DeviceSource::substituteMacro(std::string const macro_name,
+                                   std::string const substitute_text) {
+  text_ = iReplaceSubstring(text_, "__" + macro_name + "__", substitute_text);
+}
+
+// Convert the source to a string
+std::string DeviceSource::toString(void) const {
+  return text_;
+}
+
+// Check that the kernel is not empty
+bool DeviceSource::isEmpty(void) const {
+  return text_.length() == 0;
 }
 
 }  // namespace amsla::common

@@ -112,6 +112,39 @@ using Buffer = cl::Buffer;
  */
 using Kernel = cl::Kernel;
 
+/** Sources for the kernel
+ */
+class DeviceSource {
+ public:
+  /** Create a device source
+   *  @param source_text Text of the source file.
+   */
+  explicit DeviceSource(std::string const source_text);
+
+  /** Include some other source in the current one.
+   *  @param source_to_include Other source to include;
+   */
+  void include(DeviceSource const& source_to_include);
+
+  /** Substitute a macro in the current source with some text.
+   *  @param macro_name In the source, it appears between double underscores.
+   *  @param substitute_text Replaces the whole macro (including undercores).
+   */
+  void substituteMacro(std::string const macro_name,
+                       std::string const substitute_text);
+
+  /** Convert the source to a string.
+   */
+  std::string toString(void) const;
+
+  /** Check if the source is empty.
+   */
+  bool isEmpty(void) const;
+
+ private:
+  std::string text_;
+};
+
 /** Get the default context
  *  @param platform_number The number of platform given in clinfo
  */
@@ -173,7 +206,7 @@ void waitAllDeviceOperations(void);
  *  @params kernel_source The source for the kernel.
  *  @params kernel_name The name of the kernel in the source.
  */
-Kernel compileKernel(std::string const& kernel_source,
+Kernel compileKernel(DeviceSource const& kernel_source,
                      std::string const& kernel_name);
 
 /** Initialise an array of a device type with some given data

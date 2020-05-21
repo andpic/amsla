@@ -1,5 +1,5 @@
 /** @file test_DeviceManagement.cpp
- *  @brief Tests for the header DeviceManagement in amsla_common.
+ * Tests for the header DeviceManagement in amsla_common.
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -28,13 +28,13 @@
 
 namespace {
 
-/** @brief Check that a valid context is created without errors.
+/** Check that a valid context is created without errors.
  */
 TEST(DeviceManagement, context_created_without_errors) {
   cl::Context context = amsla::common::defaultContext();
 }
 
-/** @brief Check that a valid device is created without errors.
+/** Check that a valid device is created without errors.
  */
 TEST(DeviceManagement, default_device_created_without_errors) {
   amsla::common::defaultDevice();
@@ -44,8 +44,8 @@ TEST(DeviceManagement, default_device_created_without_errors) {
  */
 TEST(DeviceManagement, data_moved_to_device_without_errors) {
   std::vector<uint> const row_indices = {1, 2, 3, 4};
-  cl::Buffer device_buffer =
-      amsla::common::moveToDevice(row_indices, CL_MEM_READ_WRITE);
+  cl::Buffer device_buffer = amsla::common::moveToDevice(
+      row_indices, amsla::common::AccessType::READ_AND_WRITE);
   amsla::common::waitAllDeviceOperations();
 }
 
@@ -54,8 +54,8 @@ TEST(DeviceManagement, data_moved_to_device_without_errors) {
  */
 TEST(DeviceManagement, data_moved_to_device_and_back_without_errors) {
   std::vector<uint> const row_indices = {1, 2, 3, 4};
-  cl::Buffer device_buffer =
-      amsla::common::moveToDevice(row_indices, CL_MEM_READ_WRITE);
+  cl::Buffer device_buffer = amsla::common::moveToDevice(
+      row_indices, amsla::common::AccessType::READ_AND_WRITE);
   amsla::common::waitAllDeviceOperations();
 
   auto data_back = amsla::common::moveToHost<decltype(row_indices)::value_type>(
