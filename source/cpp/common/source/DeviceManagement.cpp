@@ -49,7 +49,7 @@ std::unique_ptr<amsla::common::Device> g_default_device;
 std::unique_ptr<amsla::common::CommandQueue> g_default_queue;
 
 // Get shared device functions
-amsla::common::DeviceSource iExportDeviceFunctions(void) {
+amsla::common::DeviceSource iExportDeviceFunctions() {
   std::string ret =
 #include "derived/device_functions.cl"
       ;
@@ -126,7 +126,7 @@ CommandQueue defaultQueue(Context const& context) {
 }
 
 // Wait until all the operations in the queue are done
-void waitAllDeviceOperations(void) {
+void waitAllDeviceOperations() {
   auto queue = defaultQueue();
   queue.finish();
 }
@@ -137,47 +137,66 @@ Kernel compileKernel(DeviceSource const& kernel_source,
   checkThat(~kernel_source.isEmpty() && kernel_name.length() != 0,
             "Empty kernel provided.");
 
+  auto all_kernels = compileAllKernels(kernel_source);
+
+  for (Kernel& curr_kernel : all_kernels) {
+    std::string curr_kernel_name = curr_kernel.name();
+    if (curr_kernel_name == kernel_name) {
+      return curr_kernel;
+    }
+  }
+
+  throw std::runtime_error("Source does not contain required kernel.");
+}
+
+// Compile all kernels in the source
+std::vector<Kernel> compileAllKernels(DeviceSource const& kernel_source) {
+  checkThat(~kernel_source.isEmpty(), "Empty kernel provided.");
+
   auto context = defaultContext();
   std::vector<cl::Device> devices = {defaultDevice()};
 
+  DeviceSource source_to_compile = kernel_source;
+  source_to_compile.include(iExportDeviceFunctions());
+  std::string source_string = source_to_compile.toString();
+
   // Build kernel from source string
-  std::string source_string = kernel_source.toString();
   cl::Program::Sources source(
       1, std::make_pair(source_string.c_str(), source_string.length()));
   auto program = cl::Program(context, source);
-  Kernel kernel;
+  std::vector<Kernel> all_kernels;
 
   // Build the kernel and write the error to output
   try {
     program.build(devices);
-    // Create kernel object
-    kernel = Kernel(program, kernel_name.c_str());
+    std::string kernel_names = program.getInfo<CL_PROGRAM_KERNEL_NAMES>();
+
+    // Create kernel objects
+    all_kernels.push_back(Kernel(program, kernel_names.c_str()));
   } catch (cl::Error err) {
     std::cerr << err << std::endl;
     std::cerr << "=== BUILD SOURCE ===" << std::endl
               << source_string << std::endl;
 
-    if (err.what() == "clBuildProgram") {
-      auto build_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
+    if (err.what() == std::string("clBuildProgram")) {
+      auto build_log =
+          program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(defaultDevice());
       std::cerr << "=== BUILD LOG ===" << std::endl << build_log << std::endl;
     }
     throw err;
   }
 
-  return kernel;
+  return all_kernels;
 }
 
-// Implementation of DeviceSource
+// Constructor for DeviceSource objects
 DeviceSource::DeviceSource(std::string const source_text) {
-  auto source_base = iExportDeviceFunctions();
-  DeviceSource added_source(source_text);
-  source_base.include(added_source);
-  text_ = source_base.toString();
+  text_ = std::string("\n") + source_text;
 }
 
 // Include some other source in the current one.
 void DeviceSource::include(DeviceSource const& source_to_include) {
-  text_ = text_ + std::string("\n") + source_to_include.text_;
+  text_ = source_to_include.text_ + std::string("\n") + text_;
 }
 
 // Substitute a macro in the current source with some text.
@@ -187,12 +206,12 @@ void DeviceSource::substituteMacro(std::string const macro_name,
 }
 
 // Convert the source to a string
-std::string DeviceSource::toString(void) const {
+std::string DeviceSource::toString() const {
   return text_;
 }
 
 // Check that the kernel is not empty
-bool DeviceSource::isEmpty(void) const {
+bool DeviceSource::isEmpty() const {
   return text_.length() == 0;
 }
 

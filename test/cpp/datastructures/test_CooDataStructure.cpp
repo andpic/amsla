@@ -1,5 +1,5 @@
 /** @file test_CooDataStructure.cpp
- *  @brief Tests for the CooDataStructure in amsla_datasructures.
+ * Tests for the CooDataStructure in amsla_datasructures.
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -28,11 +28,9 @@
 // Project includes
 #include "CooDataStructure.hpp"
 
-// Helpers ********************************************************************/
-
 namespace {
 
-template <class BaseType>
+template <typename BaseType>
 auto iGetSimpleCoo() {
   std::vector<uint> const row_indices = {1, 2, 3, 4};
   std::vector<uint> const col_indices = {2, 3, 4, 5};
@@ -41,16 +39,14 @@ auto iGetSimpleCoo() {
                                                  values);
 }
 
-// Test specs *****************************************************************/
-
-/** @brief Check that a CooDataStructure object can be created and destroyed
+/** Check that a CooDataStructure object can be created and destroyed
  * without errors.
  */
 TEST(CooDataStructure, object_created_and_destroyed) {
   auto dataStructure = iGetSimpleCoo<double>();
 }
 
-/** @brief Check that a CooDataStructure object can be created and destroyed
+/** Check that a CooDataStructure object can be created and destroyed
  * without errors.
  */
 TEST(CooDataStructure, allNodes_does_not_error) {

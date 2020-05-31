@@ -52,13 +52,13 @@ namespace amsla::common {
  *  Example usage:
  *      ToDeviceType<double>::type
  */
-template <class HostType>
+template <typename HostType>
 struct ToDeviceType {
   typedef void type;
 
  private:
   // Make this struct non-instantiable
-  ToDeviceType(void){};
+  ToDeviceType(){};
 };
 
 template <>
@@ -83,10 +83,11 @@ struct ToDeviceType<uint> {
  *  @param BaseType The type we want the name of.
  *
  *  Example usage:
- *      auto deviceName = deviceTypeName<double>();
+ *      auto type_name = typeName<double>();
+ *      type_name is "double"
  */
-template <class HostType>
-static const char* deviceTypeName(void);
+template <typename Type>
+static std::string typeName();
 
 /** Wrapper for an OpenCL context
  */
@@ -110,7 +111,17 @@ using Buffer = cl::Buffer;
 
 /** Wrapper for an OpenCL kernel
  */
-using Kernel = cl::Kernel;
+class Kernel : public cl::Kernel {
+ public:
+  /** Construct a kernel object
+   */
+  Kernel(const cl::Program& program, const char* name, cl_int* err = NULL)
+      : cl::Kernel(program, name, err){};
+
+  /** Get the name of the current kernel.
+   */
+  std::string name() { return getInfo<CL_KERNEL_FUNCTION_NAME>(); }
+};
 
 /** Sources for the kernel
  */
@@ -119,7 +130,7 @@ class DeviceSource {
   /** Create a device source
    *  @param source_text Text of the source file.
    */
-  explicit DeviceSource(std::string const source_text);
+  explicit DeviceSource(std::string const source_text = "");
 
   /** Include some other source in the current one.
    *  @param source_to_include Other source to include;
@@ -135,11 +146,11 @@ class DeviceSource {
 
   /** Convert the source to a string.
    */
-  std::string toString(void) const;
+  std::string toString() const;
 
   /** Check if the source is empty.
    */
-  bool isEmpty(void) const;
+  bool isEmpty() const;
 
  private:
   std::string text_;
@@ -160,9 +171,9 @@ CommandQueue defaultQueue(Context const& context = defaultContext());
 
 /** Create an OpenCL buffer
  */
-template <class DataType>
+template <typename DataType>
 Buffer createBuffer(std::size_t const num_elements = 1,
-                    AccessType const mem_flag = CL_MEM_READ_WRITE);
+                    AccessType const mem_flag = AccessType::READ_AND_WRITE);
 
 /** Move given data to the device and return a buffer
  *  @param host_data Pointer to data on the host.
@@ -171,13 +182,13 @@ Buffer createBuffer(std::size_t const num_elements = 1,
  *
  *  Creates a buffer, moves the data to the device without blocking the queue.
  */
-template <class DataType>
+template <typename DataType>
 Buffer moveToDevice(std::vector<DataType> const& host_data,
-                    AccessType const mem_flag = CL_MEM_READ_WRITE);
+                    AccessType const mem_flag = AccessType::READ_AND_WRITE);
 
-template <class DataType>
+template <typename DataType>
 Buffer moveToDevice(DataType const& host_data,
-                    AccessType const mem_flag = CL_MEM_READ_WRITE);
+                    AccessType const mem_flag = AccessType::READ_AND_WRITE);
 
 /** Move given data from the device to the host
  *  @param device_data A buffer for the data on the device
@@ -187,16 +198,16 @@ Buffer moveToDevice(DataType const& host_data,
  *  Move the data from the device to the host without blocking the execution
  *  queue.
  */
-template <class DataType>
+template <typename DataType>
 std::vector<DataType> moveToHost(Buffer const& device_data,
                                  std::size_t const num_elements);
 
-template <class DataType>
+template <typename DataType>
 DataType moveToHost(Buffer const& device_data);
 
 /** Wait until all the operations on the device are completed
  */
-void waitAllDeviceOperations(void);
+void waitAllDeviceOperations();
 
 /** Compile an OpenCL kernel
  *
@@ -209,12 +220,22 @@ void waitAllDeviceOperations(void);
 Kernel compileKernel(DeviceSource const& kernel_source,
                      std::string const& kernel_name);
 
+/** Compile all OpenCL kernels in the source
+ *
+ *  Given the source of the kernel as a string and the kernel's name, compile
+ *  it
+ *
+ *  @params kernel_source The source for the kernel.
+ *  @params kernel_name The name of the kernel in the source.
+ */
+std::vector<Kernel> compileAllKernels(DeviceSource const& kernel_source);
+
 /** Initialise an array of a device type with some given data
  *  @param copy_to A pointer to the device-like data.
  *  @param copy_from A vector of data on the host.
  *  @param max_elements The maximum number of elements in copy_to.
  */
-template <class HostType>
+template <typename HostType>
 void initialiseDeviceLikeArray(void* const copy_to,
                                std::vector<HostType> const& copy_from,
                                std::size_t const max_elements);

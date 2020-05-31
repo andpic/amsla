@@ -20,8 +20,8 @@
  *  limitations under the License.
  */
 
-#ifndef _AMSLA_COMMON_PRIVATE_DEVICEMANAGEMENT_HPP
-#define _AMSLA_COMMON_PRIVATE_DEVICEMANAGEMENT_HPP
+#ifndef _AMSLA_COMMON_DETAILS_DEVICEMANAGEMENT_HPP
+#define _AMSLA_COMMON_DETAILS_DEVICEMANAGEMENT_HPP
 
 // System includes
 #include <tuple>
@@ -47,7 +47,7 @@ cl_mem_flags iConvertToOpenClAccess(
 }
 
 // Move any data to the device
-template <class DataType>
+template <typename DataType>
 amsla::common::Buffer iMoveRawDataToDevice(
     DataType const* array,
     std::size_t num_elements,
@@ -73,13 +73,23 @@ amsla::common::Buffer iMoveRawDataToDevice(
 namespace amsla::common {
 
 // Return the name of the type as a string
-template <class HostType>
-static const char* deviceTypeName(void) {
-  return typeid(ToDeviceType<HostType>::type).name();
+/*template <typename Type>
+std::string typeName() {
+  return std::string(typeid(Type).name());
+}*/
+
+template <>
+std::string typeName<double>() {
+  return std::string("double");
+}
+
+template <>
+std::string typeName<float>() {
+  return std::string("float");
 }
 
 // Create a buffer
-template <class DataType>
+template <typename DataType>
 Buffer createBuffer(std::size_t const num_elements, AccessType const mem_flag) {
   std::size_t bytes_to_copy = sizeof(DataType) * num_elements;
   Buffer out_array(defaultContext(), iConvertToOpenClAccess(mem_flag),
@@ -88,19 +98,19 @@ Buffer createBuffer(std::size_t const num_elements, AccessType const mem_flag) {
 }
 
 // Move data to the device
-template <class DataType>
+template <typename DataType>
 Buffer moveToDevice(std::vector<DataType> const& array,
                     AccessType const mem_flag) {
   return iMoveRawDataToDevice(&array[0], array.size(), mem_flag);
 }
 
-template <class DataType>
+template <typename DataType>
 Buffer moveToDevice(DataType const& host_data, AccessType const mem_flag) {
   return iMoveRawDataToDevice(&host_data, 1, mem_flag);
 }
 
 // Move data to the host, with a blocking read
-template <class DataType>
+template <typename DataType>
 std::vector<DataType> moveToHost(Buffer const& device_data,
                                  std::size_t const num_elements) {
   auto queue = defaultQueue();
@@ -112,7 +122,7 @@ std::vector<DataType> moveToHost(Buffer const& device_data,
   return ret_data;
 }
 
-template <class DataType>
+template <typename DataType>
 DataType moveToHost(Buffer const& device_data) {
   auto queue = defaultQueue();
 
@@ -124,7 +134,7 @@ DataType moveToHost(Buffer const& device_data) {
 }
 
 // Intialise device layout on the host
-template <class HostType>
+template <typename HostType>
 void initialiseDeviceLikeArray(void* const copy_to,
                                std::vector<HostType> const& copy_from,
                                std::size_t const max_elements) {
@@ -134,11 +144,12 @@ void initialiseDeviceLikeArray(void* const copy_to,
 
   // Convert copy_from to the corresponding device type. For example:
   // double -> cl_double
-  typedef ToDeviceType<HostType> DeviceType;
+  using DeviceType = typename ToDeviceType<HostType>::type;
   std::vector<DeviceType> device_from(copy_from);
 
-  std::copy_n(device_from.begin(), num_elements, copy_to);
-  std::fill(copy_to + num_elements, copy_to + max_elements,
+  auto copy_to_device = static_cast<DeviceType*>(copy_to);
+  std::copy_n(device_from.begin(), num_elements, copy_to_device);
+  std::fill(copy_to_device + num_elements, copy_to_device + max_elements,
             static_cast<DeviceType>(0));
 }
 

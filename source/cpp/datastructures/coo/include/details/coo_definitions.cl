@@ -1,5 +1,5 @@
 /** @file coo_definitions.cl
- *  @brief OpenCL sources for the data structure COO
+ * OpenCL sources for the data structure COO
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -20,7 +20,7 @@
 
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
-/** @brief Definition of the data structure
+/** Definition of the data structure
  */
 typedef struct __DATASTRUCTURE___ {
   uint row_indices_[__MAX_ELEMENTS__];
@@ -32,18 +32,17 @@ typedef struct __DATASTRUCTURE___ {
   uint max_elements_;
 } __DATASTRUCTURE__;
 
-/** @function allNodes
- *  @brief Get all the indices of nodes in the graph.
+/** Get all the indices of nodes in the graph.
  *
  *  @param data_structure The COO data structure being processed.
  *  @param output Output indices.
  *  @param num_elements_output Number of elements in the output array.
  *  @param workspace Temporary workspace.
  */
-void allNodes(__global __DATASTRUCTURE__ const* const data_structure,
-              __global uint* const output,
-              __global uint* const num_elements_output,
-              __global uint* const workspace) {
+void allNodes(__global __DATASTRUCTURE__ const* data_structure,
+              __global uint* output,
+              __global uint* num_elements_output,
+              __global uint* workspace) {
   // Get global thread ID
   __private uint const curr_wi_id = get_global_id(0);
   __private uint const num_edges = data_structure->num_edges_;

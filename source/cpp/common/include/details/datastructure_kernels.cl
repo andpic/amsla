@@ -1,5 +1,5 @@
-/** @file coo_kernels.cl
- *  @brief Implementation of the kernel for "allNodes"
+/** @file datastructure_kernels.cl
+ * Implementation of the kernel for "allNodes"
  *
  *  @author Andrea Picciau <andrea@picciau.net>
  *
@@ -18,10 +18,9 @@
  *  limitations under the License.
  */
 
-__kernel void allNodesKernel(
-    __global __DATASTRUCTURE__ const* const data_structure,
-    __global uint* const output,
-    __global uint* const num_elements_output,
-    __global uint* const workspace) {
+__kernel void allNodesKernel(__global __DATASTRUCTURE__ const* data_structure,
+                             __global uint* output,
+                             __global uint* num_elements_output,
+                             __global uint* workspace) {
   allNodes(data_structure, output, num_elements_output, workspace);
 }

@@ -1,5 +1,5 @@
 /** @file CooDataStructure.hpp
- *  @brief Sparse data structure in the COO format.
+ * Sparse data structure in the COO format.
  *
  *  This contains the definitions of a sparse data structure in the COO format.
  *
@@ -35,31 +35,20 @@
 
 namespace amsla::datastructures {
 
-/** @class CooDataStructure
- *  @brief Data structure that represents a sparse matrix in COO format.
+/** A COO data structure
+ *
+ *  This is the interface that
  */
-template <class BaseType>
-class CooDataStructure : public amsla::common::DataStructure {
+template <typename BaseType>
+class CooDataStructure : public amsla::common::DataStructure<BaseType> {
  public:
-  /** @brief Construct a CooDataStructure object
-   *  @param row_indices Row indices of the elements in the matrix.
-   *  @param column_indices Column indices of the elements in the matrix.
-   *  @param values Values of the elements in the matrix
-   */
-  CooDataStructure(std::vector<uint> const& row_indices,
-                   std::vector<uint> const& column_indices,
+  CooDataStructure(std::vector<uint> const& row_indexes,
+                   std::vector<uint> const& column_indexes,
                    std::vector<BaseType> const& values);
-
-  /** @brief Retrieve the IDs of all the nodes in the graph
-   */
-  std::vector<uint> allNodes(void);
-
- private:
-  std::unique_ptr<DataStructure> impl_;
-};  // class CooDataStructure
+};
 
 }  // namespace amsla::datastructures
 
-#include "private/CooDataStructure.hpp"
+#include "details/CooDataStructure.hpp"
 
 #endif
