@@ -74,7 +74,7 @@ jobs:
             lcov --remove ./code_coverage.info '/usr/*' --output-file ./code_coverage.info
             lcov --remove ./code_coverage.info '7/*' --output-file ./code_coverage.info
             lcov --list ./code_coverage.info
-            bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
+            bash <(curl -s https://codecov.io/bash) -f ./code_coverage.info || echo "Codecov did not collect coverage reports"
 
 workflows:
   version: 2.1
