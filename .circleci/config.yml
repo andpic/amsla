@@ -82,4 +82,5 @@ workflows:
     jobs:
       - build_and_test_matlab
       - build_and_test_cpp
+      - build_and_coverage_cpp
       - performance
