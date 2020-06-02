@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+project(amsla_source)
 
 # GENERATE INCLUDABLE STRINGS FROM OPENCL CODE
 
@@ -36,26 +37,6 @@ function(include_all_OpenCL_files)
     make_includable("${curr_opencl_source}" "${file_derived}")
   endforeach()
 endfunction(include_all_OpenCL_files)
-
-# CONFIGURE CODE COVERAGE
-
-option(CODE_COVERAGE "Enable coverage reporting" OFF)
-
-function(configure_code_coverage target)
-  if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    message(STATUS "Setting code coverage for ${target}")
-
-    # Add required flags (GCC & LLVM/Clang)
-    target_compile_options(
-      "${target}"
-      INTERFACE -O0 # no optimization
-                -g # generate debug info
-                --coverage # sets all required flags
-    )
-
-    target_link_libraries("${target}" INTERFACE --coverage)
-  endif()
-endfunction(configure_code_coverage)
 
 # ADD SUBDIRECTORIES
 

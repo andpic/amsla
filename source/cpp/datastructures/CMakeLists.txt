@@ -9,4 +9,3 @@ add_library(amsla_datastructures INTERFACE)
 target_include_directories(amsla_datastructures
                            INTERFACE "${PROJECT_SOURCE_DIR}/coo/include")
 target_link_libraries(amsla_datastructures INTERFACE amsla_common)
-configure_code_coverage(amsla_datastructures)

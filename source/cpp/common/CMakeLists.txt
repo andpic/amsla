@@ -10,4 +10,3 @@ add_library(amsla_common STATIC "${all_cpp_sources}")
 
 target_include_directories(amsla_common PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(amsla_common PUBLIC OpenCL::OpenCL)
-configure_code_coverage(amsla_common)
