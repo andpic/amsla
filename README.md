@@ -5,7 +5,7 @@ a sparse linear algebra library for many-core and multi-core processors that
 automatically optimizes the data structures and their parameters based on the
 processors' architectures.
 
-[![CircleCI](https://circleci.com/gh/andpic/amsla.svg?style=svg&circle-token=08165812a7f8ac76f4ba414e7776127c29e2b0dc)](https://circleci.com/gh/andpic/amsla)[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CircleCI](https://circleci.com/gh/andpic/amsla.svg?style=svg&circle-token=08165812a7f8ac76f4ba414e7776127c29e2b0dc)](https://circleci.com/gh/andpic/amsla)[![codecov](https://codecov.io/gh/andpic/amsla/branch/development/graph/badge.svg)](https://codecov.io/gh/andpic/amsla)[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Background
 
