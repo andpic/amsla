@@ -223,6 +223,7 @@ def _execute_amsla_build(tasks):
 
 
 if __name__ == '__main__':
+    ''' Helper for AMSLA: compile and run tests. '''
     args = _parse_args()
 
     tasks = _configure_amsla_build(args.debug,

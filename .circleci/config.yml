@@ -36,10 +36,9 @@ jobs:
       - run:
           name: Build and run all tests
           command: |
-            cd .circleci/
-            python3 build.py -dt
+            python3 setup.py -dt
             mkdir /tmp/amsla_test
-            find ../build -name 'Test.xml' -exec mv {} /tmp/amsla_test/test_amsla.xml \;
+            find ./build -name 'Test.xml' -exec mv {} /tmp/amsla_test/test_amsla.xml \;
       - store_test_results:
           path: /tmp/amsla_test
 
@@ -51,10 +50,8 @@ jobs:
       - run:
           name: Build and collect code coverage
           command: |
-            cd .circleci/
-            mkdir /tmp/amsla_test
-            python3 build.py -dct
-            bash <(curl -s https://codecov.io/bash) -f ../build/code_coverage.info || echo "Codecov did not collect coverage reports"
+            python3 setup.py -dct
+            bash <(curl -s https://codecov.io/bash) -f ./build/code_coverage.info || echo "Codecov did not collect coverage reports"
 
 workflows:
   version: 2.1
