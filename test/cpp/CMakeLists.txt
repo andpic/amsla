@@ -19,7 +19,7 @@ function(configure_build amsla_module)
   # Link to libraries
   target_link_libraries(
     "${executable_name}"
-    PRIVATE OpenCL::OpenCL "${GTEST_BOTH_LIBRARIES}"
+    PRIVATE "${GTEST_BOTH_LIBRARIES}"
     PRIVATE Threads::Threads
     PRIVATE "${amsla_module}")
 

@@ -34,18 +34,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build
+          name: Build and run all tests
           command: |
-            mkdir build && cd build
-            cmake -DCMAKE_BUILD_TYPE=Debug ..
-            make VERBOSE=1
-      - run:
-          name: Run all the tests
-          command: |
+            cd .circleci/
+            python3 build.py -dt
             mkdir /tmp/amsla_test
-            cd build/test/cpp
-            ctest --verbose --no-compress-output -T Test
-            mv ./Testing/**/Test.xml /tmp/amsla_test/test_amsla.xml
+            find ../build -name 'Test.xml' -exec mv {} /tmp/amsla_test/test_amsla.xml \;
       - store_test_results:
           path: /tmp/amsla_test
 
@@ -55,26 +49,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build
+          name: Build and collect code coverage
           command: |
-            mkdir build && cd build
-            cmake -DCODE_COVERAGE=1 -DCMAKE_BUILD_TYPE=Debug ..
-            make VERBOSE=1
-      - run:
-          name: Run all the tests
-          command: |
+            cd .circleci/
             mkdir /tmp/amsla_test
-            cd build/test/cpp
-            ctest --verbose --no-compress-output
-      - run:
-          name: Collect code coverage
-          command: |
-            cd build/
-            lcov --directory . --capture --output-file ./code_coverage.info
-            lcov --remove ./code_coverage.info '/usr/*' --output-file ./code_coverage.info
-            lcov --remove ./code_coverage.info '7/*' --output-file ./code_coverage.info
-            lcov --list ./code_coverage.info
-            bash <(curl -s https://codecov.io/bash) -f ./code_coverage.info || echo "Codecov did not collect coverage reports"
+            python3 build.py -dct
+            bash <(curl -s https://codecov.io/bash) -f ../build/code_coverage.info || echo "Codecov did not collect coverage reports"
 
 workflows:
   version: 2.1
