@@ -116,7 +116,7 @@ def _is_chrome_available():
     try:
         subprocess.check_call(['google-chrome', '--version'])
         is_available = True
-    except subprocess.CalledProcessError as _:
+    except FileNotFoundError as _:
         is_available = False
     return is_available
 
