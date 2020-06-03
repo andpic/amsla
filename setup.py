@@ -29,9 +29,7 @@ def _this_scripts_dir():
 
 def _default_build_dir():
     ''' Get the path of the default build dir. '''
-    from pathlib import Path
-    amsla_dir = Path(_this_scripts_dir()).parent
-    build_dir = os.path.join(amsla_dir, 'build')
+    build_dir = os.path.join(_this_scripts_dir(), 'build')
     build_dir_abs = os.path.abspath(build_dir)
     return build_dir_abs
 
