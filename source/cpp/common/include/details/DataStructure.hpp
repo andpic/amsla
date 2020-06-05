@@ -67,51 +67,45 @@ class DataStructureImpl : public amsla::common::DataStructureInterface {
     using DeviceIndexType = amsla::common::ToDeviceType<uint>::type;
     std::vector<DeviceIndexType> output;
 
-    try {
-      auto vector_size = host_data_layout_->maxElements();
+    auto vector_size = host_data_layout_->maxElements();
 
-      amsla::common::Kernel device_kernel = compiled_kernels_[0];
+    amsla::common::Kernel device_kernel = compiled_kernels_[0];
 
-      auto output_buffer =
-          amsla::common::createBuffer<decltype(output)::value_type>(
-              vector_size, amsla::common::AccessType::WRITE_ONLY);
-      auto num_elements_output_buffer =
-          amsla::common::createBuffer<decltype(output)::value_type>(
-              1, amsla::common::AccessType::WRITE_ONLY);
-      auto workspace_buffer =
-          amsla::common::createBuffer<decltype(output)::value_type>(
-              2 * vector_size, amsla::common::AccessType::READ_AND_WRITE);
+    auto output_buffer =
+        amsla::common::createBuffer<decltype(output)::value_type>(
+            vector_size, amsla::common::AccessType::WRITE_ONLY);
+    auto num_elements_output_buffer =
+        amsla::common::createBuffer<decltype(output)::value_type>(
+            1, amsla::common::AccessType::WRITE_ONLY);
+    auto workspace_buffer =
+        amsla::common::createBuffer<decltype(output)::value_type>(
+            2 * vector_size, amsla::common::AccessType::READ_AND_WRITE);
 
-      // Bind kernel arguments to kernel
-      device_kernel.setArg(0, device_buffer_);
-      device_kernel.setArg(1, output_buffer);
-      device_kernel.setArg(2, num_elements_output_buffer);
-      device_kernel.setArg(3, workspace_buffer);
+    // Bind kernel arguments to kernel
+    device_kernel.setArg(0, device_buffer_);
+    device_kernel.setArg(1, output_buffer);
+    device_kernel.setArg(2, num_elements_output_buffer);
+    device_kernel.setArg(3, workspace_buffer);
 
-      // Number of work items in each local work group
-      auto num_threads = static_cast<uint>(
-          std::ceil(vector_size / static_cast<double>(64)) * 64);
-      cl::NDRange global_size(num_threads);
-      cl::NDRange local_size = global_size;
+    // Number of work items in each local work group
+    auto num_threads = static_cast<uint>(
+        std::ceil(vector_size / static_cast<double>(64)) * 64);
+    cl::NDRange global_size(num_threads);
+    cl::NDRange local_size = global_size;
 
-      // Enqueue kernel
-      auto queue = amsla::common::defaultQueue();
-      queue.enqueueNDRangeKernel(device_kernel, cl::NullRange, global_size,
-                                 local_size);
+    // Enqueue kernel
+    auto queue = amsla::common::defaultQueue();
+    queue.enqueueNDRangeKernel(device_kernel, cl::NullRange, global_size,
+                               local_size);
 
-      // Block until kernel completion
-      output = amsla::common::moveToHost<decltype(output)::value_type>(
-          output_buffer, vector_size);
-      auto num_elements_output =
-          amsla::common::moveToHost<cl_uint>(num_elements_output_buffer);
-      amsla::common::waitAllDeviceOperations();
+    // Block until kernel completion
+    output = amsla::common::moveToHost<decltype(output)::value_type>(
+        output_buffer, vector_size);
+    auto num_elements_output =
+        amsla::common::moveToHost<cl_uint>(num_elements_output_buffer);
+    amsla::common::waitAllDeviceOperations();
 
-      output.resize(num_elements_output);
-
-    } catch (cl::Error err) {
-      std::cerr << err << std::endl;
-      throw err;
-    }
+    output.resize(num_elements_output);
 
     return output;
   }

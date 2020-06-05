@@ -31,22 +31,19 @@
 #include "Assertions.hpp"
 #include "DeviceManagement.hpp"
 
-// Write an OpenCL error to a std::ostream
-std::ostream& operator<<(std::ostream& a_stream, cl::Error const err) {
-  a_stream << "ERROR: " << err.what() << "(" << err.err() << ")";
-  return a_stream;
-}
-
 namespace {
 
 // A global variable storing the default context
 std::unique_ptr<amsla::common::Context> g_default_context;
 
+
 // A global variable storing the default device
 std::unique_ptr<amsla::common::Device> g_default_device;
 
+
 // A global variable storing the default device
 std::unique_ptr<amsla::common::CommandQueue> g_default_queue;
+
 
 // Get shared device functions
 amsla::common::DeviceSource iExportDeviceFunctions() {
@@ -55,6 +52,7 @@ amsla::common::DeviceSource iExportDeviceFunctions() {
       ;
   return amsla::common::DeviceSource(ret);
 }
+
 
 // Replace a substring with another.
 std::string iReplaceSubstring(std::string in_string,
@@ -78,6 +76,47 @@ std::string iReplaceSubstring(std::string in_string,
     index += replace_with.length();
   }
   return in_string;
+}
+
+// Remove final '\0' in strings
+std::string iRemoveEmptyChar(std::string& a_string) {
+  std::size_t string_len = a_string.length();
+  if (string_len > 0 && a_string[string_len - 1] == '\0') {
+    a_string = a_string.substr(0, string_len - 1);
+  }
+  return a_string;
+}
+
+
+// Get the names of all OpenCL kernels inside the program
+std::vector<std::string> iGetKernelNames(cl::Program const& a_program) {
+  std::string names_in_string{a_program.getInfo<CL_PROGRAM_KERNEL_NAMES>() +
+                              ';'};
+  std::vector<std::string> kernel_names;
+
+  size_t split_position;
+  // ";" is the standard delimiter
+  std::string delimiter{';'};
+
+  while ((split_position = names_in_string.find(delimiter)) !=
+         std::string::npos) {
+    // Remove empty terminal character
+    std::string curr_name = names_in_string.substr(0, split_position);
+
+    kernel_names.push_back(curr_name);
+    names_in_string.erase(0, split_position + delimiter.length());
+  }
+  return kernel_names;
+}
+
+
+// Create a build error
+std::runtime_error iCreateBuildError(cl::Program const& a_program) {
+  auto build_log = a_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(
+      amsla::common::defaultDevice());
+  std::string message =
+      "Error when building OpenCL source:" + '\n' + '\n' + build_log;
+  return std::runtime_error(message);
 }
 
 }  // namespace
@@ -131,6 +170,14 @@ void waitAllDeviceOperations() {
   queue.finish();
 }
 
+
+// Get the name of the kernel
+std::string Kernel::name() {
+  std::string ret_string = getInfo<CL_KERNEL_FUNCTION_NAME>();
+  return iRemoveEmptyChar(ret_string);
+}
+
+
 // Kernel compilation
 Kernel compileKernel(DeviceSource const& kernel_source,
                      std::string const& kernel_name) {
@@ -169,21 +216,13 @@ std::vector<Kernel> compileAllKernels(DeviceSource const& kernel_source) {
   // Build the kernel and write the error to output
   try {
     program.build(devices);
-    std::string kernel_names = program.getInfo<CL_PROGRAM_KERNEL_NAMES>();
+    auto kernel_names = iGetKernelNames(program);
 
     // Create kernel objects
-    all_kernels.push_back(Kernel(program, kernel_names.c_str()));
+    for (auto curr_name : kernel_names)
+      all_kernels.push_back(Kernel(program, curr_name));
   } catch (cl::Error err) {
-    std::cerr << err << std::endl;
-    std::cerr << "=== BUILD SOURCE ===" << std::endl
-              << source_string << std::endl;
-
-    if (err.what() == std::string("clBuildProgram")) {
-      auto build_log =
-          program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(defaultDevice());
-      std::cerr << "=== BUILD LOG ===" << std::endl << build_log << std::endl;
-    }
-    throw err;
+    throw iCreateBuildError(program);
   }
 
   return all_kernels;

@@ -1,24 +1,23 @@
-/** @file DeviceManagement.hpp
- *  @brief Wrapper for the OpenCl library
- *
- *  This contains all the definitions and implementations
- *
- *  @author Andrea Picciau <andrea@picciau.net>
- *
- *  @copyright Copyright 2019-2020 Andrea Picciau
- *
- *  @license Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+/// @file DeviceManagement.hpp
+/// @brief Wrapper for the OpenCl library
+///
+/// This contains all the definitions and implementations
+///
+/// @author Andrea Picciau <andrea@picciau.net>
+///
+/// @copyright Copyright 2019-2020 Andrea Picciau
+///
+/// @license Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+///
+///    http://www.apache.org/licenses/LICENSE-2.0
+///
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
 
 #ifndef _AMSLA_COMMON_DETAILS_DEVICEMANAGEMENT_HPP
 #define _AMSLA_COMMON_DETAILS_DEVICEMANAGEMENT_HPP
@@ -46,6 +45,15 @@ cl_mem_flags iConvertToOpenClAccess(
   }
 }
 
+
+// Wrap an OpenCL error with a std::runtime error
+std::runtime_error iWrapOpenClError(cl::Error const& err) {
+  std::string message =
+      "Error from OpenCL backend:" + '\n' + '\n' + std::string(err.what());
+  return std::runtime_error(message);
+}
+
+
 // Move any data to the device
 template <typename DataType>
 amsla::common::Buffer iMoveRawDataToDevice(
@@ -61,8 +69,7 @@ amsla::common::Buffer iMoveRawDataToDevice(
     auto queue = amsla::common::defaultQueue();
     queue.enqueueWriteBuffer(out_array, CL_FALSE, 0, bytes_to_copy, array);
   } catch (cl::Error err) {
-    std::cerr << err << std::endl;
-    throw err;
+    throw iWrapOpenClError(err);
   }
 
   return out_array;
@@ -73,11 +80,6 @@ amsla::common::Buffer iMoveRawDataToDevice(
 namespace amsla::common {
 
 // Return the name of the type as a string
-/*template <typename Type>
-std::string typeName() {
-  return std::string(typeid(Type).name());
-}*/
-
 template <>
 std::string typeName<double>() {
   return std::string("double");

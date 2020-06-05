@@ -1,0 +1,2 @@
+BasedOnStyle: Chromium
+MaxEmptyLinesToKeep: '2'
