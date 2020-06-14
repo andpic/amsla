@@ -85,7 +85,7 @@ def _parse_args():
 
 class Tasks:
     """ Tasks to be executed for the build """
-    prebuild_task = 'cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON'
+    prebuild_task = 'cmake'
     build_task = 'cmake --build .'
     build_path = _default_source_dir()
     build_test_task = 'cmake --build .'
@@ -102,10 +102,16 @@ def _configure_build_type(tasks, is_debug):
         config = 'Debug'
     else:
         config = 'Release'
-    tasks.prebuild_task = tasks.prebuild_task + " -DCMAKE_BUILD_TYPE=" + config
+    tasks.prebuild_task = tasks.prebuild_task + " --config " + config
     tasks.build_task = tasks.build_task + " --config " + config
     tasks.build_test_task = tasks.build_test_task + " --config " + config
     tasks.test_task = tasks.test_task + " -C " + config
+    return tasks
+
+
+def _finalize_tasks(tasks):
+    ''' Add the last elements to the tasks definition '''
+    tasks.prebuild_task = tasks.prebuild_task + " .."
     return tasks
 
 
@@ -179,6 +185,7 @@ def _configure_amsla_build(is_debug, is_coverage, is_no_tests, is_running_tests,
     elif not is_running_tests:
         tasks = _disable_test_runs(tasks)
 
+    tasks = _finalize_tasks(tasks)
     return tasks
 
 

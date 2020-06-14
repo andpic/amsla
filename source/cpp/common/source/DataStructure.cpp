@@ -1,39 +1,41 @@
-/** @file DataStructure.hpp
- * Interface for DataStructure objects.
- *
- *  This contains the definition for DataStructure object. Any data structure
- * has abide by this interface.
- *
- *  @author Andrea Picciau <andrea@picciau.net>
- *
- *  @copyright Copyright 2019-2020 Andrea Picciau
- *
- *  @license Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-#ifndef _AMSLA_COMMON_DETAILS_DATASTRUCTURE_HPP
-#define _AMSLA_COMMON_DETAILS_DATASTRUCTURE_HPP
+/// @file DataStructure.cpp
+/// Interface for DataStructure objects.
+///
+/// This contains the definition for DataStructure object. Any data structure
+/// has abide by this interface.
+///
+/// @author Andrea Picciau <andrea@picciau.net>
+///
+/// @copyright Copyright 2019-2020 Andrea Picciau
+///
+/// @license Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+///
+///    http://www.apache.org/licenses/LICENSE-2.0
+///
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
 
 // System includes
 #include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 
-namespace {
+// Project includes
+#include "DataStructure.hpp"
+
+
+namespace amsla::common {
 
 // A class managing the data layout
 template <typename BaseType>
-class DataStructureImpl : public amsla::common::DataStructureInterface {
+class DataStructure<BaseType>::DataStructureImpl
+    : public amsla::common::DataStructureInterface {
  public:
   // Class constructor
   DataStructureImpl(std::vector<uint> const& row_indices,
@@ -51,12 +53,13 @@ class DataStructureImpl : public amsla::common::DataStructureInterface {
     host_data_layout_ = std::unique_ptr<amsla::common::DataLayoutInterface>(
         data_layout_factory(row_indices, column_indices, values, num_elements));
 
-    exportable_sources_ =
-        amsla::common::DeviceSource(host_data_layout_->exportDeviceSources());
+    exportable_sources_ = std::make_unique<amsla::common::DeviceSource>(
+        host_data_layout_->exportDeviceSources());
     compileSpecialisedKernels();
 
-    device_buffer_ = host_data_layout_->moveToDevice(
-        amsla::common::AccessType::READ_AND_WRITE);
+    device_buffer_ = std::make_unique<amsla::common::DeviceData>(
+        host_data_layout_->moveToDevice(
+            amsla::common::AccessType::READ_AND_WRITE));
   }
 
   // Retrieve the IDs of all the nodes in the graph
@@ -69,34 +72,27 @@ class DataStructureImpl : public amsla::common::DataStructureInterface {
 
     auto vector_size = host_data_layout_->maxElements();
 
-    amsla::common::Kernel device_kernel = compiled_kernels_[0];
+    amsla::common::DeviceKernel device_kernel = compiled_kernels_[0];
 
     auto output_buffer =
-        amsla::common::createBuffer<decltype(output)::value_type>(
-            vector_size, amsla::common::AccessType::WRITE_ONLY);
-    auto num_elements_output_buffer =
-        amsla::common::createBuffer<decltype(output)::value_type>(
-            1, amsla::common::AccessType::WRITE_ONLY);
-    auto workspace_buffer =
-        amsla::common::createBuffer<decltype(output)::value_type>(
-            2 * vector_size, amsla::common::AccessType::READ_AND_WRITE);
+        amsla::common::moveToDevice(std::vector<DeviceIndexType>(vector_size),
+                                    amsla::common::AccessType::WRITE_ONLY);
+    auto num_elements_output_buffer = amsla::common::moveToDevice(
+        static_cast<DeviceIndexType>(1), amsla::common::AccessType::WRITE_ONLY);
+    auto workspace_buffer = amsla::common::moveToDevice(
+        std::vector<DeviceIndexType>(2 * vector_size),
+        amsla::common::AccessType::READ_AND_WRITE);
 
     // Bind kernel arguments to kernel
-    device_kernel.setArg(0, device_buffer_);
-    device_kernel.setArg(1, output_buffer);
-    device_kernel.setArg(2, num_elements_output_buffer);
-    device_kernel.setArg(3, workspace_buffer);
+    device_kernel.setArgument(0, *device_buffer_);
+    device_kernel.setArgument(1, output_buffer);
+    device_kernel.setArgument(2, num_elements_output_buffer);
+    device_kernel.setArgument(3, workspace_buffer);
 
-    // Number of work items in each local work group
+    // Run the kernel
     auto num_threads = static_cast<uint>(
         std::ceil(vector_size / static_cast<double>(64)) * 64);
-    cl::NDRange global_size(num_threads);
-    cl::NDRange local_size = global_size;
-
-    // Enqueue kernel
-    auto queue = amsla::common::defaultQueue();
-    queue.enqueueNDRangeKernel(device_kernel, cl::NullRange, global_size,
-                               local_size);
+    device_kernel.run(num_threads, num_threads);
 
     // Block until kernel completion
     output = amsla::common::moveToHost<decltype(output)::value_type>(
@@ -112,7 +108,7 @@ class DataStructureImpl : public amsla::common::DataStructureInterface {
 
   // Export the device source to be used with this data structure
   amsla::common::DeviceSource exportDeviceSources() const {
-    return exportable_sources_;
+    return *exportable_sources_;
   }
 
  private:
@@ -126,7 +122,7 @@ class DataStructureImpl : public amsla::common::DataStructureInterface {
     specialiseKernelSources(kernel_sources);
 
     // Preappend the definitions for the current data structure.
-    kernel_sources.include(exportable_sources_);
+    kernel_sources.include(*exportable_sources_);
 
     // Compile all kernels and store them by name
     compiled_kernels_ = amsla::common::compileAllKernels(kernel_sources);
@@ -145,29 +141,25 @@ class DataStructureImpl : public amsla::common::DataStructureInterface {
                                    amsla::common::typeName<BaseType>());
   }
 
-  // A function that creates data layout objects.
-  amsla::common::DataStructureInterface::LayoutFactoryMethod<BaseType>
-      host_layout_factory_;
-
   // Host-side data
   std::unique_ptr<amsla::common::DataLayoutInterface> host_data_layout_;
 
   // Device-side data
-  amsla::common::Buffer device_buffer_;
+  std::unique_ptr<amsla::common::DeviceData> device_buffer_;
+
+  amsla::common::DataStructureInterface::LayoutFactoryMethod<BaseType>
+      host_layout_factory_;
 
   // Source code for basic operations on the device
-  amsla::common::DeviceSource exportable_sources_;
+  std::unique_ptr<amsla::common::DeviceSource> exportable_sources_;
 
   // ID for the data structure
   std::string data_structure_id_;
 
   // Compiled OpenCL kernels
-  std::vector<amsla::common::Kernel> compiled_kernels_;
+  std::vector<amsla::common::DeviceKernel> compiled_kernels_;
 };
 
-}  // namespace
-
-namespace amsla::common {
 
 // DataStructure class constructor
 template <typename BaseType>
@@ -177,10 +169,10 @@ DataStructure<BaseType>::DataStructure(
     std::vector<BaseType> const& values,
     amsla::common::DataStructureInterface::LayoutFactoryMethod<BaseType> const&
         data_layout_factory)
-    : impl_(new DataStructureImpl<BaseType>(row_indices,
-                                            column_indices,
-                                            values,
-                                            data_layout_factory)){};
+    : impl_(new DataStructureImpl(row_indices,
+                                  column_indices,
+                                  values,
+                                  data_layout_factory)){};
 
 // Get the IDs of all the nodes in the the graph, delegate to implementation.
 template <typename BaseType>
@@ -188,6 +180,6 @@ std::vector<uint> DataStructure<BaseType>::allNodes() {
   return impl_->allNodes();
 }
 
-}  // namespace amsla::common
+template class DataStructure<double>;
 
-#endif
+}  // namespace amsla::common

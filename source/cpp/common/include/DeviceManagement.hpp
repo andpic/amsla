@@ -35,10 +35,6 @@
 
 namespace amsla::common {
 
-// Start ignoring attributes in template argument
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-attributes"
-
 /// Convert a host type to a class (OpenCL) type
 /// @param HostType The host type being converted.
 ///
@@ -53,24 +49,6 @@ struct ToDeviceType {
   ToDeviceType(){};
 };
 
-template <>
-struct ToDeviceType<float> {
-  typedef cl_float type;
-};
-
-template <>
-struct ToDeviceType<double> {
-  typedef cl_double type;
-};
-
-template <>
-struct ToDeviceType<uint> {
-  typedef cl_uint type;
-};
-
-// Stop ignoring attributes on template argument
-#pragma GCC diagnostic pop
-
 
 /// Return the name of the type as a string
 /// @param BaseType The type we want the name of.
@@ -82,34 +60,25 @@ template <typename Type>
 static std::string typeName();
 
 
-/// Wrapper for an OpenCL context
-using Context = cl::Context;
-
-
-/// Wrapper for an OpenCL device
-using Device = cl::Device;
-
-
-/// Wrapper for an OpenCL queue
-using CommandQueue = cl::CommandQueue;
-
-
-/// Types of access to device data.
-enum class AccessType { READ_ONLY, WRITE_ONLY, READ_AND_WRITE };
-
-
-/// Wrapper for an OpenCL buffer
-using Buffer = cl::Buffer;
-
-
 /// Sources for the kernel
 class DeviceSource {
  public:
   /// Create a device source
   /// @param source_text Text of the source file.
-  explicit DeviceSource(std::string const source_text = "");
+  explicit DeviceSource(std::string const source_text);
 
-  /// Include some other source in the current one.
+  /// Create a copy of a device source
+  /// @param another_source Source to be copied.
+  DeviceSource(DeviceSource const& another_source);
+
+  /// Destructor
+  ~DeviceSource();
+
+  /// Copy assignment
+  /// @param other Another device_source to copy from.
+  DeviceSource& operator=(DeviceSource const& other);
+
+  /// Prepend some other source to the current one
   /// @param source_to_include Other source to include;
   void include(DeviceSource const& source_to_include);
 
@@ -126,48 +95,15 @@ class DeviceSource {
   bool isEmpty() const;
 
  private:
-  std::string text_;
+  class DeviceSourceImpl;
+  std::unique_ptr<DeviceSourceImpl> impl_;
 };
 
-
-/// Wrapper for an OpenCL kernel
-class Kernel : public cl::Kernel {
- public:
-  /// Get the name of the current kernel.
-  std::string name();
-
-  // Friend functions to construct a kernel object
-  friend Kernel compileKernel(DeviceSource const& kernel_source,
-                              std::string const& kernel_name);
-
-  friend std::vector<Kernel> compileAllKernels(
-      DeviceSource const& kernel_source);
-
- private:
-  // Construct a kernel object
-  Kernel(cl::Program const& program, std::string const& name)
-      : cl::Kernel(program, name.c_str(), nullptr){};
-};
+/// Types of access to device data.
+enum class AccessType { READ_ONLY, WRITE_ONLY, READ_AND_WRITE };
 
 
-/// Get the default context
-/// @param platform_number The number of platform given in clinfo
-Context& defaultContext(uint const platform_number = 0);
-
-
-/// Get the default OpenCL device.
-Device& defaultDevice(Context const& context = defaultContext());
-
-
-/// Get the default OpenCL command queue.
-CommandQueue defaultQueue(Context const& context = defaultContext());
-
-
-/// Create an OpenCL buffer
-template <typename DataType>
-Buffer createBuffer(std::size_t const num_elements = 1,
-                    AccessType const mem_flag = AccessType::READ_AND_WRITE);
-
+class DeviceData;
 
 /// Move given data to the device and return a buffer
 /// @param host_data Pointer to data on the host.
@@ -176,32 +112,81 @@ Buffer createBuffer(std::size_t const num_elements = 1,
 ///
 /// Creates a buffer, moves the data to the device without blocking the queue.
 template <typename DataType>
-Buffer moveToDevice(std::vector<DataType> const& host_data,
-                    AccessType const mem_flag = AccessType::READ_AND_WRITE);
-
-template <typename DataType>
-Buffer moveToDevice(DataType const& host_data,
-                    AccessType const mem_flag = AccessType::READ_AND_WRITE);
+DeviceData moveToDevice(DataType const& host_data,
+                        AccessType const mem_flag = AccessType::READ_AND_WRITE);
 
 
 /// Move given data from the device to the host
 /// @param device_data A buffer for the data on the device
-/// @param host_data Pointer to data on the host.
+///
+/// Move the data from the device to the host without blocking the execution
+/// queue.
+template <typename DataType>
+DataType moveToHost(DeviceData const& device_data);
+
+/// Move given data from the device to the host, when the data is an array.
+/// @param device_data A buffer for the data on the device
 /// @param num_elements Number of elements in the host array.
 ///
 /// Move the data from the device to the host without blocking the execution
 /// queue.
 template <typename DataType>
-std::vector<DataType> moveToHost(Buffer const& device_data,
+std::vector<DataType> moveToHost(DeviceData const& device_data,
                                  std::size_t const num_elements);
 
-template <typename DataType>
-DataType moveToHost(Buffer const& device_data);
+
+/// Data on the device.
+class DeviceData {
+ public:
+  /// Constructor
+  /// @param byte_size The number of bytes allocated on the device
+  /// @param mem_flag The type of
+  DeviceData(std::size_t const byte_size,
+             AccessType const mem_flag = AccessType::READ_AND_WRITE);
+
+  /// Constructor from OpenCL buffer
+  /// @param a_buffer An OpenCL buffer object
+  explicit DeviceData(cl::Buffer const& a_buffer);
+
+  /// Move constructor from OpenCL buffer
+  /// @param a_buffer An OpenCL buffer object
+  explicit DeviceData(cl::Buffer&& a_buffer);
+
+  /// Create a copy of device data
+  /// @param other Data to be copied.
+  DeviceData(DeviceData const& other);
+
+  /// Destructor
+  ~DeviceData();
+
+  /// Copy assignment
+  /// @param other Another device data to copy from.
+  DeviceData& operator=(const DeviceData& other);
+
+  // Friend functions
+
+  template <typename DataType>
+  friend DeviceData amsla::common::moveToDevice(DataType const& host_data,
+                                                AccessType const mem_flag);
+
+  template <typename DataType>
+  friend DataType amsla::common::moveToHost(DeviceData const& device_data);
+
+  template <typename DataType>
+  friend std::vector<DataType> amsla::common::moveToHost(
+      DeviceData const& device_data,
+      std::size_t const num_elements);
+
+ private:
+  // Convert to an OpenCL buffer
+  cl::Buffer const& toOpenClBuffer() const;
+
+  class DeviceDataImpl;
+  std::unique_ptr<DeviceDataImpl> impl_;
+};
 
 
-/// Wait until all the operations on the device are completed
-void waitAllDeviceOperations();
-
+class DeviceKernel;
 
 /// Compile an OpenCL kernel
 ///
@@ -210,9 +195,8 @@ void waitAllDeviceOperations();
 ///
 /// @params kernel_source The source for the kernel.
 /// @params kernel_name The name of the kernel in the source.
-Kernel compileKernel(DeviceSource const& kernel_source,
-                     std::string const& kernel_name);
-
+DeviceKernel compileKernel(DeviceSource const& kernel_source,
+                           std::string const& kernel_name);
 
 /// Compile all OpenCL kernels in the source
 ///
@@ -221,17 +205,55 @@ Kernel compileKernel(DeviceSource const& kernel_source,
 ///
 /// @params kernel_source The source for the kernel.
 /// @params kernel_name The name of the kernel in the source.
-std::vector<Kernel> compileAllKernels(DeviceSource const& kernel_source);
+std::vector<DeviceKernel> compileAllKernels(DeviceSource const& kernel_source);
 
 
-/// Initialise an array of a device type with some given data
-/// @param copy_to A pointer to the device-like data.
-/// @param copy_from A vector of data on the host.
-/// @param max_elements The maximum number of elements in copy_to.
-template <typename HostType>
-void initialiseDeviceLikeArray(void* const copy_to,
-                               std::vector<HostType> const& copy_from,
-                               std::size_t const max_elements);
+/// Wrapper for an OpenCL kernel
+class DeviceKernel {
+ public:
+  /// Create a copy of device kernel
+  /// @param other Data to be copied.
+  DeviceKernel(DeviceKernel const& other);
+
+  /// Destructor
+  ~DeviceKernel();
+
+  /// Copy assignment
+  /// @param other Another kernel to copy from.
+  DeviceKernel& operator=(const DeviceKernel& other);
+
+  /// Get the name of the current kernel.
+  std::string name();
+
+  /// Set an argument to the kernel
+  /// @param argument_number Number of the argument to be set.
+  /// @param device_data Device data to be given as argument.
+  void setArgument(uint const argument_number, DeviceData const& device_data);
+
+  /// Run the device kernel
+  /// @param num_threads Total number of threads to execute the kernel with
+  /// @param num_threads_per_block Number of blocks to group the threads into.
+  void run(std::size_t num_threads, std::size_t num_threads_per_block);
+
+  // Friend functions to construct a kernel object
+
+  friend DeviceKernel compileKernel(DeviceSource const& kernel_source,
+                                    std::string const& kernel_name);
+
+  friend std::vector<DeviceKernel> compileAllKernels(
+      DeviceSource const& kernel_source);
+
+ private:
+  // Construct a kernel object
+  DeviceKernel(cl::Program const& program, std::string const& name);
+
+  class DeviceKernelImpl;
+  std::unique_ptr<DeviceKernelImpl> impl_;
+};
+
+
+/// Wait until all the operations on the device are completed
+void waitAllDeviceOperations();
 
 }  // namespace amsla::common
 

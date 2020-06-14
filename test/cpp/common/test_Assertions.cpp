@@ -1,5 +1,5 @@
-/// @file Assertions.cpp
-/// Shared definitions of assertions.
+/// @file test_Assertions.cpp
+/// Tests for the header Assertions in amsla_common.
 ///
 /// @author Andrea Picciau <andrea@picciau.net>
 ///
@@ -18,26 +18,16 @@
 /// limitations under the License.
 
 // System includes
-#include <iostream>
-#include <stdexcept>
+#include <gtest/gtest.h>
+#include <limits.h>
+#include <fstream>
 #include <string>
+#include <vector>
 
 // Project includes
 #include "Assertions.hpp"
 
-namespace amsla::common {
-
-void assertThat(bool const must_be_true, std::string const diagnostic) {
-  if (!must_be_true) {
-    throw std::runtime_error(diagnostic);
-  }
+/// Check that an exception is thrown when the function assertThat fails.
+TEST(Assertions, exception_is_thrown_when_assertThat_fails) {
+  EXPECT_THROW(amsla::common::assertThat(false, "Dummy"), std::runtime_error);
 }
-
-// Disable check when not in debug mode
-void checkThat(bool const must_be_true, std::string const diagnostic) {
-#if DEBUG
-  assertThat(must_be_true, diagnostic);
-#endif
-}
-
-}  // namespace amsla::common
