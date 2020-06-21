@@ -200,7 +200,9 @@ cl::Buffer iCloneOpenClBuffer(cl::Buffer const& from,
                  num_bytes);
   try {
     auto queue = iDefaultQueue();
-    queue.enqueueCopyBuffer(from, ret, 0, 0, num_bytes);
+    cl::Event wait_event;
+    queue.enqueueCopyBuffer(from, ret, 0, 0, num_bytes, nullptr, &wait_event);
+    wait_event.wait();
   } catch (cl::Error err) {
     throw iWrapOpenClError(err);
   }
@@ -220,7 +222,7 @@ cl::Buffer writeRawDataToDevice(void const* array,
                       num_bytes);
   try {
     auto queue = iDefaultQueue();
-    queue.enqueueWriteBuffer(out_data, CL_FALSE, 0, num_bytes, array);
+    queue.enqueueWriteBuffer(out_data, CL_TRUE, 0, num_bytes, array);
   } catch (cl::Error err) {
     throw iWrapOpenClError(err);
   }

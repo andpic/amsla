@@ -107,22 +107,20 @@ TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
   auto row_indices_size = row_indices.size();
   auto device_buffer = amsla::common::moveToDevice(
       row_indices, amsla::common::AccessType::READ_AND_WRITE);
-  amsla::common::waitAllDeviceOperations();
 
   // Create a clone
-  amsla::common::DeviceData device_buffer_clone = device_buffer;
-  amsla::common::waitAllDeviceOperations();
+  amsla::common::DeviceData device_buffer_clone(device_buffer);
 
   // Execute operations on the clone
-  curr_kernel.setArgument(0, device_buffer);
+  curr_kernel.setArgument(0, device_buffer_clone);
   curr_kernel.run(row_indices_size, row_indices_size);
   amsla::common::waitAllDeviceOperations();
 
   // Expect the results to be different from the original values
-  auto after_kernel =
-      amsla::common::moveToHost<std::vector<uint>>(device_buffer_clone);
-  auto original =
-      amsla::common::moveToHost<std::vector<uint>>(device_buffer_clone);
+  std::vector<uint> after_kernel =
+      amsla::common::moveToHost<uint>(device_buffer_clone, row_indices_size);
+  std::vector<uint> original =
+      amsla::common::moveToHost<uint>(device_buffer, row_indices_size);
   for (std::size_t i = 0; i < row_indices_size; i++) {
     EXPECT_EQ(after_kernel[i], original[i] + 1);
   }
