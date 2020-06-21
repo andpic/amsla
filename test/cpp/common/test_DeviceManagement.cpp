@@ -29,7 +29,7 @@
 
 
 /// Check that a DeviceSource object can be created and that a single kernel
-/// can be created
+/// can be compiled
 TEST(DeviceManagement, create_DeviceSource_and_single_Kernel) {
   std::string source_text =
 #include "derived/simple_kernels.cl"
@@ -76,15 +76,54 @@ TEST(DeviceManagement, data_moved_to_device_without_errors) {
 /// errors
 TEST(DeviceManagement, data_moved_to_device_and_back_without_errors) {
   std::vector<uint> const row_indices = {1, 2, 3, 4};
+  std::size_t num_rows = row_indices.size();
+  auto device_buffer = amsla::common::moveToDevice(
+      row_indices, amsla::common::AccessType::READ_AND_WRITE);
+
+  std::vector<uint> data_back =
+      amsla::common::moveToHost<uint>(device_buffer, num_rows);
+
+  for (std::size_t i = 0; i < num_rows; i++) {
+    EXPECT_EQ(row_indices[i], data_back[i]);
+  }
+}
+
+
+/// Check that the copy constructor of DeviceData actually clones the internal
+/// data.
+///
+/// The check is done by copying a DeviceData object and then executing a
+/// kernel that increments the data on the original object. If the data was
+/// cloned, the copy has retained the original values.
+TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
+  std::string source_text =
+#include "derived/simple_kernels.cl"
+      ;
+  auto curr_source = amsla::common::DeviceSource(source_text);
+  auto curr_kernel = compileKernel(curr_source, "simple_increment");
+
+  // Create a first array
+  std::vector<uint> const row_indices = {1, 2, 3, 4};
+  auto row_indices_size = row_indices.size();
   auto device_buffer = amsla::common::moveToDevice(
       row_indices, amsla::common::AccessType::READ_AND_WRITE);
   amsla::common::waitAllDeviceOperations();
 
-  auto data_back = amsla::common::moveToHost<decltype(row_indices)::value_type>(
-      device_buffer, std::size(row_indices));
+  // Create a clone
+  amsla::common::DeviceData device_buffer_clone = device_buffer;
   amsla::common::waitAllDeviceOperations();
 
-  for (std::size_t i = 0; i < row_indices.size(); i++) {
-    EXPECT_EQ(row_indices[i], data_back[i]);
+  // Execute operations on the clone
+  curr_kernel.setArgument(0, device_buffer);
+  curr_kernel.run(row_indices_size, row_indices_size);
+  amsla::common::waitAllDeviceOperations();
+
+  // Expect the results to be different from the original values
+  auto after_kernel =
+      amsla::common::moveToHost<std::vector<uint>>(device_buffer_clone);
+  auto original =
+      amsla::common::moveToHost<std::vector<uint>>(device_buffer_clone);
+  for (std::size_t i = 0; i < row_indices_size; i++) {
+    EXPECT_EQ(after_kernel[i], original[i] + 1);
   }
 }

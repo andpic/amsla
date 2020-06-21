@@ -1,4 +1,4 @@
-/** @file CooDataStructure.hpp
+/** @file CooDataStructure.cpp
  * Sparse data structure in the COO format.
  *
  *  This contains the definitions of a sparse data structure in the COO format.
@@ -20,9 +20,6 @@
  *  limitations under the License.
  */
 
-#ifndef _AMSLA_DATASTRUCTURES_DETAILS_COODATASTRUCTURE_HPP
-#define _AMSLA_DATASTRUCTURES_DETAILS_COODATASTRUCTURE_HPP
-
 // System includes
 #include <algorithm>
 #include <cmath>
@@ -32,7 +29,7 @@
 
 // Project includes
 #include "Assertions.hpp"
-#include "DataStructure.hpp"
+#include "CooDataStructure.hpp"
 #include "DeviceManagement.hpp"
 
 namespace {
@@ -44,6 +41,7 @@ uint iComputeClosestPower(uint const n) {
   double temp_result = std::ceil(std::log10(n));
   return std::max(2.0, temp_result);
 }
+
 
 // Shorthand
 using DeviceSource = amsla::common::DeviceSource;
@@ -63,12 +61,11 @@ class CooDataLayout : public amsla::common::DataLayoutInterface {
 
     std::size_t const num_elements = row_indices.size();
 
-    amsla::common::initialiseDeviceLikeArray(internal_layout_.row_indices_,
-                                             row_indices, max_elements);
-    amsla::common::initialiseDeviceLikeArray(internal_layout_.column_indices_,
-                                             column_indices, max_elements);
-    amsla::common::initialiseDeviceLikeArray(internal_layout_.values_, values,
-                                             max_elements);
+    iInitialiseDeviceLikeArray(internal_layout_.row_indices_, row_indices,
+                               max_elements);
+    iInitialiseDeviceLikeArray(internal_layout_.column_indices_, column_indices,
+                               max_elements);
+    iInitialiseDeviceLikeArray(internal_layout_.values_, values, max_elements);
 
     std::set<uint> all_nodes(row_indices.begin(), row_indices.end());
     all_nodes.insert(column_indices.begin(), column_indices.end());
@@ -99,9 +96,10 @@ class CooDataLayout : public amsla::common::DataLayoutInterface {
   std::size_t maxElements() { return max_elements; }
 
   // Move data layout to the device
-  amsla::common::Buffer moveToDevice(
+  amsla::common::DeviceData moveToDevice(
       amsla::common::AccessType const access_mode) {
-    return amsla::common::moveToDevice(internal_layout_, access_mode);
+    return amsla::common::moveToDevice<DeviceLayout>(internal_layout_,
+                                                     access_mode);
   }
 
  private:
@@ -165,6 +163,6 @@ amsla::datastructures::CooDataStructure<BaseType>::CooDataStructure(
                                              column_indexes,
                                              values,
                                              createCooDataLayout<BaseType>) {}
-}  // namespace amsla::datastructures
 
-#endif
+template class amsla::datastructures::CooDataStructure<double>;
+}  // namespace amsla::datastructures

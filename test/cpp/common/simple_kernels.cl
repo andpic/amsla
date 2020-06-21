@@ -20,6 +20,10 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 
+void kernel simple_increment(global int* A) {
+  A[get_global_id(0)] = A[get_global_id(0)] + 1;
+}
+
 void kernel simple_add(global const int* A,
                        global const int* B,
                        global int* C) {

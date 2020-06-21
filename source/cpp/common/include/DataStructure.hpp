@@ -91,6 +91,9 @@ class DataStructure : public DataStructureInterface {
                 DataStructureInterface::LayoutFactoryMethod<BaseType> const&
                     data_layout_factory);
 
+  // Destructor
+  ~DataStructure();
+
   /// All the node IDs in the graph.
   std::vector<uint> allNodes();
 

@@ -4,8 +4,12 @@ project(amsla_datastructures)
 # BUILD AS A LIBRARY
 
 include_all_opencl_files()
-add_library(amsla_datastructures INTERFACE)
+
+file(GLOB_RECURSE all_cpp_sources "*.cpp")
+add_library(amsla_datastructures STATIC "${all_cpp_sources}")
 
 target_include_directories(amsla_datastructures
-                           INTERFACE "${PROJECT_SOURCE_DIR}/coo/include")
-target_link_libraries(amsla_datastructures INTERFACE amsla_common)
+                           PUBLIC "${PROJECT_SOURCE_DIR}/include")
+
+target_link_libraries(amsla_datastructures PUBLIC amsla_common OpenCL::OpenCL)
+add_dependencies(amsla_datastructures amsla_common)

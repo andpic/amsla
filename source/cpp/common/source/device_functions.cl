@@ -152,6 +152,8 @@ void iMergeTwoChunks_(__global uint* input_array,
   }
 }
 
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
 void sort(__global uint* input_array,
           uint const num_elements,
           __global uint* workspace) {

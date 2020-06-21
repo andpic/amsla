@@ -58,8 +58,8 @@ class DataStructure<BaseType>::DataStructureImpl
     compileSpecialisedKernels();
 
     device_buffer_ = std::make_unique<amsla::common::DeviceData>(
-        host_data_layout_->moveToDevice(
-            amsla::common::AccessType::READ_AND_WRITE));
+        std::move(host_data_layout_->moveToDevice(
+            amsla::common::AccessType::READ_AND_WRITE)));
   }
 
   // Retrieve the IDs of all the nodes in the graph
@@ -67,21 +67,19 @@ class DataStructure<BaseType>::DataStructureImpl
     std::string kernel_name("allNodesKernel");
 
     // Preallocate the output
-    using DeviceIndexType = amsla::common::ToDeviceType<uint>::type;
-    std::vector<DeviceIndexType> output;
+    std::vector<uint> output;
 
     auto vector_size = host_data_layout_->maxElements();
 
     amsla::common::DeviceKernel device_kernel = compiled_kernels_[0];
 
-    auto output_buffer =
-        amsla::common::moveToDevice(std::vector<DeviceIndexType>(vector_size),
-                                    amsla::common::AccessType::WRITE_ONLY);
+    auto output_buffer = amsla::common::moveToDevice(
+        std::vector<uint>(vector_size), amsla::common::AccessType::WRITE_ONLY);
     auto num_elements_output_buffer = amsla::common::moveToDevice(
-        static_cast<DeviceIndexType>(1), amsla::common::AccessType::WRITE_ONLY);
-    auto workspace_buffer = amsla::common::moveToDevice(
-        std::vector<DeviceIndexType>(2 * vector_size),
-        amsla::common::AccessType::READ_AND_WRITE);
+        static_cast<uint>(1), amsla::common::AccessType::WRITE_ONLY);
+    auto workspace_buffer =
+        amsla::common::moveToDevice(std::vector<uint>(2 * vector_size),
+                                    amsla::common::AccessType::READ_AND_WRITE);
 
     // Bind kernel arguments to kernel
     device_kernel.setArgument(0, *device_buffer_);
@@ -179,6 +177,10 @@ template <typename BaseType>
 std::vector<uint> DataStructure<BaseType>::allNodes() {
   return impl_->allNodes();
 }
+
+// Define destructor as required by the PIMPL idiom.
+template <typename BaseType>
+DataStructure<BaseType>::~DataStructure() = default;
 
 template class DataStructure<double>;
 

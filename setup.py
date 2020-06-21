@@ -102,7 +102,7 @@ def _configure_build_type(tasks, is_debug):
         config = 'Debug'
     else:
         config = 'Release'
-    tasks.prebuild_task = tasks.prebuild_task + " --config " + config
+    tasks.prebuild_task = tasks.prebuild_task + " -DCMAKE_BUILD_TYPE=" + config
     tasks.build_task = tasks.build_task + " --config " + config
     tasks.build_test_task = tasks.build_test_task + " --config " + config
     tasks.test_task = tasks.test_task + " -C " + config

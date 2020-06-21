@@ -49,6 +49,4 @@ class CooDataStructure : public amsla::common::DataStructure<BaseType> {
 
 }  // namespace amsla::datastructures
 
-#include "details/CooDataStructure.hpp"
-
 #endif

@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace amsla::common {
@@ -42,7 +43,7 @@ namespace amsla::common {
 ///     ToDeviceType<double>::type
 template <typename HostType>
 struct ToDeviceType {
-  typedef void type;
+  typedef HostType type;
 
  private:
   // Make this struct non-instantiable
@@ -58,6 +59,28 @@ struct ToDeviceType {
 ///     type_name is "double"
 template <typename Type>
 static std::string typeName();
+
+
+/// Initialise an array of the DeviceType coresponding to the given HostType.
+/// @param copy_from Input array.
+/// @param copy_to Where to copy the data to.
+/// @param max_elements Elements in copy_to.
+///
+/// The difference of max_elements and the length of copy_from is filled with
+/// zeros.
+template <typename HostType,
+          typename DeviceType = typename ToDeviceType<HostType>::type>
+void initialiseDeviceArray(std::vector<HostType> const& copy_from,
+                           void* const copy_to,
+                           std::size_t const max_elements);
+
+
+/// Convert vector to a device array
+/// @param copy_from Input array.
+template <typename HostType,
+          typename DeviceType = typename ToDeviceType<HostType>::type>
+std::pair<DeviceType*, std::size_t> convertToDeviceArray(
+    std::vector<HostType> const& copy_from);
 
 
 /// Sources for the kernel
@@ -103,7 +126,50 @@ class DeviceSource {
 enum class AccessType { READ_ONLY, WRITE_ONLY, READ_AND_WRITE };
 
 
-class DeviceData;
+/// Data on the device.
+class DeviceData {
+ public:
+  /// Constructor
+  /// @param byte_size The number of bytes allocated on the device
+  /// @param mem_flag How the data can be accessed.
+  DeviceData(std::size_t const byte_size,
+             AccessType const mem_flag = AccessType::READ_AND_WRITE);
+
+  /// Constructor from OpenCL buffer
+  /// @param a_buffer An OpenCL buffer object
+  /// @param byte_size The number of bytes allocated on the device
+  /// @param mem_flag How the data can be accessed.
+  explicit DeviceData(cl::Buffer const& a_buffer,
+                      std::size_t const byte_size,
+                      AccessType const mem_flag = AccessType::READ_AND_WRITE);
+
+  /// Move constructor from OpenCL buffer
+  /// @param a_buffer An OpenCL buffer object
+  /// @param byte_size The number of bytes allocated on the device
+  /// @param mem_flag How the data can be accessed.
+  explicit DeviceData(cl::Buffer&& a_buffer,
+                      std::size_t const byte_size,
+                      AccessType const mem_flag = AccessType::READ_AND_WRITE);
+
+  /// Create a copy of device data
+  /// @param other Data to be copied.
+  DeviceData(DeviceData const& other);
+
+  /// Destructor
+  ~DeviceData();
+
+  /// Copy assignment
+  /// @param other Another device data to copy from.
+  DeviceData& operator=(const DeviceData& other);
+
+  /// Get the DeviceData as an OpenCL buffer
+  cl::Buffer const& toOpenClBuffer() const;
+
+ private:
+  class DeviceDataImpl;
+  std::unique_ptr<DeviceDataImpl> impl_;
+};
+
 
 /// Move given data to the device and return a buffer
 /// @param host_data Pointer to data on the host.
@@ -133,57 +199,6 @@ DataType moveToHost(DeviceData const& device_data);
 template <typename DataType>
 std::vector<DataType> moveToHost(DeviceData const& device_data,
                                  std::size_t const num_elements);
-
-
-/// Data on the device.
-class DeviceData {
- public:
-  /// Constructor
-  /// @param byte_size The number of bytes allocated on the device
-  /// @param mem_flag The type of
-  DeviceData(std::size_t const byte_size,
-             AccessType const mem_flag = AccessType::READ_AND_WRITE);
-
-  /// Constructor from OpenCL buffer
-  /// @param a_buffer An OpenCL buffer object
-  explicit DeviceData(cl::Buffer const& a_buffer);
-
-  /// Move constructor from OpenCL buffer
-  /// @param a_buffer An OpenCL buffer object
-  explicit DeviceData(cl::Buffer&& a_buffer);
-
-  /// Create a copy of device data
-  /// @param other Data to be copied.
-  DeviceData(DeviceData const& other);
-
-  /// Destructor
-  ~DeviceData();
-
-  /// Copy assignment
-  /// @param other Another device data to copy from.
-  DeviceData& operator=(const DeviceData& other);
-
-  // Friend functions
-
-  template <typename DataType>
-  friend DeviceData amsla::common::moveToDevice(DataType const& host_data,
-                                                AccessType const mem_flag);
-
-  template <typename DataType>
-  friend DataType amsla::common::moveToHost(DeviceData const& device_data);
-
-  template <typename DataType>
-  friend std::vector<DataType> amsla::common::moveToHost(
-      DeviceData const& device_data,
-      std::size_t const num_elements);
-
- private:
-  // Convert to an OpenCL buffer
-  cl::Buffer const& toOpenClBuffer() const;
-
-  class DeviceDataImpl;
-  std::unique_ptr<DeviceDataImpl> impl_;
-};
 
 
 class DeviceKernel;

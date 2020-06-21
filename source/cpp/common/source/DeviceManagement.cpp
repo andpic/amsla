@@ -191,6 +191,21 @@ std::runtime_error iWrapOpenClError(cl::Error const& err) {
   return std::runtime_error(message);
 }
 
+
+// Clone an OpenCL buffer
+cl::Buffer iCloneOpenClBuffer(cl::Buffer const& from,
+                              std::size_t num_bytes,
+                              amsla::common::AccessType mem_flag) {
+  cl::Buffer ret(iDefaultContext(), iConvertToOpenClAccess(mem_flag),
+                 num_bytes);
+  try {
+    auto queue = iDefaultQueue();
+    queue.enqueueCopyBuffer(from, ret, 0, 0, num_bytes);
+  } catch (cl::Error err) {
+    throw iWrapOpenClError(err);
+  }
+}
+
 }  // namespace
 
 
@@ -317,22 +332,40 @@ DeviceSource::~DeviceSource() = default;
 class DeviceData::DeviceDataImpl {
  private:
   cl::Buffer buffer_;
+  std::size_t num_bytes_;
+  amsla::common::AccessType access_type_;
 
  public:
   using AccessType = amsla::common::AccessType;
 
   DeviceDataImpl(std::size_t const byte_size, AccessType const mem_flag)
-      : buffer_(iDefaultContext(),
-                iConvertToOpenClAccess(mem_flag),
-                byte_size) {}
+      : buffer_(iDefaultContext(), iConvertToOpenClAccess(mem_flag), byte_size),
+        num_bytes_(byte_size),
+        access_type_(mem_flag) {}
 
   // Constructing from a cl::Buffer
-  explicit DeviceDataImpl(cl::Buffer const& a_buffer) {
-    buffer_ = cl::Buffer(a_buffer);
+  explicit DeviceDataImpl(cl::Buffer const& a_buffer,
+                          std::size_t const num_bytes,
+                          AccessType const mem_flag) {
+    buffer_ = iCloneOpenClBuffer(a_buffer, num_bytes, mem_flag);
+    num_bytes_ = num_bytes;
+    access_type_ = mem_flag;
   }
 
-  explicit DeviceDataImpl(cl::Buffer&& a_buffer) {
+  explicit DeviceDataImpl(cl::Buffer&& a_buffer,
+                          std::size_t const num_bytes,
+                          AccessType const mem_flag) {
     buffer_ = std::move(a_buffer);
+    num_bytes_ = num_bytes;
+    access_type_ = mem_flag;
+  }
+
+  // Copy constructor
+  DeviceDataImpl(DeviceDataImpl const& from) {
+    buffer_ =
+        iCloneOpenClBuffer(from.buffer_, from.num_bytes_, from.access_type_);
+    num_bytes_ = from.num_bytes_;
+    access_type_ = from.access_type_;
   }
 
   // Convert to an OpenCL buffer
@@ -347,14 +380,19 @@ DeviceData::DeviceData(std::size_t const byte_size, AccessType const mem_flag) {
 }
 
 // Constructor from OpenCL buffer
-DeviceData::DeviceData(cl::Buffer const& a_buffer) {
-  impl_ = std::unique_ptr<DeviceDataImpl>(new DeviceDataImpl(a_buffer));
+DeviceData::DeviceData(cl::Buffer const& a_buffer,
+                       std::size_t const byte_size,
+                       AccessType const mem_flag) {
+  impl_ = std::unique_ptr<DeviceDataImpl>(
+      new DeviceDataImpl(a_buffer, byte_size, mem_flag));
 }
 
 // Constructor from OpenCL buffer
-DeviceData::DeviceData(cl::Buffer&& a_buffer) {
-  impl_ =
-      std::unique_ptr<DeviceDataImpl>(new DeviceDataImpl(std::move(a_buffer)));
+DeviceData::DeviceData(cl::Buffer&& a_buffer,
+                       std::size_t const byte_size,
+                       AccessType const mem_flag) {
+  impl_ = std::unique_ptr<DeviceDataImpl>(
+      new DeviceDataImpl(std::move(a_buffer), byte_size, mem_flag));
 }
 
 // Create a copy of device data
@@ -402,7 +440,7 @@ class DeviceKernel::DeviceKernelImpl {
 
   // Set an argument to the kernel
   void setArgument(uint const argument_number, DeviceData const& device_data) {
-    kernel_.setArg(argument_number, device_data);
+    kernel_.setArg(argument_number, device_data.toOpenClBuffer());
   }
 
   // Run the device kernel
