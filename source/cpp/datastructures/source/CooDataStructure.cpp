@@ -61,11 +61,12 @@ class CooDataLayout : public amsla::common::DataLayoutInterface {
 
     std::size_t const num_elements = row_indices.size();
 
-    iInitialiseDeviceLikeArray(internal_layout_.row_indices_, row_indices,
-                               max_elements);
-    iInitialiseDeviceLikeArray(internal_layout_.column_indices_, column_indices,
-                               max_elements);
-    iInitialiseDeviceLikeArray(internal_layout_.values_, values, max_elements);
+    amsla::common::initialiseDeviceArray(
+        row_indices, internal_layout_.row_indices_, max_elements);
+    amsla::common::initialiseDeviceArray(
+        column_indices, internal_layout_.column_indices_, max_elements);
+    amsla::common::initialiseDeviceArray(values, internal_layout_.values_,
+                                         max_elements);
 
     std::set<uint> all_nodes(row_indices.begin(), row_indices.end());
     all_nodes.insert(column_indices.begin(), column_indices.end());

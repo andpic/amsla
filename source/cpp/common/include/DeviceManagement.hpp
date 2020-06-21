@@ -71,7 +71,7 @@ static std::string typeName();
 template <typename HostType,
           typename DeviceType = typename ToDeviceType<HostType>::type>
 void initialiseDeviceArray(std::vector<HostType> const& copy_from,
-                           void* const copy_to,
+                           DeviceType* const copy_to,
                            std::size_t const max_elements);
 
 
