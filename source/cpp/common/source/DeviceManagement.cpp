@@ -204,6 +204,7 @@ cl::Buffer iCloneOpenClBuffer(cl::Buffer const& from,
   } catch (cl::Error err) {
     throw iWrapOpenClError(err);
   }
+  return ret;
 }
 
 }  // namespace

@@ -59,9 +59,7 @@ void initialiseDeviceArray(std::vector<HostType> const& copy_from,
   // Convert copy_from to the corresponding device type. For example:
   // double -> cl_double
   auto from_size = copy_from.size();
-  std::transform(
-      copy_from.begin(), copy_from.end(), copy_to,
-      [](const HostType& value) { return static_cast<DeviceType>(value); });
+  std::copy(copy_from.begin(), copy_from.end(), copy_to);
   std::fill(&copy_to[num_elements], &copy_to[max_elements],
             static_cast<DeviceType>(0));
 }
@@ -127,10 +125,8 @@ std::vector<DataType> moveToHost(DeviceData const& device_data,
 
   // Copy data into a DataType (host) vector
   std::vector<DataType> ret_array(num_elements);
-  std::transform(&device_like_array[0], &device_like_array[num_elements],
-                 std::back_inserter(ret_array), [](const DeviceType& value) {
-                   return static_cast<DataType>(value);
-                 });
+  std::copy(&device_like_array[0], &device_like_array[num_elements],
+            ret_array.begin());
   return ret_array;
 }
 
