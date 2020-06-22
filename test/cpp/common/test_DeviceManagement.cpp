@@ -28,20 +28,60 @@
 // Project includes
 #include "DeviceManagement.hpp"
 
-
-/// Check that a DeviceSource object can be created and that a single kernel
-/// can be compiled
-TEST(DeviceManagement, create_DeviceSource_and_single_Kernel) {
+namespace {
+amsla::common::DeviceSource iCreateSimpleDeviceSource() {
   std::string source_text =
 #include "derived/simple_kernels.cl"
       ;
   auto curr_source = amsla::common::DeviceSource(source_text);
-  std::string curr_name = "simple_add";
-  auto curr_kernel = compileKernel(curr_source, curr_name);
+  return curr_source;
+}
+}  // namespace
+
+/// Check that the copy constructor for a DeviceSource object does not error
+TEST(DeviceManagement, DeviceSource_copy_constructor_does_not_error) {
+  auto first = iCreateSimpleDeviceSource();
+  amsla::common::DeviceSource second(first);
+}
+
+/// Check that the assignment operator for a DeviceSource object does not error
+TEST(DeviceManagement, DeviceSource_assignment_operator_does_not_error) {
+  auto first = iCreateSimpleDeviceSource();
+  auto second = iCreateSimpleDeviceSource();
+  second = first;
 }
 
 
-// Test that an error is thrown when one tries to compile a bad OpenCL kernel.
+/// Check that a DeviceSource object can be created and that a single kernel
+/// can be compiled
+namespace {
+amsla::common::DeviceKernel iCreateSimpleKernel() {
+  auto curr_source = iCreateSimpleDeviceSource();
+  std::string curr_name = "simple_add";
+  auto curr_kernel = compileKernel(curr_source, curr_name);
+  return curr_kernel;
+}
+}  // namespace
+
+TEST(DeviceManagement, create_DeviceSource_and_single_Kernel) {
+  iCreateSimpleKernel();
+}
+
+/// Check that the assignment operator of DeviceKernel does not throw an error
+TEST(DeviceManagement, DeviceKernel_assignment_operator_does_not_error) {
+  auto first = iCreateSimpleKernel();
+  amsla::common::DeviceKernel second = iCreateSimpleKernel();
+  second = first;
+}
+
+/// Check that the copy constructor of DeviceKernel does not throw an error
+TEST(DeviceManagement, DeviceKernel_copy_constructor_does_not_error) {
+  auto first = iCreateSimpleKernel();
+  amsla::common::DeviceKernel second(first);
+}
+
+
+/// Test that an error is thrown when one tries to compile a bad OpenCL kernel.
 TEST(DeviceManagement, bad_OpenCL_source_throws_exception) {
   std::string source_text =
 #include "derived/bad_kernel.cl"
@@ -52,8 +92,8 @@ TEST(DeviceManagement, bad_OpenCL_source_throws_exception) {
 }
 
 
-// Test that an error is thrown when one tries to compile kernel that is not in
-// the given source.
+/// Test that an error is thrown when one tries to compile kernel that is not in
+/// the given source.
 TEST(DeviceManagement, non_existing_kernel_throws_exception) {
   std::string source_text =
 #include "derived/simple_kernels.cl"
@@ -139,7 +179,8 @@ TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
 
 TEST(DeviceManagement, DeviceData_assignment_operator_clones_data) {
   iRunTestCloneData([](amsla::common::DeviceData const& in_data) {
-    amsla::common::DeviceData out_data = in_data;
+    amsla::common::DeviceData out_data(in_data);
+    out_data = in_data;
     return out_data;
   });
 }

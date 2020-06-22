@@ -346,15 +346,6 @@ class DeviceData::DeviceDataImpl {
         num_bytes_(byte_size),
         access_type_(mem_flag) {}
 
-  // Constructing from a cl::Buffer
-  explicit DeviceDataImpl(cl::Buffer const& a_buffer,
-                          std::size_t const num_bytes,
-                          AccessType const mem_flag) {
-    buffer_ = iCloneOpenClBuffer(a_buffer, num_bytes, mem_flag);
-    num_bytes_ = num_bytes;
-    access_type_ = mem_flag;
-  }
-
   explicit DeviceDataImpl(cl::Buffer&& a_buffer,
                           std::size_t const num_bytes,
                           AccessType const mem_flag) {
@@ -380,14 +371,6 @@ class DeviceData::DeviceDataImpl {
 DeviceData::DeviceData(std::size_t const byte_size, AccessType const mem_flag) {
   impl_ =
       std::unique_ptr<DeviceDataImpl>(new DeviceDataImpl(byte_size, mem_flag));
-}
-
-// Constructor from OpenCL buffer
-DeviceData::DeviceData(cl::Buffer const& a_buffer,
-                       std::size_t const byte_size,
-                       AccessType const mem_flag) {
-  impl_ = std::unique_ptr<DeviceDataImpl>(
-      new DeviceDataImpl(a_buffer, byte_size, mem_flag));
 }
 
 // Constructor from OpenCL buffer

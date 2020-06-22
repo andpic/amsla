@@ -135,14 +135,6 @@ class DeviceData {
   DeviceData(std::size_t const byte_size,
              AccessType const mem_flag = AccessType::READ_AND_WRITE);
 
-  /// Constructor from OpenCL buffer
-  /// @param a_buffer An OpenCL buffer object
-  /// @param byte_size The number of bytes allocated on the device
-  /// @param mem_flag How the data can be accessed.
-  explicit DeviceData(cl::Buffer const& a_buffer,
-                      std::size_t const byte_size,
-                      AccessType const mem_flag = AccessType::READ_AND_WRITE);
-
   /// Move constructor from OpenCL buffer
   /// @param a_buffer An OpenCL buffer object
   /// @param byte_size The number of bytes allocated on the device
