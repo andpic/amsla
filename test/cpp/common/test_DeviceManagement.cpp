@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include <limits.h>
 #include <fstream>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -95,7 +96,10 @@ TEST(DeviceManagement, data_moved_to_device_and_back_without_errors) {
 /// The check is done by copying a DeviceData object and then executing a
 /// kernel that increments the data on the original object. If the data was
 /// cloned, the copy has retained the original values.
-TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
+namespace {
+void iRunTestCloneData(
+    std::function<amsla::common::DeviceData(amsla::common::DeviceData const&)>
+        data_cloner) {
   std::string source_text =
 #include "derived/simple_kernels.cl"
       ;
@@ -109,7 +113,7 @@ TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
       row_indices, amsla::common::AccessType::READ_AND_WRITE);
 
   // Create a clone
-  amsla::common::DeviceData device_buffer_clone(device_buffer);
+  auto device_buffer_clone = data_cloner(device_buffer);
 
   // Execute operations on the clone
   curr_kernel.setArgument(0, device_buffer_clone);
@@ -124,4 +128,18 @@ TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
   for (std::size_t i = 0; i < row_indices_size; i++) {
     EXPECT_EQ(after_kernel[i], original[i] + 1);
   }
+}
+}  // namespace
+
+TEST(DeviceManagement, DeviceData_copy_constructor_clones_data) {
+  iRunTestCloneData([](amsla::common::DeviceData const& in_data) {
+    return amsla::common::DeviceData(in_data);
+  });
+}
+
+TEST(DeviceManagement, DeviceData_assignment_operator_clones_data) {
+  iRunTestCloneData([](amsla::common::DeviceData const& in_data) {
+    amsla::common::DeviceData out_data = in_data;
+    return out_data;
+  });
 }
