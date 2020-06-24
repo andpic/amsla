@@ -102,7 +102,8 @@ def _configure_build_type(tasks, is_debug):
         config = 'Debug'
     else:
         config = 'Release'
-    tasks.prebuild_task = tasks.prebuild_task + " -DCMAKE_BUILD_TYPE=" + config
+    tasks.prebuild_task = tasks.prebuild_task + \
+        " --config " + config + " -DCMAKE_BUILD_TYPE=" + config
     tasks.build_task = tasks.build_task + " --config " + config
     tasks.build_test_task = tasks.build_test_task + " --config " + config
     tasks.test_task = tasks.test_task + " -C " + config
@@ -203,7 +204,7 @@ def _execute_task(command):
         try:
             subprocess.check_call(command.split())
         except subprocess.CalledProcessError as _:
-            sys.exit(os.EX_SOFTWARE)
+            sys.exit(-1)
 
 
 def _execute_amsla_build(tasks):
@@ -224,7 +225,7 @@ def _execute_amsla_build(tasks):
     for current_task in tasks.post_test_task:
         _execute_task(current_task)
 
-    sys.exit(os.EX_OK)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
