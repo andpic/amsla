@@ -46,8 +46,7 @@ void readRawDataFromDevice(cl::Buffer const& device_data,
 namespace amsla::common {
 
 // Initialise an array of the DeviceType coresponding to the given HostType.
-template <typename HostType,
-          typename DeviceType = typename ToDeviceType<HostType>::type>
+template <typename HostType, typename DeviceType>
 void initialiseDeviceArray(std::vector<HostType> const& copy_from,
                            DeviceType* const copy_to,
                            std::size_t const max_elements) {
@@ -66,8 +65,7 @@ void initialiseDeviceArray(std::vector<HostType> const& copy_from,
 
 
 // Convert a host vector to the corresponding device array
-template <typename HostType,
-          typename DeviceType = typename ToDeviceType<HostType>::type>
+template <typename HostType, typename DeviceType>
 std::pair<DeviceType*, std::size_t> convertToDeviceArray(
     std::vector<HostType> const& copy_from) {
   auto array_size = copy_from.size();
@@ -110,23 +108,24 @@ DeviceData moveToDevice(DataType const& host_data, AccessType const mem_flag) {
 
 
 // Move data to the host, with a blocking read
-template <typename DataType>
-std::vector<DataType> moveToHost(DeviceData const& device_data,
+template <typename HostType>
+std::vector<HostType> moveToHost(DeviceData const& device_data,
                                  std::size_t const num_elements) {
   // Convert host DataType to device DeviceType
-  using DeviceType = typename amsla::common::ToDeviceType<DataType>::type;
-  DeviceType device_like_array[num_elements];
+  using DeviceType = typename amsla::common::ToDeviceType<HostType>::type;
+  std::vector<DeviceType> device_like_array(num_elements);
 
   // Read into a DeviceType array
   std::size_t num_bytes = sizeof(DeviceType) * num_elements;
   amsla::common::details::readRawDataFromDevice(
       device_data.toOpenClBuffer(), num_bytes,
-      static_cast<void*>(device_like_array));
+      static_cast<void*>(&device_like_array[0]));
 
-  // Copy data into a DataType (host) vector
-  std::vector<DataType> ret_array(num_elements);
-  std::copy(&device_like_array[0], &device_like_array[num_elements],
-            ret_array.begin());
+  // Copy data into a HostType (host) vector
+  std::vector<HostType> ret_array(num_elements);
+  std::transform(device_like_array.begin(), device_like_array.end(),
+                 ret_array.begin(),
+                 [](auto& in_data) { return static_cast<HostType>(in_data); });
   return ret_array;
 }
 

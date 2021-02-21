@@ -33,6 +33,7 @@
 // Project includes
 #include "DeviceManagement.hpp"
 
+
 namespace amsla::common {
 
 /// Interface for all DataLayouts, that describe the data layout on the device.

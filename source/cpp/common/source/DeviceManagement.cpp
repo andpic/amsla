@@ -487,7 +487,7 @@ DeviceKernel::~DeviceKernel() = default;
 // Kernel compilation
 DeviceKernel compileKernel(DeviceSource const& kernel_source,
                            std::string const& kernel_name) {
-  checkThat(~kernel_source.isEmpty() && kernel_name.length() != 0,
+  checkThat(!kernel_source.isEmpty() && kernel_name.length() != 0,
             "Empty kernel provided.");
 
   auto all_kernels = amsla::common::compileAllKernels(kernel_source);
@@ -504,7 +504,7 @@ DeviceKernel compileKernel(DeviceSource const& kernel_source,
 
 // Compile all kernels in the source
 std::vector<DeviceKernel> compileAllKernels(DeviceSource const& kernel_source) {
-  checkThat(~kernel_source.isEmpty(), "Empty kernel provided.");
+  checkThat(!kernel_source.isEmpty(), "Empty kernel provided.");
 
   auto context = iDefaultContext();
   std::vector<cl::Device> devices = {iDefaultDevice()};

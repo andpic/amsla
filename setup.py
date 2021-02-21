@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#  @copyright Copyright 2019-2020 Andrea Picciau
+#  @copyright Copyright 2019-2021 Andrea Picciau
 #
 #  @license Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -46,15 +46,16 @@ def _default_test_dir():
     return test_dir
 
 
-def _create_new_build_dir():
+def _create_new_build_dir(keep_build):
     ''' Remove previously existing build dir and create a new one '''
     build_dir = _default_build_dir()
     # Delete directory if it exists
-    if os.path.exists(build_dir):
+    if os.path.exists(build_dir) and not keep_build:
         print("Removing directory: " + build_dir)
         shutil.rmtree(build_dir, ignore_errors=True)
-    print("Creating directory: " + build_dir)
-    os.makedirs(build_dir)
+    elif not os.path.exists(build_dir):
+        print("Creating directory: " + build_dir)
+        os.makedirs(build_dir)
     return build_dir
 
 
@@ -69,6 +70,8 @@ def _parse_args():
                         action='store_true', help='do not build tests.')
     parser.add_argument('-t', '--run-tests',
                         action='store_true', help='execute the tests.')
+    parser.add_argument('-k', '--keep-build',
+                        action='store_true', default=False, help='execute the tests.')
     parser.add_argument('-m', '--module', action='store',
                         help='run the tests for the specific module.')
 
@@ -168,9 +171,9 @@ def _disable_tests(task):
     return task
 
 
-def _configure_amsla_build(is_debug, is_coverage, is_no_tests, is_running_tests, module):
+def _configure_amsla_build(is_debug, is_coverage, is_no_tests, is_running_tests, is_keep_build, module):
     ''' Configure the build for AMSLA '''
-    _create_new_build_dir()
+    _create_new_build_dir(is_keep_build)
 
     tasks = Tasks()
     tasks = _configure_build_type(tasks, is_debug)
@@ -236,5 +239,6 @@ if __name__ == '__main__':
                                    args.code_coverage,
                                    args.no_tests,
                                    args.run_tests,
+                                   args.keep_build,
                                    args.module)
     _execute_amsla_build(tasks)

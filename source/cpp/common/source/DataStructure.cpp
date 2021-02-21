@@ -51,7 +51,8 @@ class DataStructure<BaseType>::DataStructureImpl
     host_layout_factory_ = data_layout_factory;
 
     host_data_layout_ = std::unique_ptr<amsla::common::DataLayoutInterface>(
-        data_layout_factory(row_indices, column_indices, values, num_elements));
+        data_layout_factory(row_indices, column_indices, values,
+                            static_cast<uint>(num_elements)));
 
     exportable_sources_ = std::make_unique<amsla::common::DeviceSource>(
         host_data_layout_->exportDeviceSources());
