@@ -29,6 +29,9 @@
 // System includes
 #include <CL/cl.hpp>
 #include <algorithm>
+#ifdef _WIN64
+using uint = unsigned int;
+#endif
 #include <iostream>
 #include <string>
 #include <utility>

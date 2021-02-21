@@ -39,7 +39,7 @@ uint iComputeClosestPower(uint const n) {
   amsla::common::checkThat(n > 0, "The input must be greater than 0.");
 
   double temp_result = std::ceil(std::log10(n));
-  return std::max(2.0, temp_result);
+  return static_cast<uint>(std::max(2.0, temp_result));
 }
 
 
@@ -70,8 +70,8 @@ class CooDataLayout : public amsla::common::DataLayoutInterface {
 
     std::set<uint> all_nodes(row_indices.begin(), row_indices.end());
     all_nodes.insert(column_indices.begin(), column_indices.end());
-    internal_layout_.num_nodes_ = all_nodes.size();
-    internal_layout_.num_edges_ = num_elements;
+    internal_layout_.num_nodes_ = static_cast<IdDeviceType>(all_nodes.size());
+    internal_layout_.num_edges_ = static_cast<IdDeviceType>(num_elements);
   }
 
   // Export device sources that are customised for the CooDataLayout
@@ -107,8 +107,9 @@ class CooDataLayout : public amsla::common::DataLayoutInterface {
   using IdDeviceType = typename amsla::common::ToDeviceType<uint>::type;
   using BaseDeviceType = typename amsla::common::ToDeviceType<BaseType>::type;
 
-  // Data layout on the device
-  struct __attribute__((__packed__)) DeviceLayout {
+// Data layout on the device. Needs to be packed.
+#pragma pack(push, 1)
+  struct DeviceLayout {
     // Elements in the matrix
     IdDeviceType row_indices_[max_elements];
     IdDeviceType column_indices_[max_elements];
@@ -123,6 +124,7 @@ class CooDataLayout : public amsla::common::DataLayoutInterface {
     // Maximum number of edges allowed in the matrix.
     IdDeviceType const max_elements_ = max_elements;
   };
+#pragma pack(pop)
 
   // Internal data layout
   DeviceLayout internal_layout_;
