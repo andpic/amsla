@@ -123,8 +123,9 @@ std::vector<HostType> moveToHost(DeviceData const& device_data,
 
   // Copy data into a HostType (host) vector
   std::vector<HostType> ret_array(num_elements);
-  std::copy(&device_like_array[0], &device_like_array[num_elements],
-            ret_array.begin());
+  std::transform(device_like_array.begin(), device_like_array.end(),
+                 ret_array.begin(),
+                 [](auto& in_data) { return static_cast<HostType>(in_data); });
   return ret_array;
 }
 
