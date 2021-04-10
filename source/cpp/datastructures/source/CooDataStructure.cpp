@@ -1,24 +1,23 @@
-/** @file CooDataStructure.cpp
- * Sparse data structure in the COO format.
- *
- *  This contains the definitions of a sparse data structure in the COO format.
- *
- *  @author Andrea Picciau <andrea@picciau.net>
- *
- *  @copyright Copyright 2019-2020 Andrea Picciau
- *
- *  @license Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+/// @file CooDataStructure.cpp
+/// Sparse data structure in the COO format.
+///
+/// This contains the definitions of a sparse data structure in the COO format.
+///
+/// @author Andrea Picciau <andrea@picciau.net>
+///
+/// @copyright Copyright 2019-2020 Andrea Picciau
+///
+/// @license Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+///
+///    http://www.apache.org/licenses/LICENSE-2.0
+///
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
 
 // System includes
 #include <algorithm>
@@ -46,8 +45,7 @@ uint iComputeClosestPower(uint const n) {
 // Shorthand
 using DeviceSource = amsla::common::DeviceSource;
 
-/** Layout of the data on the host, mirroring the layout on the device.
- */
+// Layout of the data on the host, mirroring the layout on the device.
 template <typename BaseType, std::size_t max_elements>
 class CooDataLayout : public amsla::common::DataLayoutInterface {
  public:

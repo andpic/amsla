@@ -26,12 +26,12 @@
 
 namespace amsla::common {
 
-/// Throw an exception if the condition is false
+/// @brief Throw an exception if the condition is false
 /// @param must_be_true The condition that must be satisfied.
 /// @param diagnostic A string to print in case the condition is not satisfied.
 void assertThat(bool const must_be_true, std::string const diagnostic);
 
-/// Assert that a condition is true
+/// @brief Assert that a condition is true
 /// @param must_be_true The condition that must be satisfied.
 /// @param diagnostic A string to print in case the condition is not satisfied.
 void checkThat(bool const must_be_true, std::string const diagnostic);
