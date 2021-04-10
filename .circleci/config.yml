@@ -49,12 +49,13 @@ jobs:
       - checkout
       - run:
           name: Build and collect code coverage
+          environment:
+            CODECOV_TOKEN: 8115c535-e2f6-41e1-8657-4e7b53d80136
           command: |
             python3 setup.py -dct
             bash <(curl -s https://codecov.io/bash) -f ./build/code_coverage.info || echo "Codecov did not collect coverage reports"
 
 workflows:
-  version: 2.1
   run_all_tests:
     jobs:
       - build_and_test_matlab
